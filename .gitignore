@@ -1,3 +1,7 @@
+# IDE
+.vscode
+.idea
+
 # Logs
 logs
 *.log
@@ -102,3 +106,11 @@ dist
 
 # TernJS port file
 .tern-port
+
+node_modules
+coverage.json
+typechain
+
+#Hardhat files
+cache
+artifacts
