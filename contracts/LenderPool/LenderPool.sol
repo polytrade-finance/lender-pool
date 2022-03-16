@@ -2,9 +2,10 @@
 pragma solidity ^0.8.12;
 
 import "./interface/ITetherToken.sol";
+import "./interface/ILenderPool.sol";
 import "hardhat/console.sol";
 
-contract LenderPool {
+contract LenderPool is ILenderPool {
     /**
      *
      */
