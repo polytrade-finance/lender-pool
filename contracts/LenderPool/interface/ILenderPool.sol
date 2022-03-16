@@ -6,7 +6,7 @@ interface ILenderPool {
      * @dev Emitted when funds are deposited by the `lenderAddress`.
      * `lendingAmount` is the total amount added
      */
-    event Deposit(address lenderAddress, uint lendingAmount);
+    event Deposit(address indexed lenderAddress, uint indexed lendingAmount);
 
     /**
      * @dev Transfer Tether token from `msg.sender` address to contract
