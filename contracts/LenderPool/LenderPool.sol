@@ -23,6 +23,7 @@ contract LenderPool is ILenderPool {
      * @notice Deposit token to smart contract
      * @dev Transfers the approved token from msg.sender to lender pool
      * @param amount, the number of tokens to be lent
+     *
      * Requirements:
      *
      * - `lendingAmount` should be greater than zero
