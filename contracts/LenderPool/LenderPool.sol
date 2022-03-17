@@ -2,7 +2,6 @@
 pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interface/ILenderPool.sol";
 
 /**
@@ -12,7 +11,7 @@ import "./interface/ILenderPool.sol";
 contract LenderPool is ILenderPool {
     using SafeERC20 for IERC20;
 
-    mapping(address => uint) private _balance;
+    mapping(address => uint) private _deposits;
 
     address public immutable tokenAddress;
 
@@ -36,8 +35,8 @@ contract LenderPool is ILenderPool {
         IERC20 _token = IERC20(tokenAddress);
         uint allowance = _token.allowance(msg.sender, address(this));
         require(allowance >= amount, "Amount not approved");
+        _deposits[msg.sender] += amount;
         _token.safeTransferFrom(msg.sender, address(this), amount);
-        _balance[msg.sender] += amount;
         emit Deposit(msg.sender, amount);
     }
 
@@ -47,6 +46,6 @@ contract LenderPool is ILenderPool {
      * @return returns the balance of lender
      */
     function getBalance(address lender) external view returns (uint) {
-        return _balance[lender];
+        return _deposits[lender];
     }
 }
