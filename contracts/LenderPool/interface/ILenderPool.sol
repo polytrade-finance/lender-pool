@@ -5,7 +5,6 @@ interface ILenderPool {
     /**
      * @notice Emits when new fund is added to the Lender Pool
      * @dev Emitted when funds are deposited by the `lender`.
-     * `amount` is the total amount added
      * @param lender, address of the lender
      * @param amount, amount deposited by the lender
      */
@@ -19,7 +18,7 @@ interface ILenderPool {
     function deposit(uint amount) external;
 
     /**
-     * @notice returns the total amount lent by the lender
+     * @notice returns amount lent by the lender
      * @param lender, address of lender
      * @return returns balance of the lender
      */

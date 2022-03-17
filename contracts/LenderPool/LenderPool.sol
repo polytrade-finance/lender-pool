@@ -42,7 +42,7 @@ contract LenderPool is ILenderPool {
     }
 
     /**
-     * @notice returns the total amount lent by the lender
+     * @notice returns amount lent by the lender
      * @param lender, address of the lender
      * @return returns balance of the lender
      */
