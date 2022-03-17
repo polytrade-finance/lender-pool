@@ -23,7 +23,7 @@ describe("Token", function () {
 
     expect(
       ethers.utils
-        .parseUnits("1.0", 15)
+        .parseUnits("1000000000", "6")
         .eq(await token.connect(accounts[0]).balanceOf(addresses[0]))
     );
   });
