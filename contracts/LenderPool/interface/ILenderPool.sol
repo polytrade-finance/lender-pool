@@ -12,13 +12,13 @@ interface ILenderPool {
     /**
      * @notice Deposit token to smart contract
      * @dev Transfers the approved token from msg.sender to lender pool
-     * @param amount The number of tokens user wants to transfer
+     * @param amount, The number of tokens user wants to transfer
      */
     function deposit(uint amount) external;
 
     /**
      * @notice returns the total amount lent by lender
-     * @param lender address of lender
+     * @param lender, address of lender
      * @return returns the balance of lender
      */
     function getBalance(address lender) external view returns (uint);
