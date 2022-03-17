@@ -22,7 +22,9 @@ contract LenderPool is ILenderPool {
     /**
      * @notice Deposit token to smart contract
      * @dev Transfers the approved token from msg.sender to lender pool
-     * @param amount, The number of tokens user wants to transfer
+     * @param amount, the number of tokens to be lent
+
+
      * Requirements:
      *
      * - `lendingAmount` should be greater than zero
@@ -40,9 +42,9 @@ contract LenderPool is ILenderPool {
     }
 
     /**
-     * @notice returns the total amount lent by lender
-     * @param lender, address of lender
-     * @return returns the balance of lender
+     * @notice returns the total amount lent by the lender
+     * @param lender, address of the lender
+     * @return returns balance of the lender
      */
     function getBalance(address lender) external view returns (uint) {
         return _deposits[lender];

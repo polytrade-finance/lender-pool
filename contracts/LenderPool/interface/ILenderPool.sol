@@ -3,25 +3,25 @@ pragma solidity ^0.8.12;
 
 interface ILenderPool {
     /**
-     * @notice Emits when new fund is added to Lender Pool
-     * @dev Emitted when funds are deposited by the `lenderAddress`.
-     * `lendingAmount` is the total amount added
+     * @notice Emits when new fund is added to the Lender Pool
+     * @dev Emitted when funds are deposited by the `lender`.
+     * `amount` is the total amount added
      * @param lender, address of the lender
-     * @param amount, amount deposited by lender
+     * @param amount, amount deposited by the lender
      */
     event Deposit(address indexed lender, uint amount);
 
     /**
      * @notice Deposit token to smart contract
      * @dev Transfers the approved token from msg.sender to lender pool
-     * @param amount, The number of tokens user wants to transfer
+     * @param amount,the number of tokens to be lent
      */
     function deposit(uint amount) external;
 
     /**
-     * @notice returns the total amount lent by lender
+     * @notice returns the total amount lent by the lender
      * @param lender, address of lender
-     * @return returns the balance of lender
+     * @return returns balance of the lender
      */
     function getBalance(address lender) external view returns (uint);
 }
