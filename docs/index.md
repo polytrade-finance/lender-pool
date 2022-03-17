@@ -1,6 +1,10 @@
-## Welcome to GitHub Pages
+## Lender Pool - Documentation
 
-You can use the [editor on GitHub](https://github.com/polytrade-finance/lender-pool/edit/develop/docs/index.md) to maintain and preview the content for your website in Markdown files.
+LenderPool is an endless pool allowing Lenders to supply capital.  
+The Pool then automatically allocates that capital across a 3rd party Defi protocol to hold stable and earn extra yield.
+When Lenders supply to the Pool, they receive an equivalent amount of T-stable coin, which they can stake to get interest on their investments.
+
+[editor on GitHub](https://github.com/polytrade-finance/lender-pool/edit/develop/docs/index.md) to maintain and preview the content for your website in Markdown files.
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
