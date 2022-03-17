@@ -43,7 +43,7 @@ contract LenderPool is ILenderPool {
 
     /**
      * @notice returns the total amount lent by lender
-     * @param, lender, address of lender
+     * @param lender, address of lender
      * @return returns the balance of lender
      */
     function getBalance(address lender) external view returns (uint) {
