@@ -13,10 +13,10 @@ contract LenderPool is ILenderPool {
 
     mapping(address => uint) private _deposits;
 
-    address public immutable tokenAddress;
+    IERC20 public immutable token;
 
     constructor(address _tokenAddress) {
-        tokenAddress = _tokenAddress;
+        token = IERC20(_tokenAddress);
     }
 
     /**
@@ -32,11 +32,10 @@ contract LenderPool is ILenderPool {
      */
     function deposit(uint amount) external {
         require(amount > 0, "Lending amount invalid");
-        IERC20 _token = IERC20(tokenAddress);
-        uint allowance = _token.allowance(msg.sender, address(this));
+        uint allowance = token.allowance(msg.sender, address(this));
         require(allowance >= amount, "Amount not approved");
         _deposits[msg.sender] += amount;
-        _token.safeTransferFrom(msg.sender, address(this), amount);
+        token.safeTransferFrom(msg.sender, address(this), amount);
         emit Deposit(msg.sender, amount);
     }
 
