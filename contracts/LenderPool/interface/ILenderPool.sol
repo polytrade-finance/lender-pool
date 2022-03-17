@@ -20,7 +20,7 @@ interface ILenderPool {
     /**
      * @notice returns amount lent by the lender
      * @param lender, address of lender
-     * @return returns balance of the lender
+     * @return returns the amount lent by the lender
      */
     function getBalance(address lender) external view returns (uint);
 }

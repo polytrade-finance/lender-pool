@@ -37,13 +37,13 @@ contract LenderPool is ILenderPool {
         require(allowance >= amount, "Amount not approved");
         _deposits[msg.sender] += amount;
         emit Deposit(msg.sender, amount);
-        token.safeTransferFrom(msg.sender, address(this), amount); 
+        token.safeTransferFrom(msg.sender, address(this), amount);
     }
 
     /**
      * @notice returns amount lent by the lender
      * @param lender, address of the lender
-     * @return returns balance of the lender
+     * @return returns the amount lent by the lender
      */
     function getBalance(address lender) external view returns (uint) {
         return _deposits[lender];
