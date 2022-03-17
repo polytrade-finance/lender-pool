@@ -12,7 +12,7 @@ describe("Token", function () {
     addresses = accounts.map((account: SignerWithAddress) => account.address);
   });
 
-  it("Should deploy Token successfully", async function () {
+  it("it should deploy Token successfully", async function () {
     const Token = await ethers.getContractFactory("Token");
     const token: Token = await Token.deploy("Tether", "USDC", 6);
     await token.deployed();
