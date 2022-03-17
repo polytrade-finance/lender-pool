@@ -22,7 +22,7 @@ describe("Token", function () {
     expect(await token.decimals()).to.be.equal(6);
 
     expect(
-      ethers.BigNumber.from("1000000000000000").eq(
+      ethers.utils.parseUnits("1.0",15).eq(
         await token.connect(accounts[0]).balanceOf(addresses[0])
       )
     );
