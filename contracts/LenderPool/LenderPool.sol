@@ -37,8 +37,8 @@ contract LenderPool is ILenderPool {
         uint allowance = token.allowance(msg.sender, address(this));
         require(allowance >= amount, "Amount not approved");
         _deposits[msg.sender] += amount;
-        token.safeTransferFrom(msg.sender, address(this), amount);
         emit Deposit(msg.sender, amount);
+        token.safeTransferFrom(msg.sender, address(this), amount); 
     }
 
     /**
