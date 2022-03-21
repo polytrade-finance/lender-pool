@@ -27,7 +27,9 @@ describe("LenderPool", function () {
     expect(
       await ethers.provider.getCode(lenderPool.address)
     ).to.be.length.above(10);
-    expect(await ethers.provider.getCode(stable.address)).to.be.length.above(10);
+    expect(await ethers.provider.getCode(stable.address)).to.be.length.above(
+      10
+    );
   });
 
   it("should approve stable token", async function () {
@@ -57,7 +59,9 @@ describe("LenderPool", function () {
   it("should deposit stable token successfully", async function () {
     await lenderPool.connect(accounts[0]).deposit(100);
     expect(
-      ethers.BigNumber.from("100").eq(await stable.balanceOf(lenderPool.address))
+      ethers.BigNumber.from("100").eq(
+        await stable.balanceOf(lenderPool.address)
+      )
     );
   });
 
