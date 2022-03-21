@@ -3,7 +3,7 @@ pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract DerivativeToken is ERC20 {
+contract Derivative is ERC20 {
     uint8 private immutable _decimals;
 
     constructor(
