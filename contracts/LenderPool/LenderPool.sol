@@ -43,9 +43,16 @@ contract LenderPool is ILenderPool {
         token.safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    /*
-     *@notice converts the token into derivative and transfers to lender
-     *@dev calculates the total derivative lender can claim and transfers it to lender
+    /**
+     * @notice converts the token into derivative and transfers to lender
+     * @dev calculates the total derivative lender can claim and transfers it to lender
+     * @dev Emits {DerivativeClaimed} event
+     *
+     * Requirements:
+     *
+     * - `deposit` should be greater than zero
+     * - `derivativeClaimed` must not be equal to deposit
+     *
      */
     function convertToDerivative() external {
         require(_deposits[msg.sender] > 0, "No deposit made");
@@ -68,6 +75,11 @@ contract LenderPool is ILenderPool {
         return _deposits[lender];
     }
 
+    /**
+     * @notice retruns the amount of derivative claimed
+     * @param lender, address of the lender
+     * @return retruns the amount of derivative claimed
+     */
     function getDerivativeClaimed(address lender) external view returns (uint) {
         return _derivativeClaimed[lender];
     }

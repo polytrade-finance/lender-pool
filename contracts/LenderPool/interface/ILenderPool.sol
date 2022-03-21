@@ -37,4 +37,11 @@ interface ILenderPool {
      * @return returns the amount lent by the lender
      */
     function getBalance(address lender) external view returns (uint);
+
+    /**
+     * @notice retruns the amount of derivative claimed
+     * @param lender, address of the lender
+     * @return retruns the amount of derivative claimed
+     */
+    function getDerivativeClaimed(address lender) external view returns (uint);
 }
