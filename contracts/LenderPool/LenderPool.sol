@@ -54,7 +54,7 @@ contract LenderPool is ILenderPool {
     function convertToDerivative() external {
         require(_deposits[msg.sender] > 0, "No deposit made");
         uint amount = _deposits[msg.sender];
-        _deposits[msg.sender] = 0; 
+        _deposits[msg.sender] = 0;
         tStable.safeTransfer(msg.sender, amount);
     }
 

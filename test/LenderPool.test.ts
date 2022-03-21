@@ -72,7 +72,6 @@ describe("LenderPool", function () {
     expect(balanceAfter.sub(balanceBefore).eq(ethers.BigNumber.from("100")));
   });
 
-
   it("should revert if all derivative is claimed", function async() {
     expect(
       lenderPool.connect(accounts[0]).convertToDerivative()
