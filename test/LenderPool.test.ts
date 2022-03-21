@@ -30,7 +30,7 @@ describe("LenderPool", function () {
     expect(await ethers.provider.getCode(token.address)).to.be.length.above(10);
   });
 
-  it("should approve token", async function () {
+  it("should approve stable token", async function () {
     await token.connect(accounts[0]).approve(lenderPool.address, 100);
     expect(
       ethers.BigNumber.from("100").eq(
@@ -39,7 +39,7 @@ describe("LenderPool", function () {
     );
   });
 
-  it("should transfer derivative to lender pool", async function () {
+  it("should transfer tStable to lender pool", async function () {
     await derivative
       .connect(accounts[0])
       .transfer(lenderPool.address, 100 * 10 ** 6);
@@ -51,10 +51,10 @@ describe("LenderPool", function () {
   });
 
   it("should check balance of user is zero", async function () {
-    expect(await lenderPool.getBalance(addresses[0])).to.be.equal(0);
+    expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(0);
   });
 
-  it("should deposit amount successfully", async function () {
+  it("should deposit stable token successfully", async function () {
     await lenderPool.connect(accounts[0]).deposit(100);
     expect(
       ethers.BigNumber.from("100").eq(await token.balanceOf(lenderPool.address))
@@ -62,19 +62,32 @@ describe("LenderPool", function () {
   });
 
   it("should check balance of user after deposit", async function () {
-    expect(await lenderPool.getBalance(addresses[0])).to.be.equal(100);
+    expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(100);
   });
 
-  it("should claim derivative successfully", async function () {
-    const balanceBefore = await derivative.balanceOf(addresses[0]);
-    await lenderPool.connect(accounts[0]).convertToDerivative();
-    const balanceAfter = await derivative.balanceOf(addresses[0]);
-    expect(balanceAfter.sub(balanceBefore).eq(ethers.BigNumber.from("100")));
-  });
-
-  it("should revert if all derivative is claimed", function async() {
+  it("should revert if tStable claimed is more than stable deposited", async function () {
     expect(
-      lenderPool.connect(accounts[0]).convertToDerivative()
+      lenderPool.connect(accounts[0]).withdrawTStable(1000)
+    ).to.be.revertedWith("Amount requested more than deposit made");
+  });
+
+  it("should claim tStable successfully", async function () {
+    const balanceBefore = await derivative.balanceOf(addresses[0]);
+    await lenderPool.connect(accounts[0]).withdrawTStable(1);
+    const balanceAfter = await derivative.balanceOf(addresses[0]);
+    expect(balanceAfter.sub(balanceBefore).eq(ethers.BigNumber.from("1")));
+  });
+
+  it("should claim all tStable successfully", async function () {
+    const balanceBefore = await derivative.balanceOf(addresses[0]);
+    await lenderPool.connect(accounts[0]).withdrawAllTStable();
+    const balanceAfter = await derivative.balanceOf(addresses[0]);
+    expect(balanceAfter.sub(balanceBefore).eq(ethers.BigNumber.from("99")));
+  });
+
+  it("should revert if all tStable is claimed", function async() {
+    expect(
+      lenderPool.connect(accounts[0]).withdrawAllTStable()
     ).to.be.revertedWith("Derivative already claimed");
   });
 
@@ -92,7 +105,7 @@ describe("LenderPool", function () {
 
   it("should revert if no amount is deposited", async function () {
     expect(
-      lenderPool.connect(accounts[1]).convertToDerivative()
+      lenderPool.connect(accounts[1]).withdrawAllTStable()
     ).to.be.revertedWith("No deposit made");
   });
 });
