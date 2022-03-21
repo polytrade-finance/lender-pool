@@ -10,12 +10,26 @@ interface ILenderPool {
      */
     event Deposit(address indexed lender, uint amount);
 
+    /*
+     * @notice Emits when derivative token is transferred.
+     * @dev Emitted when derivative token is claimed and then transferred to lender.
+     * @param lender, address of the lender
+     * @param amount, amount transferred to the lender
+     */
+    event DerivativeClaimed(address indexed lender, uint amount);
+
     /**
      * @notice Deposit token to smart contract
      * @dev Transfers the approved token from msg.sender to lender pool
      * @param amount, the number of tokens to be lent
      */
     function deposit(uint amount) external;
+
+    /*
+     *@notice converts the token into derivative and transfers to lender
+     *@dev calculates the total derivative lender can claim and transfers it to lender
+     */
+    function convertToDerivative() external;
 
     /**
      * @notice returns amount lent by the lender

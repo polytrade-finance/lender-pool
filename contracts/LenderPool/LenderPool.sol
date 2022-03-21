@@ -12,11 +12,14 @@ contract LenderPool is ILenderPool {
     using SafeERC20 for IERC20;
 
     mapping(address => uint) private _deposits;
+    mapping(address => uint) private _derivativeClaimed;
 
     IERC20 public immutable token;
+    IERC20 public immutable derivative;
 
-    constructor(address _tokenAddress) {
+    constructor(address _tokenAddress, address _derivativeAddress) {
         token = IERC20(_tokenAddress);
+        derivative = IERC20(_derivativeAddress);
     }
 
     /**
@@ -38,6 +41,22 @@ contract LenderPool is ILenderPool {
         _deposits[msg.sender] += amount;
         emit Deposit(msg.sender, amount);
         token.safeTransferFrom(msg.sender, address(this), amount);
+    }
+
+    /*
+     *@notice converts the token into derivative and transfers to lender
+     *@dev calculates the total derivative lender can claim and transfers it to lender
+     */
+    function convertToDerivative() external {
+        require(_deposits[msg.sender] > 0, "No deposit made");
+        require(
+            _deposits[msg.sender] == _derivativeClaimed[msg.sender],
+            "Derivative already claimed"
+        );
+        uint amount = _deposits[msg.sender] - _derivativeClaimed[msg.sender];
+        _derivativeClaimed[msg.sender] += amount;
+        derivative.safeTransferFrom(msg.sender, address(this), amount);
+        emit DerivativeClaimed(msg.sender, amount);
     }
 
     /**
