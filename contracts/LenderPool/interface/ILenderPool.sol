@@ -10,14 +10,6 @@ interface ILenderPool {
      */
     event Deposit(address indexed lender, uint amount);
 
-    /*
-     * @notice Emits when derivative token is transferred.
-     * @dev Emitted when derivative token is claimed and then transferred to lender.
-     * @param lender, address of the lender
-     * @param amount, amount transferred to the lender
-     */
-    event DerivativeClaimed(address indexed lender, uint amount);
-
     /**
      * @notice Deposit token to smart contract
      * @dev Transfers the approved token from msg.sender to lender pool
@@ -37,11 +29,4 @@ interface ILenderPool {
      * @return returns the amount lent by the lender
      */
     function getBalance(address lender) external view returns (uint);
-
-    /**
-     * @notice returns the amount of derivative claimed
-     * @param lender, address of the lender
-     * @return returns the amount of derivative claimed
-     */
-    function getDerivativeClaimed(address lender) external view returns (uint);
 }
