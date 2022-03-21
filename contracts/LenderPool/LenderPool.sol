@@ -51,10 +51,26 @@ contract LenderPool is ILenderPool {
      * - `deposit` should be greater than zero
      *
      */
-    function convertToDerivative() external {
+    function withdrawAllTStable() external {
         require(_deposits[msg.sender] > 0, "No deposit made");
         uint amount = _deposits[msg.sender];
         _deposits[msg.sender] = 0;
+        tStable.safeTransfer(msg.sender, amount);
+    }
+
+    /**
+     * @notice converts the given amount of stable token into tStable token and transfers to lender
+     * @dev checks the required condition and converts stable token to tstable and transfers to lender
+     * @param amount, total amount to stable token to converted to tStable token
+     *
+     * Requirements:
+     *
+     * - `deposit` should be greater than tStable amount requested
+     *
+     */
+    function withdrawTStable(uint amount) external {
+        require(_deposits[msg.sender] >= amount, "Invalid amount requested");
+        _deposits[msg.sender] -= amount;
         tStable.safeTransfer(msg.sender, amount);
     }
 
@@ -63,7 +79,7 @@ contract LenderPool is ILenderPool {
      * @param lender, address of the lender
      * @return returns the stable token lent by the lender
      */
-    function getBalance(address lender) external view returns (uint) {
+    function getDeposit(address lender) external view returns (uint) {
         return _deposits[lender];
     }
 }
