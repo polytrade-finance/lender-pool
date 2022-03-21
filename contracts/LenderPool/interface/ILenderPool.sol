@@ -11,14 +11,14 @@ interface ILenderPool {
     event Deposit(address indexed lender, uint amount);
 
     /**
-     * @notice Deposit token to smart contract
-     * @dev Transfers the approved token from msg.sender to lender pool
-     * @param amount, the number of tokens to be lent
+     * @notice Deposit stable to smart contract
+     * @dev Transfers the approved stable from msg.sender to lender pool
+     * @param amount, the number of stable to be lent
      */
     function deposit(uint amount) external;
 
     /*
-     *@notice converts the token into derivative and transfers to lender
+     *@notice converts the stable into derivative and transfers to lender
      *@dev calculates the total derivative lender can claim and transfers it to lender
      */
     function convertToDerivative() external;

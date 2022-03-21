@@ -13,38 +13,38 @@ contract LenderPool is ILenderPool {
 
     mapping(address => uint) private _deposits;
 
-    IERC20 public immutable token;
+    IERC20 public immutable stable;
     IERC20 public immutable tStable;
 
-    constructor(address _tokenAddress, address _derivativeAddress) {
-        token = IERC20(_tokenAddress);
-        tStable = IERC20(_derivativeAddress);
+    constructor(address _stableAddress, address _tStableAddress) {
+        stable = IERC20(_stableAddress);
+        tStable = IERC20(_tStableAddress);
     }
 
     /**
-     * @notice Deposit token to smart contract
-     * @dev Transfers the approved token from msg.sender to lender pool
-     * @param amount, the number of tokens to be lent
+     * @notice Deposit stable to smart contract
+     * @dev Transfers the approved stable from msg.sender to lender pool
+     * @param amount, the number of stable to be lent
      *
      * Requirements:
      *
      * - `lendingAmount` should be greater than zero
-     * - `lendingAmount` must be approved from the token contract for the LenderPool contact
+     * - `lendingAmount` must be approved from the stable contract for the LenderPool contact
      *
      * Emits {Deposit} event
      */
     function deposit(uint amount) external {
         require(amount > 0, "Lending amount invalid");
-        uint allowance = token.allowance(msg.sender, address(this));
+        uint allowance = stable.allowance(msg.sender, address(this));
         require(allowance >= amount, "Amount not approved");
         _deposits[msg.sender] += amount;
         emit Deposit(msg.sender, amount);
-        token.safeTransferFrom(msg.sender, address(this), amount);
+        stable.safeTransferFrom(msg.sender, address(this), amount);
     }
 
     /**
-     * @notice converts the token into derivative and transfers to lender
-     * @dev calculates the total derivative lender can claim and transfers it to lender
+     * @notice converts the stable into tStable and transfers to lender
+     * @dev calculates the total tStable lender can claim and transfers it to lender
      *
      * Requirements:
      *
