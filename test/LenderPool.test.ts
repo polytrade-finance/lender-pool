@@ -1,14 +1,14 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Token, LenderPool, Derivative } from "../typechain";
+import { Token, LenderPool } from "../typechain";
 
 describe("LenderPool", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
   let lenderPool: LenderPool;
   let token: Token;
-  let derivative: Derivative;
+  let derivative: Token;
 
   before(async () => {
     accounts = await ethers.getSigners();
@@ -16,7 +16,7 @@ describe("LenderPool", function () {
     const Token = await ethers.getContractFactory("Token");
     token = await Token.deploy("Tether", "USDT", 6);
     await token.deployed();
-    const Derivative = await ethers.getContractFactory("Derivative");
+    const Derivative = await ethers.getContractFactory("Token");
     derivative = await Derivative.deploy("Tether derivative", "TUSDT", 6);
     const LenderPool = await ethers.getContractFactory("LenderPool");
     lenderPool = await LenderPool.deploy(token.address, derivative.address);
@@ -72,11 +72,6 @@ describe("LenderPool", function () {
     expect(balanceAfter.sub(balanceBefore).eq(ethers.BigNumber.from("100")));
   });
 
-  it("should return the derivative claimed", async function () {
-    expect(await lenderPool.getDerivativeClaimed(addresses[0])).to.be.equal(
-      100
-    );
-  });
 
   it("should revert if all derivative is claimed", function async() {
     expect(
