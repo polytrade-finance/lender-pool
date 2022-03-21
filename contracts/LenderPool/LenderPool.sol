@@ -22,14 +22,14 @@ contract LenderPool is ILenderPool {
     }
 
     /**
-     * @notice Deposit stable to smart contract
-     * @dev Transfers the approved stable from msg.sender to lender pool
-     * @param amount, the number of stable to be lent
+     * @notice Deposit stable token to smart contract
+     * @dev Transfers the approved stable token from msg.sender to lender pool
+     * @param amount, the number of stable token to be lent
      *
      * Requirements:
      *
      * - `lendingAmount` should be greater than zero
-     * - `lendingAmount` must be approved from the stable contract for the LenderPool contact
+     * - `lendingAmount` must be approved from the stable token  contract for the LenderPool contact
      *
      * Emits {Deposit} event
      */
@@ -43,8 +43,8 @@ contract LenderPool is ILenderPool {
     }
 
     /**
-     * @notice converts the stable into tStable and transfers to lender
-     * @dev calculates the total tStable lender can claim and transfers it to lender
+     * @notice converts the stable token into tStable token and transfers to lender
+     * @dev calculates the total tStable token lender can claim and transfers it to lender
      *
      * Requirements:
      *
@@ -59,9 +59,9 @@ contract LenderPool is ILenderPool {
     }
 
     /**
-     * @notice returns amount lent by the lender
+     * @notice returns stable token lent by the lender
      * @param lender, address of the lender
-     * @return returns the amount lent by the lender
+     * @return returns the stable token lent by the lender
      */
     function getBalance(address lender) external view returns (uint) {
         return _deposits[lender];
