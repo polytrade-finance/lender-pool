@@ -39,7 +39,7 @@ interface ILenderPool {
     function getBalance(address lender) external view returns (uint);
 
     /**
-     * @notice retruns the amount of derivative claimed
+     * @notice returns the amount of derivative claimed
      * @param lender, address of the lender
      * @return returns the amount of derivative claimed
      */
