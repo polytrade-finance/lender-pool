@@ -12,14 +12,13 @@ contract LenderPool is ILenderPool {
     using SafeERC20 for IERC20;
 
     mapping(address => uint) private _deposits;
-    mapping(address => uint) private _derivativeClaimed;
 
     IERC20 public immutable token;
-    IERC20 public immutable derivative;
+    IERC20 public immutable tStable;
 
     constructor(address _tokenAddress, address _derivativeAddress) {
         token = IERC20(_tokenAddress);
-        derivative = IERC20(_derivativeAddress);
+        tStable = IERC20(_derivativeAddress);
     }
 
     /**
@@ -46,24 +45,17 @@ contract LenderPool is ILenderPool {
     /**
      * @notice converts the token into derivative and transfers to lender
      * @dev calculates the total derivative lender can claim and transfers it to lender
-     * @dev Emits {DerivativeClaimed} event
      *
      * Requirements:
      *
      * - `deposit` should be greater than zero
-     * - `derivativeClaimed` must not be equal to deposit
      *
      */
     function convertToDerivative() external {
         require(_deposits[msg.sender] > 0, "No deposit made");
-        require(
-            _deposits[msg.sender] != _derivativeClaimed[msg.sender],
-            "Derivative already claimed"
-        );
-        uint amount = _deposits[msg.sender] - _derivativeClaimed[msg.sender];
-        _derivativeClaimed[msg.sender] += amount;
-        derivative.safeTransfer(msg.sender, amount);
-        emit DerivativeClaimed(msg.sender, amount);
+        uint amount = _deposits[msg.sender];
+        _deposits[msg.sender] = 0; 
+        tStable.safeTransfer(msg.sender, amount);
     }
 
     /**
@@ -73,14 +65,5 @@ contract LenderPool is ILenderPool {
      */
     function getBalance(address lender) external view returns (uint) {
         return _deposits[lender];
-    }
-
-    /**
-     * @notice returns the amount of derivative claimed
-     * @param lender, address of the lender
-     * @return returns the amount of derivative claimed
-     */
-    function getDerivativeClaimed(address lender) external view returns (uint) {
-        return _derivativeClaimed[lender];
     }
 }
