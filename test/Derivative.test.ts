@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Token } from "../typechain";
+import { Derivative } from "../typechain";
 
 describe("Token", function () {
   let accounts: SignerWithAddress[];
@@ -13,8 +13,12 @@ describe("Token", function () {
   });
 
   it("should deploy Token successfully", async function () {
-    const Token = await ethers.getContractFactory("Token");
-    const token: Token = await Token.deploy("Tether", "USDT", 6);
+    const Token = await ethers.getContractFactory("Derivative");
+    const token: Derivative = await Token.deploy(
+      "Tether derivative",
+      "TUSDT",
+      6
+    );
     await token.deployed();
 
     expect(await ethers.provider.getCode(token.address)).to.be.length.above(10);
