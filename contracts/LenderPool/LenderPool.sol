@@ -50,12 +50,12 @@ contract LenderPool is ILenderPool {
     function convertToDerivative() external {
         require(_deposits[msg.sender] > 0, "No deposit made");
         require(
-            _deposits[msg.sender] == _derivativeClaimed[msg.sender],
+            _deposits[msg.sender] != _derivativeClaimed[msg.sender],
             "Derivative already claimed"
         );
         uint amount = _deposits[msg.sender] - _derivativeClaimed[msg.sender];
         _derivativeClaimed[msg.sender] += amount;
-        derivative.safeTransferFrom(msg.sender, address(this), amount);
+        derivative.safeTransfer(msg.sender, amount);
         emit DerivativeClaimed(msg.sender, amount);
     }
 
@@ -66,5 +66,9 @@ contract LenderPool is ILenderPool {
      */
     function getBalance(address lender) external view returns (uint) {
         return _deposits[lender];
+    }
+
+    function getDerivativeClaimed(address lender) external view returns (uint) {
+        return _derivativeClaimed[lender];
     }
 }
