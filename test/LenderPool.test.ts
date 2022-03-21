@@ -7,19 +7,19 @@ describe("LenderPool", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
   let lenderPool: LenderPool;
-  let token: Token;
-  let derivative: Token;
+  let stable: Token;
+  let tStable: Token;
 
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
     const Token = await ethers.getContractFactory("Token");
-    token = await Token.deploy("Tether", "USDT", 6);
-    await token.deployed();
-    const Derivative = await ethers.getContractFactory("Token");
-    derivative = await Derivative.deploy("Tether derivative", "TUSDT", 6);
+    stable = await Token.deploy("Tether", "USDT", 6);
+    await stable.deployed();
+    const TStable = await ethers.getContractFactory("Token");
+    tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
     const LenderPool = await ethers.getContractFactory("LenderPool");
-    lenderPool = await LenderPool.deploy(token.address, derivative.address);
+    lenderPool = await LenderPool.deploy(stable.address, tStable.address);
     await lenderPool.deployed();
   });
 
@@ -27,24 +27,24 @@ describe("LenderPool", function () {
     expect(
       await ethers.provider.getCode(lenderPool.address)
     ).to.be.length.above(10);
-    expect(await ethers.provider.getCode(token.address)).to.be.length.above(10);
+    expect(await ethers.provider.getCode(stable.address)).to.be.length.above(10);
   });
 
   it("should approve stable token", async function () {
-    await token.connect(accounts[0]).approve(lenderPool.address, 100);
+    await stable.connect(accounts[0]).approve(lenderPool.address, 100);
     expect(
       ethers.BigNumber.from("100").eq(
-        await token.allowance(addresses[0], lenderPool.address)
+        await stable.allowance(addresses[0], lenderPool.address)
       )
     );
   });
 
   it("should transfer tStable to lender pool", async function () {
-    await derivative
+    await tStable
       .connect(accounts[0])
       .transfer(lenderPool.address, 100 * 10 ** 6);
     expect(
-      (await derivative.balanceOf(lenderPool.address)).eq(
+      (await tStable.balanceOf(lenderPool.address)).eq(
         ethers.utils.parseUnits("100", 6)
       )
     );
@@ -57,7 +57,7 @@ describe("LenderPool", function () {
   it("should deposit stable token successfully", async function () {
     await lenderPool.connect(accounts[0]).deposit(100);
     expect(
-      ethers.BigNumber.from("100").eq(await token.balanceOf(lenderPool.address))
+      ethers.BigNumber.from("100").eq(await stable.balanceOf(lenderPool.address))
     );
   });
 
@@ -72,23 +72,23 @@ describe("LenderPool", function () {
   });
 
   it("should claim tStable successfully", async function () {
-    const balanceBefore = await derivative.balanceOf(addresses[0]);
+    const balanceBefore = await tStable.balanceOf(addresses[0]);
     await lenderPool.connect(accounts[0]).withdrawTStable(1);
-    const balanceAfter = await derivative.balanceOf(addresses[0]);
+    const balanceAfter = await tStable.balanceOf(addresses[0]);
     expect(balanceAfter.sub(balanceBefore).eq(ethers.BigNumber.from("1")));
   });
 
   it("should claim all tStable successfully", async function () {
-    const balanceBefore = await derivative.balanceOf(addresses[0]);
+    const balanceBefore = await tStable.balanceOf(addresses[0]);
     await lenderPool.connect(accounts[0]).withdrawAllTStable();
-    const balanceAfter = await derivative.balanceOf(addresses[0]);
+    const balanceAfter = await tStable.balanceOf(addresses[0]);
     expect(balanceAfter.sub(balanceBefore).eq(ethers.BigNumber.from("99")));
   });
 
   it("should revert if all tStable is claimed", function async() {
     expect(
       lenderPool.connect(accounts[0]).withdrawAllTStable()
-    ).to.be.revertedWith("Derivative already claimed");
+    ).to.be.revertedWith("tStable already claimed");
   });
 
   it("should revert if allowance is less than lending amount", async function () {
