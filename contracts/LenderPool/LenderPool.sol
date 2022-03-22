@@ -90,10 +90,26 @@ contract LenderPool is ILenderPool {
         tStable.safeTransfer(msg.sender, _pendingReward[msg.sender]);
     }
 
-    function setAPY(uint _rewardAPY) external {
+    /**
+     *
+     *
+     */
+    function claimRewards() external {
+        _updatePendingReward();
+        tStable.safeTransfer(msg.sender, _pendingReward[msg.sender]);
+        _pendingReward[msg.sender] = 0;
+    }
+
+    /**
+     *
+     */
+    function setAPY(uint _rewardAPY) external{
         rewardAPY = _rewardAPY;
     }
 
+    /**
+     *
+     */
     function getAPY() external view returns (uint) {
         return rewardAPY;
     }

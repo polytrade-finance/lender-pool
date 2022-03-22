@@ -2,6 +2,9 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { Token, LenderPool } from "../typechain";
+import { increaseTime, n6, ONE_DAY } from "./helpers";
+
+
 
 describe("LenderPool", function () {
   let accounts: SignerWithAddress[];
@@ -132,13 +135,50 @@ describe("LenderPool reward verification", function () {
     lenderPool = await LenderPool.deploy(stable.address, tStable.address);
     await lenderPool.deployed();
   });
-  it("should deploy contracts successfully", async function () {
+
+  it("should approve stable token", async function () {
+    await stable.connect(accounts[0]).approve(lenderPool.address, 100);
     expect(
-      await ethers.provider.getCode(lenderPool.address)
-    ).to.be.length.above(10);
-    expect(await ethers.provider.getCode(stable.address)).to.be.length.above(
-      10
+      ethers.BigNumber.from("100").eq(
+        await stable.allowance(addresses[0], lenderPool.address)
+      )
     );
   });
+
+  it("should transfer tStable to lender pool", async function () {
+    await tStable
+      .connect(accounts[0])
+      .transfer(lenderPool.address, 100 * 10 ** 6);
+    expect(
+      (await tStable.balanceOf(lenderPool.address)).eq(
+        ethers.utils.parseUnits("100", 6)
+      )
+    );
+  });
+
+  it("should check balance of user after deposit", async function () {
+    await lenderPool.connect(accounts[0]).deposit(100);
+    expect(
+      ethers.BigNumber.from("100").eq(
+        await stable.balanceOf(lenderPool.address)
+      )
+    );
+    expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(100);
+  });
+
+ it("should set APY to 10%", async function(){
+   await lenderPool.connect(accounts[0]).setAPY(10);
+   expect(await lenderPool.getAPY()).to.be.equal(10);
+ })
+
+  it("should check reward after 1 day",async function(){
+    increaseTime(60*60*24);
+    const balanceBefore = await tStable.balanceOf(addresses[0]);
+    await lenderPool.claimRewards();
+    const balanceAfter = await tStable.balanceOf(addresses[0]);
+    console.log(balanceAfter.sub(balanceBefore));
+  })
+
   
-})
+  
+});
