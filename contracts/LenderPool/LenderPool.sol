@@ -12,9 +12,13 @@ contract LenderPool is ILenderPool {
     using SafeERC20 for IERC20;
 
     mapping(address => uint) private _deposits;
+    mapping(address => uint) private _startTime;
+    mapping(address => uint) private _pendingReward;
 
     IERC20 public immutable stable;
     IERC20 public immutable tStable;
+
+    uint public rewardAPY;
 
     constructor(address _stableAddress, address _tStableAddress) {
         stable = IERC20(_stableAddress);
@@ -37,6 +41,7 @@ contract LenderPool is ILenderPool {
         require(amount > 0, "Lending amount invalid");
         uint allowance = stable.allowance(msg.sender, address(this));
         require(allowance >= amount, "Amount not approved");
+        _updatePendingReward();
         _deposits[msg.sender] += amount;
         emit Deposit(msg.sender, amount);
         stable.safeTransferFrom(msg.sender, address(this), amount);
@@ -54,6 +59,7 @@ contract LenderPool is ILenderPool {
      */
     function withdrawAllTStable() external {
         require(_deposits[msg.sender] > 0, "No deposit made");
+        _updatePendingReward();
         uint amount = _deposits[msg.sender];
         _deposits[msg.sender] = 0;
         emit Withdraw(msg.sender, amount);
@@ -73,9 +79,23 @@ contract LenderPool is ILenderPool {
      */
     function withdrawTStable(uint amount) external {
         require(_deposits[msg.sender] >= amount, "Invalid amount requested");
+        _updatePendingReward();
         _deposits[msg.sender] -= amount;
         emit Withdraw(msg.sender, amount);
         tStable.safeTransfer(msg.sender, amount);
+    }
+
+    function withdrawReward() external {
+        _updatePendingReward();
+        tStable.safeTransfer(msg.sender, _pendingReward[msg.sender]);
+    }
+
+    function setAPY(uint _rewardAPY) external {
+        rewardAPY = _rewardAPY;
+    }
+
+    function getAPY() external view returns (uint) {
+        return rewardAPY;
     }
 
     /**
@@ -85,5 +105,27 @@ contract LenderPool is ILenderPool {
      */
     function getDeposit(address lender) external view returns (uint) {
         return _deposits[lender];
+    }
+
+    /**
+     *
+     *
+     */
+    function _updatePendingReward() private {
+        if (_startTime[msg.sender] != 0) {
+            uint totalReward = _calculateReward();
+            _pendingReward[msg.sender] += totalReward;
+        }
+        _startTime[msg.sender] = block.timestamp;
+    }
+
+    /**
+     *
+     */
+    function _calculateReward() private view returns (uint) {
+        uint interval = block.timestamp - _startTime[msg.sender];
+        uint totalReward = ((interval * rewardAPY * _deposits[msg.sender]) /
+            365 days);
+        return totalReward;
     }
 }

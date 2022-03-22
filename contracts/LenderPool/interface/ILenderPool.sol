@@ -58,6 +58,21 @@ interface ILenderPool {
     function withdrawTStable(uint amount) external;
 
     /**
+     *
+     */
+    function withdrawReward() external;
+
+    /**
+     *
+     */
+    function setAPY(uint _rewardAPY) external;
+
+    /**
+     *
+     */
+    function getAPY() external view returns (uint);
+
+    /**
      * @notice returns amount of stable token deposited by the lender
      * @param lender, address of lender
      * @return returns amount of stable token deposited by the lender

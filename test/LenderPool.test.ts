@@ -113,3 +113,32 @@ describe("LenderPool", function () {
     ).to.be.revertedWith("No deposit made");
   });
 });
+describe("LenderPool reward verification", function () {
+  let accounts: SignerWithAddress[];
+  let addresses: string[];
+  let lenderPool: LenderPool;
+  let stable: Token;
+  let tStable: Token;
+
+  before(async () => {
+    accounts = await ethers.getSigners();
+    addresses = accounts.map((account: SignerWithAddress) => account.address);
+    const Token = await ethers.getContractFactory("Token");
+    stable = await Token.deploy("Tether", "USDT", 6);
+    await stable.deployed();
+    const TStable = await ethers.getContractFactory("Token");
+    tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
+    const LenderPool = await ethers.getContractFactory("LenderPool");
+    lenderPool = await LenderPool.deploy(stable.address, tStable.address);
+    await lenderPool.deployed();
+  });
+  it("should deploy contracts successfully", async function () {
+    expect(
+      await ethers.provider.getCode(lenderPool.address)
+    ).to.be.length.above(10);
+    expect(await ethers.provider.getCode(stable.address)).to.be.length.above(
+      10
+    );
+  });
+  
+})
