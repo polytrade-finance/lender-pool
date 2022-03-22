@@ -14,12 +14,24 @@ interface ILenderPool {
      * @notice Deposit stable token to smart contract
      * @dev Transfers the approved stable token from msg.sender to lender pool
      * @param amount, the number of stable token to be lent
+     *
+     * Requirements:
+     *
+     * - `amount` should be greater than zero
+     * - `amount` must be approved from the stable token  contract for the LenderPool contact
+     *
+     * Emits {Deposit} event
      */
     function deposit(uint amount) external;
 
     /**
-     * @notice converts all stable token deposited into tStable token and transfers to lender
+     * @notice converts the all the stable token into tStable token and transfers to lender
      * @dev calculates the total tStable token lender can claim and transfers it to lender
+     *
+     * Requirements:
+     *
+     * - `deposit` should be greater than zero
+     *
      */
     function withdrawAllTStable() external;
 
@@ -27,6 +39,11 @@ interface ILenderPool {
      * @notice converts the given amount of stable token into tStable token and transfers to lender
      * @dev checks the required condition and converts stable token to tstable and transfers to lender
      * @param amount, total amount to stable token to converted to tStable token
+     *
+     * Requirements:
+     *
+     * - `deposit` should be greater than tStable amount requested
+     *
      */
     function withdrawTStable(uint amount) external;
 

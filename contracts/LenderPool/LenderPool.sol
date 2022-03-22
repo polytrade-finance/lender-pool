@@ -28,8 +28,8 @@ contract LenderPool is ILenderPool {
      *
      * Requirements:
      *
-     * - `lendingAmount` should be greater than zero
-     * - `lendingAmount` must be approved from the stable token  contract for the LenderPool contact
+     * - `amount` should be greater than zero
+     * - `amount` must be approved from the stable token  contract for the LenderPool contact
      *
      * Emits {Deposit} event
      */
@@ -43,7 +43,7 @@ contract LenderPool is ILenderPool {
     }
 
     /**
-     * @notice converts the stable token into tStable token and transfers to lender
+     * @notice converts the all the stable token into tStable token and transfers to lender
      * @dev calculates the total tStable token lender can claim and transfers it to lender
      *
      * Requirements:
@@ -76,8 +76,8 @@ contract LenderPool is ILenderPool {
 
     /**
      * @notice returns stable token lent by the lender
-     * @param lender, address of the lender
-     * @return returns the stable token lent by the lender
+     * @param lender, address of lender
+     * @return returns the stable token by the lender
      */
     function getDeposit(address lender) external view returns (uint) {
         return _deposits[lender];
