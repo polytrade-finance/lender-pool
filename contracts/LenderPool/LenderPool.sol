@@ -44,7 +44,7 @@ contract LenderPool is ILenderPool {
 
     /**
      * @notice converts the all the deposited stable token into tStable token and transfers to lender
-     * @dev calculates the deposited tStable token lender can claim and transfers it to lender
+     * @dev calculates the tStable token lender can claim and transfers it to lender
      *
      * Requirements:
      *
@@ -61,7 +61,7 @@ contract LenderPool is ILenderPool {
     /**
      * @notice converts the given amount of stable token into tStable token and transfers to lender
      * @dev checks the required condition and converts stable token to tstable and transfers to lender
-     * @param amount, total amount of stable token to  be converted to tStable token
+     * @param amount, total amount of stable token to be converted to tStable token
      *
      * Requirements:
      *
