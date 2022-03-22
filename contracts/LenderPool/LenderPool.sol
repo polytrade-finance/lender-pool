@@ -56,8 +56,8 @@ contract LenderPool is ILenderPool {
         require(_deposits[msg.sender] > 0, "No deposit made");
         uint amount = _deposits[msg.sender];
         _deposits[msg.sender] = 0;
-        tStable.safeTransfer(msg.sender, amount);
         emit Withdraw(msg.sender, amount);
+        tStable.safeTransfer(msg.sender, amount);
     }
 
     /**
@@ -74,8 +74,8 @@ contract LenderPool is ILenderPool {
     function withdrawTStable(uint amount) external {
         require(_deposits[msg.sender] >= amount, "Invalid amount requested");
         _deposits[msg.sender] -= amount;
-        tStable.safeTransfer(msg.sender, amount);
         emit Withdraw(msg.sender, amount);
+        tStable.safeTransfer(msg.sender, amount);
     }
 
     /**
