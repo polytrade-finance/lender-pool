@@ -2,9 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { Token, LenderPool } from "../typechain";
-import { increaseTime, n6, ONE_DAY } from "./helpers";
-
-
+import { increaseTime } from "./helpers";
 
 describe("LenderPool", function () {
   let accounts: SignerWithAddress[];
@@ -166,19 +164,16 @@ describe("LenderPool reward verification", function () {
     expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(100);
   });
 
- it("should set APY to 10%", async function(){
-   await lenderPool.connect(accounts[0]).setAPY(10);
-   expect(await lenderPool.getAPY()).to.be.equal(10);
- })
+  it("should set APY to 10%", async function () {
+    await lenderPool.connect(accounts[0]).setAPY(10);
+    expect(await lenderPool.getAPY()).to.be.equal(10);
+  });
 
-  it("should check reward after 1 day",async function(){
-    increaseTime(60*60*24);
+  it("should check reward after 1 day", async function () {
+    increaseTime(60 * 60 * 24);
     const balanceBefore = await tStable.balanceOf(addresses[0]);
     await lenderPool.claimRewards();
     const balanceAfter = await tStable.balanceOf(addresses[0]);
     console.log(balanceAfter.sub(balanceBefore));
-  })
-
-  
-  
+  });
 });

@@ -103,7 +103,7 @@ contract LenderPool is ILenderPool {
     /**
      *
      */
-    function setAPY(uint _rewardAPY) external{
+    function setAPY(uint _rewardAPY) external {
         rewardAPY = _rewardAPY;
     }
 
