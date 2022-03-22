@@ -13,7 +13,7 @@ interface ILenderPool {
     /**
      * @notice Deposit stable token to smart contract
      * @dev Transfers the approved stable token from msg.sender to lender pool
-     * @param amount, the number of stable token to be lent
+     * @param amount, the number of stable token to be deposited
      *
      * Requirements:
      *
@@ -25,8 +25,8 @@ interface ILenderPool {
     function deposit(uint amount) external;
 
     /**
-     * @notice converts the all the stable token into tStable token and transfers to lender
-     * @dev calculates the total tStable token lender can claim and transfers it to lender
+     * @notice converts the all the deposited stable token into tStable token and transfers to lender
+     * @dev calculates the deposited tStable token lender can claim and transfers it to lender
      *
      * Requirements:
      *
@@ -38,7 +38,7 @@ interface ILenderPool {
     /**
      * @notice converts the given amount of stable token into tStable token and transfers to lender
      * @dev checks the required condition and converts stable token to tstable and transfers to lender
-     * @param amount, total amount to stable token to converted to tStable token
+     * @param amount, total amount of stable token to  be converted to tStable token
      *
      * Requirements:
      *
@@ -48,9 +48,9 @@ interface ILenderPool {
     function withdrawTStable(uint amount) external;
 
     /**
-     * @notice returns stable token lent by the lender
+     * @notice returns amount of stable token deposited by the lender
      * @param lender, address of lender
-     * @return returns the stable token by the lender
+     * @return returns amount of stable token deposited by the lender
      */
     function getDeposit(address lender) external view returns (uint);
 }
