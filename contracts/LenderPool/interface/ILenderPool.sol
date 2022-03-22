@@ -41,7 +41,6 @@ interface ILenderPool {
      * - `deposit` should be greater than zero
      *
      * Emits {Withdraw} event
-     *
      */
     function withdrawAllTStable() external;
 
@@ -55,7 +54,6 @@ interface ILenderPool {
      * - `deposit` should be greater than tStable amount requested
      *
      * Emits {Withdraw} event
-     *
      */
     function withdrawTStable(uint amount) external;
 

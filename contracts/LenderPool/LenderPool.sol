@@ -51,7 +51,6 @@ contract LenderPool is ILenderPool {
      * - `deposit` should be greater than zero
      *
      * Emits {Withdraw} event
-     *
      */
     function withdrawAllTStable() external {
         require(_deposits[msg.sender] > 0, "No deposit made");
