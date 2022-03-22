@@ -29,7 +29,7 @@ contract LenderPool is ILenderPool {
      * Requirements:
      *
      * - `amount` should be greater than zero
-     * - `amount` must be approved from the stable token  contract for the LenderPool contact
+     * - `amount` must be approved from the stable token contract for the LenderPool contact
      *
      * Emits {Deposit} event
      */
@@ -43,12 +43,14 @@ contract LenderPool is ILenderPool {
     }
 
     /**
-     * @notice converts the all the deposited stable token into tStable token and transfers to lender
-     * @dev calculates the tStable token lender can claim and transfers it to lender
+     * @notice converts all the deposited stable token into tStable token and transfers to the lender
+     * @dev calculates the tStable token lender can claim and transfers it to the lender
      *
      * Requirements:
      *
      * - `deposit` should be greater than zero
+     *
+     * Emits {Withdraw} event
      *
      */
     function withdrawAllTStable() external {
@@ -56,6 +58,7 @@ contract LenderPool is ILenderPool {
         uint amount = _deposits[msg.sender];
         _deposits[msg.sender] = 0;
         tStable.safeTransfer(msg.sender, amount);
+        emit Withdraw(msg.sender, amount);
     }
 
     /**
@@ -67,11 +70,13 @@ contract LenderPool is ILenderPool {
      *
      * - `deposit` should be greater than tStable amount requested
      *
+     * Emits {Withdraw} event
      */
     function withdrawTStable(uint amount) external {
         require(_deposits[msg.sender] >= amount, "Invalid amount requested");
         _deposits[msg.sender] -= amount;
         tStable.safeTransfer(msg.sender, amount);
+        emit Withdraw(msg.sender, amount);
     }
 
     /**
