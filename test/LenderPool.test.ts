@@ -143,29 +143,58 @@ describe("LenderPool reward verification", function () {
     await tStable
       .connect(accounts[0])
       .transfer(lenderPool.address, n6("10000"));
-    expect(
-      (await tStable.balanceOf(lenderPool.address)).eq(
-        n6("10000")
-      )
-    );
+    expect((await tStable.balanceOf(lenderPool.address)).eq(n6("10000")));
   });
 
   it("should check balance of user after deposit", async function () {
     await stable.connect(accounts[0]).approve(lenderPool.address, n6("100"));
     expect(
-      n6("100").eq(
-        await stable.allowance(addresses[0], lenderPool.address)
-      )
+      n6("100").eq(await stable.allowance(addresses[0], lenderPool.address))
     );
     await lenderPool.connect(accounts[0]).deposit(n6("100"));
     expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(n6("100"));
   });
 
   it("should check reward after 1 year", async function () {
-    increaseTime(ONE_DAY*365);
+    increaseTime(ONE_DAY * 365);
     const balanceBefore = await tStable.balanceOf(addresses[0]);
-    await lenderPool.claimRewards();
+    await lenderPool.withdrawReward();
     const balanceAfter = await tStable.balanceOf(addresses[0]);
-    expect(balanceAfter.sub(balanceBefore)==n6("10"));
+    expect(balanceAfter.sub(balanceBefore) === n6("10"));
+  });
+
+  it("should deposit 100 stable token after 1 year", async function () {
+    await stable.connect(accounts[0]).approve(lenderPool.address, n6("100"));
+    expect(
+      n6("100").eq(await stable.allowance(addresses[0], lenderPool.address))
+    );
+    await lenderPool.connect(accounts[0]).deposit(n6("100"));
+    expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(n6("200"));
+  });
+
+  it("should check reward after 1 year", async function () {
+    increaseTime(ONE_DAY * 365);
+    const balanceBefore = await tStable.balanceOf(addresses[0]);
+    await lenderPool.withdrawReward();
+    const balanceAfter = await tStable.balanceOf(addresses[0]);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("20"));
+  });
+
+  it("should withdraw 100 tStable and check reward after 1 year", async function () {
+    await lenderPool.withdrawTStable(n6("100"));
+    increaseTime(ONE_DAY * 365);
+    const balanceBefore = await tStable.balanceOf(addresses[0]);
+    await lenderPool.withdrawReward();
+    const balanceAfter = await tStable.balanceOf(addresses[0]);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("10"));
+  });
+
+  it("should withdraw all tStable and check reward after 1 year", async function () {
+    await lenderPool.withdrawTStable(n6("100"));
+    increaseTime(ONE_DAY * 365);
+    const balanceBefore = await tStable.balanceOf(addresses[0]);
+    await lenderPool.withdrawReward();
+    const balanceAfter = await tStable.balanceOf(addresses[0]);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("0"));
   });
 });
