@@ -58,17 +58,27 @@ interface ILenderPool {
     function withdrawTStable(uint amount) external;
 
     /**
+     * @notice tranfer the lender all the reward
+     * @dev update the pendingReward and transfer reward in tStable token
      *
+     * Requirements:
+     *
+     * - `_pendingReward` should be greater than 0
+     *
+     * Emits {Withdraw} event
      */
     function withdrawReward() external;
 
     /**
-     *
+     * @notice set the value of rewardAPY
+     * @dev set the value of rewardAPY to _rewardAPY
+     * @param _rewardAPY, value of new rewardAPY
      */
     function setAPY(uint _rewardAPY) external;
 
     /**
-     *
+     * @notice returns value of rewardAPY
+     * @return returns value of rewardAPY
      */
     function getAPY() external view returns (uint);
 

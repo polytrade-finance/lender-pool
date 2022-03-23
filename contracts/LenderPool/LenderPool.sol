@@ -85,30 +85,36 @@ contract LenderPool is ILenderPool {
         tStable.safeTransfer(msg.sender, amount);
     }
 
+    /**
+     * @notice tranfer the lender all the reward
+     * @dev update the pendingReward and transfer reward in tStable token
+     *
+     * Requirements:
+     *
+     * - `_pendingReward` should be greater than 0
+     *
+     * Emits {Withdraw} event
+     */
     function withdrawReward() external {
         _updatePendingReward();
-        tStable.safeTransfer(msg.sender, _pendingReward[msg.sender]);
-    }
-
-    /**
-     *
-     *
-     */
-    function claimRewards() external {
-        _updatePendingReward();
+        require(_pendingReward[msg.sender] > 0, "No pending reward");
+        emit Withdraw(msg.sender, _pendingReward[msg.sender]);
         tStable.safeTransfer(msg.sender, _pendingReward[msg.sender]);
         _pendingReward[msg.sender] = 0;
     }
 
     /**
-     *
+     * @notice set the value of rewardAPY
+     * @dev set the value of rewardAPY to _rewardAPY
+     * @param _rewardAPY, value of new rewardAPY
      */
     function setAPY(uint _rewardAPY) external {
         rewardAPY = _rewardAPY;
     }
 
     /**
-     *
+     * @notice returns value of rewardAPYs
+     * @return returns value of rewardAPY
      */
     function getAPY() external view returns (uint) {
         return rewardAPY;
@@ -124,7 +130,12 @@ contract LenderPool is ILenderPool {
     }
 
     /**
+     * @notice updates the _pendingRewards and _startTime mapping
+     * @dev stores all the reward received till now in _pendingRewads and set _startTime to current block time
      *
+     * Requirements:
+     *
+     * - `_startTime` should not be 0
      *
      */
     function _updatePendingReward() private {
@@ -136,12 +147,13 @@ contract LenderPool is ILenderPool {
     }
 
     /**
-     *
+     * @notice calculates the total reward
+     * @dev calulates the total reward using simple interest formula
      */
     function _calculateReward() private view returns (uint) {
         uint interval = block.timestamp - _startTime[msg.sender];
         uint totalReward = ((interval * rewardAPY * _deposits[msg.sender]) /
-            (100*365 days));
+            (100 * 365 days));
         return totalReward;
     }
 }
