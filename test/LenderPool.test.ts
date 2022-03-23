@@ -192,9 +192,6 @@ describe("LenderPool reward verification", function () {
   it("should withdraw all tStable and check reward after 1 year", async function () {
     await lenderPool.withdrawTStable(n6("100"));
     increaseTime(ONE_DAY * 365);
-    const balanceBefore = await tStable.balanceOf(addresses[0]);
-    await lenderPool.withdrawReward();
-    const balanceAfter = await tStable.balanceOf(addresses[0]);
-    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("0"));
+    expect(lenderPool.withdrawReward()).to.be.revertedWith("No pending reward");
   });
 });
