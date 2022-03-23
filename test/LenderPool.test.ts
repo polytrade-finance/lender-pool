@@ -193,36 +193,6 @@ describe("LenderPool rewards testing", function () {
     expect(lenderPool.withdrawReward()).to.be.revertedWith("No pending reward");
   });
 
-  it("should continuously deposit after every 1 year", async function () {
-    await stable.connect(accounts[0]).approve(lenderPool.address, n6("400"));
-    expect(n6("400")).to.be.equal(
-      await stable.allowance(addresses[0], lenderPool.address)
-    );
-    let balance = 0;
-    for (let i = 1; i <= 4; i++) {
-      await lenderPool.connect(accounts[0]).deposit(n6("100"));
-      balance += 100;
-      expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(
-        n6(balance.toString())
-      );
-      increaseTime(ONE_DAY * 365);
-    }
-  });
-
-  it("should withdraw all tStable", async function () {
-    const balanceBefore = await tStable.balanceOf(addresses[0]);
-    await lenderPool.withdrawAllTStable();
-    const balanceAfter = await tStable.balanceOf(addresses[0]);
-    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("400"));
-  });
-
-  it("should withdraw all reward", async function () {
-    const balanceBefore = await tStable.balanceOf(addresses[0]);
-    await lenderPool.withdrawReward();
-    const balanceAfter = await tStable.balanceOf(addresses[0]);
-    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("100"));
-  });
-
   it("should set APY to 40%", async function () {
     await lenderPool.connect(accounts[0]).setAPY(40);
     expect(await lenderPool.getAPY()).to.be.equal(40);
@@ -234,12 +204,11 @@ describe("LenderPool rewards testing", function () {
       await stable.allowance(addresses[0], lenderPool.address)
     );
     await lenderPool.connect(accounts[0]).deposit(n6("365"));
+    const balanceBefore = await tStable.balanceOf(addresses[0]);
     expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(n6("365"));
     increaseTime(ONE_DAY * 30);
-    const balanceBefore = await tStable.balanceOf(addresses[0]);
     await lenderPool.withdrawReward();
     const balanceAfter = await tStable.balanceOf(addresses[0]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("12"));
-    console.log(balanceBefore, balanceAfter);
   });
 });
