@@ -36,21 +36,15 @@ describe("LenderPool", function () {
   it("should approve stable token", async function () {
     await stable.connect(accounts[0]).approve(lenderPool.address, 100);
     expect(
-      ethers.BigNumber.from("100").eq(
-        await stable.allowance(addresses[0], lenderPool.address)
-      )
-    );
+      await stable.allowance(addresses[0], lenderPool.address)
+    ).to.be.equal(ethers.BigNumber.from("100"));
   });
 
   it("should transfer tStable to lender pool", async function () {
     await tStable
       .connect(accounts[0])
       .transfer(lenderPool.address, 100 * 10 ** 6);
-    expect(
-      (await tStable.balanceOf(lenderPool.address)).eq(
-        ethers.utils.parseUnits("100", 6)
-      )
-    );
+    expect(await tStable.balanceOf(lenderPool.address)).to.be.equal(n6("100"));
   });
 
   it("should check balance of user is zero", async function () {
@@ -59,10 +53,8 @@ describe("LenderPool", function () {
 
   it("should deposit stable token successfully", async function () {
     await lenderPool.connect(accounts[0]).deposit(100);
-    expect(
-      ethers.BigNumber.from("100").eq(
-        await stable.balanceOf(lenderPool.address)
-      )
+    expect(await stable.balanceOf(lenderPool.address)).to.be.equal(
+      ethers.BigNumber.from("100")
     );
   });
 
@@ -80,14 +72,18 @@ describe("LenderPool", function () {
     const balanceBefore = await tStable.balanceOf(addresses[0]);
     await lenderPool.connect(accounts[0]).withdrawTStable(1);
     const balanceAfter = await tStable.balanceOf(addresses[0]);
-    expect(balanceAfter.sub(balanceBefore).eq(ethers.BigNumber.from("1")));
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(
+      ethers.BigNumber.from("1")
+    );
   });
 
   it("should claim all tStable successfully", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[0]);
     await lenderPool.connect(accounts[0]).withdrawAllTStable();
     const balanceAfter = await tStable.balanceOf(addresses[0]);
-    expect(balanceAfter.sub(balanceBefore).eq(ethers.BigNumber.from("99")));
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(
+      ethers.BigNumber.from("99")
+    );
   });
 
   it("should revert if all tStable is claimed", function async() {
@@ -143,13 +139,15 @@ describe("LenderPool rewards testing", function () {
     await tStable
       .connect(accounts[0])
       .transfer(lenderPool.address, n6("10000"));
-    expect((await tStable.balanceOf(lenderPool.address)).eq(n6("10000")));
+    expect(await tStable.balanceOf(lenderPool.address)).to.be.equal(
+      n6("10000")
+    );
   });
 
   it("should check balance of user after deposit", async function () {
     await stable.connect(accounts[0]).approve(lenderPool.address, n6("100"));
-    expect(
-      n6("100").eq(await stable.allowance(addresses[0], lenderPool.address))
+    expect(n6("100")).to.be.equal(
+      await stable.allowance(addresses[0], lenderPool.address)
     );
     await lenderPool.connect(accounts[0]).deposit(n6("100"));
     expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(n6("100"));
@@ -165,8 +163,8 @@ describe("LenderPool rewards testing", function () {
 
   it("should deposit 100 stable token after 1 year", async function () {
     await stable.connect(accounts[0]).approve(lenderPool.address, n6("100"));
-    expect(
-      n6("100").eq(await stable.allowance(addresses[0], lenderPool.address))
+    expect(n6("100")).to.be.equal(
+      await stable.allowance(addresses[0], lenderPool.address)
     );
     await lenderPool.connect(accounts[0]).deposit(n6("100"));
     expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(n6("200"));
@@ -197,8 +195,8 @@ describe("LenderPool rewards testing", function () {
 
   it("should continuously deposit after every 1 year", async function () {
     await stable.connect(accounts[0]).approve(lenderPool.address, n6("400"));
-    expect(
-      n6("400").eq(await stable.allowance(addresses[0], lenderPool.address))
+    expect(n6("400")).to.be.equal(
+      await stable.allowance(addresses[0], lenderPool.address)
     );
     let balance = 0;
     for (let i = 1; i <= 4; i++) {
@@ -215,13 +213,33 @@ describe("LenderPool rewards testing", function () {
     const balanceBefore = await tStable.balanceOf(addresses[0]);
     await lenderPool.withdrawAllTStable();
     const balanceAfter = await tStable.balanceOf(addresses[0]);
-    expect(balanceAfter.sub(balanceBefore).eq(n6("400")));
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("400"));
   });
 
   it("should withdraw all reward", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[0]);
     await lenderPool.withdrawReward();
     const balanceAfter = await tStable.balanceOf(addresses[0]);
-    expect(balanceAfter.sub(balanceBefore).eq(n6("100")));
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("100"));
+  });
+
+  it("should set APY to 40%", async function () {
+    await lenderPool.connect(accounts[0]).setAPY(40);
+    expect(await lenderPool.getAPY()).to.be.equal(40);
+  });
+
+  it("should withdraw reward 1 month", async function () {
+    await stable.connect(accounts[0]).approve(lenderPool.address, n6("365"));
+    expect(n6("365")).to.be.equal(
+      await stable.allowance(addresses[0], lenderPool.address)
+    );
+    await lenderPool.connect(accounts[0]).deposit(n6("365"));
+    expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(n6("365"));
+    increaseTime(ONE_DAY * 30);
+    const balanceBefore = await tStable.balanceOf(addresses[0]);
+    await lenderPool.withdrawReward();
+    const balanceAfter = await tStable.balanceOf(addresses[0]);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("12"));
+    console.log(balanceBefore, balanceAfter);
   });
 });
