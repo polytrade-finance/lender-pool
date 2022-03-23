@@ -141,7 +141,7 @@ contract LenderPool is ILenderPool {
     function _calculateReward() private view returns (uint) {
         uint interval = block.timestamp - _startTime[msg.sender];
         uint totalReward = ((interval * rewardAPY * _deposits[msg.sender]) /
-            365 days);
+            (100*365 days));
         return totalReward;
     }
 }
