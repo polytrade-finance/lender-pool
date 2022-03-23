@@ -86,8 +86,8 @@ contract LenderPool is ILenderPool {
     }
 
     /**
-     * @notice tranfer the lender all the reward
-     * @dev update the pendingReward and transfer reward in tStable token
+     * @notice tranfer lender all the reward
+     * @dev update the pendingReward and transfers reward in tStable token to lender
      *
      * Requirements:
      *
@@ -106,14 +106,14 @@ contract LenderPool is ILenderPool {
     /**
      * @notice set the value of rewardAPY
      * @dev set the value of rewardAPY to _rewardAPY
-     * @param _rewardAPY, value of new rewardAPY
+     * @param _rewardAPY, new value of new rewardAPY
      */
     function setAPY(uint _rewardAPY) external {
         rewardAPY = _rewardAPY;
     }
 
     /**
-     * @notice returns value of rewardAPYs
+     * @notice returns value of rewardAPY
      * @return returns value of rewardAPY
      */
     function getAPY() external view returns (uint) {
@@ -130,8 +130,8 @@ contract LenderPool is ILenderPool {
     }
 
     /**
-     * @notice updates the _pendingRewards and _startTime mapping
-     * @dev stores all the reward received till now in _pendingRewads and set _startTime to current block time
+     * @notice updates the _pendingReward and _startTime mapping
+     * @dev stores all the reward received till now in _pendingRewads and set _startTime to current block timestamp
      *
      * Requirements:
      *

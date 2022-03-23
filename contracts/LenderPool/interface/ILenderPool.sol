@@ -58,8 +58,8 @@ interface ILenderPool {
     function withdrawTStable(uint amount) external;
 
     /**
-     * @notice tranfer the lender all the reward
-     * @dev update the pendingReward and transfer reward in tStable token
+     * @notice tranfer lender all the reward
+     * @dev update the pendingReward and transfers reward in tStable token to lender
      *
      * Requirements:
      *
@@ -72,7 +72,7 @@ interface ILenderPool {
     /**
      * @notice set the value of rewardAPY
      * @dev set the value of rewardAPY to _rewardAPY
-     * @param _rewardAPY, value of new rewardAPY
+     * @param _rewardAPY, new value of new rewardAPY
      */
     function setAPY(uint _rewardAPY) external;
 
