@@ -58,7 +58,7 @@ contract LenderPool is ILenderPool {
      * Emits {Withdraw} event
      */
     function withdrawAllTStable() external {
-        require(_deposits[msg.sender] > 0 || _pendingReward[msg.sender]>0 , "No deposit made");
+        require(_deposits[msg.sender] > 0, "No deposit made");
         _updatePendingReward();
         uint amount = _deposits[msg.sender];
         _deposits[msg.sender] = 0;

@@ -114,7 +114,7 @@ describe("LenderPool", function () {
     ).to.be.revertedWith("No deposit made");
   });
 });
-describe("LenderPool reward verification", function () {
+describe("LenderPool rewards testing", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
   let lenderPool: LenderPool;
@@ -193,5 +193,35 @@ describe("LenderPool reward verification", function () {
     await lenderPool.withdrawTStable(n6("100"));
     increaseTime(ONE_DAY * 365);
     expect(lenderPool.withdrawReward()).to.be.revertedWith("No pending reward");
+  });
+
+  it("should continuously deposit after every 1 year", async function () {
+    await stable.connect(accounts[0]).approve(lenderPool.address, n6("400"));
+    expect(
+      n6("400").eq(await stable.allowance(addresses[0], lenderPool.address))
+    );
+    let balance = 0;
+    for (let i = 1; i <= 4; i++) {
+      await lenderPool.connect(accounts[0]).deposit(n6("100"));
+      balance += 100;
+      expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(
+        n6(balance.toString())
+      );
+      increaseTime(ONE_DAY * 365);
+    }
+  });
+
+  it("should withdraw all tStable", async function () {
+    const balanceBefore = await tStable.balanceOf(addresses[0]);
+    await lenderPool.withdrawAllTStable();
+    const balanceAfter = await tStable.balanceOf(addresses[0]);
+    expect(balanceAfter.sub(balanceBefore).eq(n6("400")));
+  });
+
+  it("should withdraw all reward", async function () {
+    const balanceBefore = await tStable.balanceOf(addresses[0]);
+    await lenderPool.withdrawReward();
+    const balanceAfter = await tStable.balanceOf(addresses[0]);
+    expect(balanceAfter.sub(balanceBefore).eq(n6("100")));
   });
 });
