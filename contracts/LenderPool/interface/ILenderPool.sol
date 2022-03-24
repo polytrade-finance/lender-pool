@@ -19,6 +19,13 @@ interface ILenderPool {
     event Withdraw(address indexed lender, uint amount);
 
     /**
+     * @notice Emits when new rewardAPY is set
+     * @dev Emmited when new rewardAPY is set by the owner
+     * @param rewardAPY, new value of rewardAPY
+     */
+    event NewRewardAPY(uint rewardAPY);
+
+    /**
      * @notice Deposit stable token to smart contract
      * @dev Transfers the approved stable token from msg.sender to lender pool
      * @param amount, the number of stable token to be deposited

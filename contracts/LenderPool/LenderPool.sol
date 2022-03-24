@@ -108,9 +108,12 @@ contract LenderPool is ILenderPool, Ownable {
      * @notice set the value of rewardAPY
      * @dev set the value of rewardAPY to _rewardAPY, only owner can call
      * @param _rewardAPY, new value of new rewardAPY
+     *
+     * Emits {NewReardAPY} event
      */
     function setAPY(uint _rewardAPY) external onlyOwner {
         rewardAPY = _rewardAPY;
+        emit NewRewardAPY(rewardAPY);
     }
 
     /**
