@@ -2,13 +2,14 @@
 pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interface/ILenderPool.sol";
 
 /**
  * @author Polytrade
  * @title LenderPool V2
  */
-contract LenderPool is ILenderPool {
+contract LenderPool is ILenderPool, Ownable {
     using SafeERC20 for IERC20;
 
     mapping(address => uint) private _deposits;
@@ -108,7 +109,7 @@ contract LenderPool is ILenderPool {
      * @dev set the value of rewardAPY to _rewardAPY
      * @param _rewardAPY, new value of new rewardAPY
      */
-    function setAPY(uint _rewardAPY) external {
+    function setAPY(uint _rewardAPY) external onlyOwner {
         rewardAPY = _rewardAPY;
     }
 

@@ -155,8 +155,14 @@ describe("LenderPool rewards testing", function () {
   });
 
   it("should set APY to 10%", async function () {
-    await lenderPool.connect(accounts[1]).setAPY(10);
+    await lenderPool.setAPY(10);
     expect(await lenderPool.getAPY()).to.be.equal(10);
+  });
+
+  it("should not be able to increase APY", async function () {
+    expect(lenderPool.connect(accounts[1]).setAPY(20)).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );
   });
 
   it("should deposit 100 stable tokens successfully from account 1", async function () {
