@@ -71,7 +71,7 @@ interface ILenderPool {
 
     /**
      * @notice set the value of rewardAPY
-     * @dev set the value of rewardAPY to _rewardAPY
+     * @dev set the value of rewardAPY to _rewardAPY, only owner can call
      * @param _rewardAPY, new value of new rewardAPY
      */
     function setAPY(uint _rewardAPY) external;

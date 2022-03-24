@@ -106,7 +106,7 @@ contract LenderPool is ILenderPool, Ownable {
 
     /**
      * @notice set the value of rewardAPY
-     * @dev set the value of rewardAPY to _rewardAPY
+     * @dev set the value of rewardAPY to _rewardAPY, only owner can call
      * @param _rewardAPY, new value of new rewardAPY
      */
     function setAPY(uint _rewardAPY) external onlyOwner {
@@ -150,6 +150,7 @@ contract LenderPool is ILenderPool, Ownable {
     /**
      * @notice calculates the total reward
      * @dev calulates the total reward using simple interest formula
+     * @return returns total reward 
      */
     function _calculateReward() private view returns (uint) {
         uint interval = block.timestamp - _startTime[msg.sender];
