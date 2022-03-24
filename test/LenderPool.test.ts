@@ -139,14 +139,14 @@ describe("LenderPool rewards testing", function () {
     );
   });
 
-  it("should transfer stable to others EOA's", async function(){
-    await stable.connect(accounts[0]).transfer(addresses[1],n6("10000"));
-    await stable.connect(accounts[0]).transfer(addresses[2],n6("10000"));
-    await stable.connect(accounts[0]).transfer(addresses[3],n6("10000"));
+  it("should transfer stable to others EOA's", async function () {
+    await stable.connect(accounts[0]).transfer(addresses[1], n6("10000"));
+    await stable.connect(accounts[0]).transfer(addresses[2], n6("10000"));
+    await stable.connect(accounts[0]).transfer(addresses[3], n6("10000"));
     expect(await stable.balanceOf(addresses[1])).to.be.equal(n6("10000"));
     expect(await stable.balanceOf(addresses[2])).to.be.equal(n6("10000"));
     expect(await stable.balanceOf(addresses[3])).to.be.equal(n6("10000"));
-  })
+  });
 
   it("should set APY to 10%", async function () {
     await lenderPool.connect(accounts[1]).setAPY(10);
@@ -181,7 +181,7 @@ describe("LenderPool rewards testing", function () {
 
   it("should check reward after 1 year", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[1]);
-    await increaseTime(ONE_DAY * 365);  
+    await increaseTime(ONE_DAY * 365);
     await lenderPool.connect(accounts[1]).withdrawReward();
     const balanceAfter = await tStable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("20"));
@@ -196,11 +196,8 @@ describe("LenderPool rewards testing", function () {
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("10"));
   });
 
-
-it("should set APY to 40%", async function () {
-  await lenderPool.connect(accounts[0]).setAPY(40);
-  expect(await lenderPool.getAPY()).to.be.equal(40);
-});
-
-
+  it("should set APY to 40%", async function () {
+    await lenderPool.connect(accounts[0]).setAPY(40);
+    expect(await lenderPool.getAPY()).to.be.equal(40);
+  });
 });
