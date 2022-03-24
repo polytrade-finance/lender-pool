@@ -2,7 +2,13 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { Token, LenderPool } from "../typechain";
-import { increaseTime, n6, ONE_DAY } from "./helpers";
+import {
+  increaseTime,
+  n6,
+  ONE_DAY,
+  now,
+  setNextBlockTimestamp,
+} from "./helpers";
 
 describe("LenderPool", function () {
   let accounts: SignerWithAddress[];
@@ -116,7 +122,7 @@ describe("LenderPool rewards testing", function () {
   let lenderPool: LenderPool;
   let stable: Token;
   let tStable: Token;
-
+  let currentTime: number = 0;
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
@@ -201,8 +207,60 @@ describe("LenderPool rewards testing", function () {
       "No pending reward"
     );
   });
+
+  it("should withdraw all funds", async function () {
+    const balanceBefore = await tStable.balanceOf(addresses[1]);
+    await lenderPool.connect(accounts[1]).withdrawAllTStable();
+    const balanceAfter = await tStable.balanceOf(addresses[1]);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("100"));
+  });
+
   it("should set APY to 40%", async function () {
     await lenderPool.connect(accounts[0]).setAPY(40);
     expect(await lenderPool.getAPY()).to.be.equal(40);
+  });
+
+  it("should deposit 3650 stable token from account 2", async function () {
+    await stable.connect(accounts[2]).approve(lenderPool.address, n6("3650"));
+    expect(n6("3650")).to.be.equal(
+      await stable.allowance(addresses[2], lenderPool.address)
+    );
+    currentTime = await now();
+    await lenderPool.connect(accounts[2]).deposit(n6("3650"));
+    expect(await lenderPool.getDeposit(addresses[2])).to.be.equal(n6("3650"));
+  });
+
+  it("should withdraw reward after 1 month", async function () {
+    const balanceBefore = await tStable.balanceOf(addresses[2]);
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 30);
+    await lenderPool.connect(accounts[2]).withdrawReward();
+    const balanceAfter = await tStable.balanceOf(addresses[2]);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("120"));
+  });
+
+  it("should withdraw reward after 1 month", async function () {
+    const balanceBefore = await tStable.balanceOf(addresses[2]);
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 60);
+    await lenderPool.connect(accounts[2]).withdrawReward();
+    const balanceAfter = await tStable.balanceOf(addresses[2]);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("120"));
+  });
+
+  it("should deposit 9855 token from account 3", async function () {
+    await stable.connect(accounts[3]).approve(lenderPool.address, n6("9855"));
+    expect(n6("9855")).to.be.equal(
+      await stable.allowance(addresses[3], lenderPool.address)
+    );
+    currentTime = await now();
+    await lenderPool.connect(accounts[3]).deposit(n6("9855"));
+    expect(await lenderPool.getDeposit(addresses[3])).to.be.equal(n6("9855"));
+  });
+
+  it("should withdraw all the rewards after one day", async function () {
+    const balanceBefore = await tStable.balanceOf(addresses[3]);
+    await setNextBlockTimestamp(currentTime + ONE_DAY);
+    await lenderPool.connect(accounts[3]).withdrawReward();
+    const balanceAfter = await tStable.balanceOf(addresses[3]);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("10.8"));
   });
 });

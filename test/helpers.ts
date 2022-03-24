@@ -11,3 +11,14 @@ export async function increaseTime(duration: number) {
   await ethers.provider.send("evm_increaseTime", [duration]);
   await ethers.provider.send("evm_mine", []);
 }
+
+export async function setNextBlockTimestamp(time: number) {
+  await ethers.provider.send("evm_setNextBlockTimestamp", [time]);
+  await ethers.provider.send("evm_mine", []);
+}
+
+export async function now() {
+  return (
+    await ethers.provider.getBlock(await ethers.provider.getBlockNumber())
+  ).timestamp;
+}
