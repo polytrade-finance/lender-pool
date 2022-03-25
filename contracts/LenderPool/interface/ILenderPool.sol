@@ -77,6 +77,13 @@ interface ILenderPool {
     function withdrawReward() external;
 
     /**
+     * @notice returns the total pending reward
+     * @dev returns the total pending reward of msg.sender
+     * @return returns the total pending reward
+     */
+    function getReward() external returns (uint);
+
+    /**
      * @notice set the value of rewardAPY
      * @dev set the value of rewardAPY to _rewardAPY, only owner can call
      * @param _rewardAPY, new value of new rewardAPY

@@ -257,16 +257,14 @@ describe("LenderPool rewards testing", function () {
     expect(n6("9855")).to.be.equal(
       await stable.allowance(addresses[3], lenderPool.address)
     );
-    currentTime = await now();
     await lenderPool.connect(accounts[3]).deposit(n6("9855"));
     expect(await lenderPool.getDeposit(addresses[3])).to.be.equal(n6("9855"));
   });
 
   it("should withdraw all the rewards after one day", async function () {
-    const balanceBefore = await tStable.balanceOf(addresses[3]);
-    await setNextBlockTimestamp(currentTime + ONE_DAY);
-    await lenderPool.connect(accounts[3]).withdrawReward();
-    const balanceAfter = await tStable.balanceOf(addresses[3]);
-    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("10.8"));
+    await increaseTime(ONE_DAY);
+    expect(await lenderPool.connect(accounts[3]).getReward()).to.be.equal(
+      n6("10.8")
+    );
   });
 });
