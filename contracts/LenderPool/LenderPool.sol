@@ -105,15 +105,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice returns the total pending reward
-     * @dev returns the total pending reward of msg.sender
-     * @return returns the total pending reward
-     */
-    function getReward() external view returns (uint) {
-        return _calculateReward() + _pendingReward[msg.sender];
-    }
-
-    /**
      * @notice set the value of rewardAPY
      * @dev set the value of rewardAPY to _rewardAPY, only owner can call
      * @param _rewardAPY, new value of new rewardAPY
@@ -140,6 +131,15 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function getDeposit(address lender) external view returns (uint) {
         return _deposits[lender];
+    }
+
+    /**
+     * @notice returns the total pending reward
+     * @dev returns the total pending reward of msg.sender
+     * @return returns the total pending reward
+     */
+    function getReward() external view returns (uint) {
+        return _calculateReward() + _pendingReward[msg.sender];
     }
 
     /**
