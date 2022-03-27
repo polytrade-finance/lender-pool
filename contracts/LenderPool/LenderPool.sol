@@ -96,8 +96,8 @@ contract LenderPool is ILenderPool, Ownable {
      *
      * Emits {Withdraw} event
      */
-    function withdrawReward() external {
-        _updatePendingReward();
+    function claimRewards() external {
+        _updatePendingReward(msg.sender);
         require(_pendingReward[msg.sender] > 0, "No pending reward");
         emit Withdraw(msg.sender, _pendingReward[msg.sender]);
         tStable.safeTransfer(msg.sender, _pendingReward[msg.sender]);
