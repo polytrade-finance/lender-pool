@@ -157,7 +157,7 @@ describe("LenderPool reward testing for fixed APY", function () {
     );
   });
 
-  it("should deposit 100 stable tokens successfully from account 1", async function () {
+  it("should deposit 100 stable tokens successfully from account 1 at t = 0 year", async function () {
     await stable.connect(accounts[1]).approve(lenderPool.address, n6("100"));
     expect(n6("100")).to.be.equal(
       await stable.allowance(addresses[1], lenderPool.address)
@@ -167,12 +167,12 @@ describe("LenderPool reward testing for fixed APY", function () {
     expect(await lenderPool.getDeposit(addresses[1])).to.be.equal(n6("100"));
   });
 
-  it("should check reward after 1 year is 10 tStable token", async function () {
+  it("should check reward at t = 1 year is 10 tStable token", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
     expect(await lenderPool.rewardOf(addresses[1])).to.be.equal(n6("10"));
   });
 
-  it("should deposit 100 stable token from account 1", async function () {
+  it("should deposit 100 stable token from account 1 at t = 2 year", async function () {
     await stable.connect(accounts[1]).approve(lenderPool.address, n6("100"));
     expect(n6("100")).to.be.equal(
       await stable.allowance(addresses[1], lenderPool.address)
@@ -182,7 +182,7 @@ describe("LenderPool reward testing for fixed APY", function () {
     expect(await lenderPool.getDeposit(addresses[1])).to.be.equal(n6("200"));
   });
 
-  it("should check reward after 1 year is 20 tStable token", async function () {
+  it("should check reward at t = 3 year is 40 tStable token", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[1]);
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 3);
     await lenderPool.connect(accounts[1]).withdrawReward();
@@ -232,7 +232,7 @@ describe("Lender pool reward testing for changing APY", function () {
     expect(await lenderPool.getLatestAPY()).to.be.equal(10);
   });
 
-  it("should deposit 100 stable tokens successfully from account 1", async function () {
+  it("should deposit 100 stable tokens successfully from account 1 at t = 0 year", async function () {
     await stable.connect(accounts[1]).approve(lenderPool.address, n6("100"));
     expect(n6("100")).to.be.equal(
       await stable.allowance(addresses[1], lenderPool.address)
@@ -242,13 +242,13 @@ describe("Lender pool reward testing for changing APY", function () {
     expect(await lenderPool.getDeposit(addresses[1])).to.be.equal(n6("100"));
   });
 
-  it("should set APY to 20%", async function () {
+  it("should set APY to 20% at t = 1 year", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
     await lenderPool.setAPY(20);
     expect(await lenderPool.getLatestAPY()).to.be.equal(20);
   });
 
-  it("should check reward after 1 year is 30 tStable token", async function () {
+  it("should check reward at t = 2 year is 30 tStable token", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[1]);
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 2);
     await lenderPool.connect(accounts[1]).withdrawReward();
@@ -256,19 +256,19 @@ describe("Lender pool reward testing for changing APY", function () {
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("30"));
   });
 
-  it("should set APY to 10%", async function () {
+  it("should set APY to 10% at t = 3 year", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 3);
     await lenderPool.setAPY(10);
     expect(await lenderPool.getLatestAPY()).to.be.equal(10);
   });
 
-  it("should set APY to 20%", async function () {
+  it("should set APY to 20% at t = 4 year", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 4);
     await lenderPool.setAPY(20);
     expect(await lenderPool.getLatestAPY()).to.be.equal(20);
   });
 
-  it("should check reward after 1 year is 50 tStable token", async function () {
+  it("should check reward at t = 5 year is 50 tStable token", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[1]);
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 5);
     await lenderPool.connect(accounts[1]).withdrawReward();
