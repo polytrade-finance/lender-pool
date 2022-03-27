@@ -138,8 +138,8 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev returns the total pending reward of msg.sender
      * @return returns the total pending reward
      */
-    function getReward() external view returns (uint) {
-        return _calculateReward() + _pendingReward[msg.sender];
+    function rewardOf(address lender) external view returns (uint) {
+        return _calculateReward(_startTime[lender], _deposits[lender]) + _pendingReward[lender];
     }
 
     /**
