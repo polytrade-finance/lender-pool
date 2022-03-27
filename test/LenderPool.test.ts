@@ -241,7 +241,7 @@ describe("Lender pool reward testing for changing APY", function () {
     currentTime = await now();
     expect(await lenderPool.getDeposit(addresses[1])).to.be.equal(n6("100"));
   });
-  
+
   it("should set APY to 20%", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
     await lenderPool.setAPY(20);
