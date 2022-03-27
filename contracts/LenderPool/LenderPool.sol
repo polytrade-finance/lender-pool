@@ -164,10 +164,11 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev calculates the total reward using simple interest formula
      * @return returns total reward
      */
-    function _calculateReward() private view returns (uint) {
-        uint interval = block.timestamp - _startTime[msg.sender];
-        uint totalReward = ((interval * rewardAPY * _deposits[msg.sender]) /
-            (100 * 365 days));
+    function _calculateReward(uint startTime, uint lenderDeposit) view private returns (uint) {
+        uint interval = block.timestamp - startTime;
+        uint oneYear = (10000 * 365 days);
+        uint totalReward = ((interval * rewardAPY * lenderDeposit) /
+            oneYear);
         return totalReward;
     }
 }
