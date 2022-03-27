@@ -130,7 +130,9 @@ contract LenderPool is ILenderPool, Ownable {
      * @return returns the total pending reward
      */
     function rewardOf(address lender) external view returns (uint) {
-        return _calculateReward(_startTime[lender], _deposits[lender]) + _pendingReward[lender];
+        return
+            _calculateReward(_startTime[lender], _deposits[lender]) +
+            _pendingReward[lender];
     }
 
     function _withdraw(uint amount) private {
@@ -151,10 +153,13 @@ contract LenderPool is ILenderPool, Ownable {
      * - `_startTime` should not be 0
      *
      */
-    function _updatePendingReward() private {
-        if (_startTime[msg.sender] != 0) {
-            uint totalReward = _calculateReward();
-            _pendingReward[msg.sender] += totalReward;
+    function _updatePendingReward(address lender) private {
+        uint startTime = _startTime[lender];
+        if (startTime > 0) {
+            _pendingReward[lender] += _calculateReward(
+                startTime,
+                _deposits[lender]
+            );
         }
         _startTime[lender] = uint40(block.timestamp);
     }
@@ -164,11 +169,14 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev calculates the total reward using simple interest formula
      * @return returns total reward
      */
-    function _calculateReward(uint startTime, uint lenderDeposit) view private returns (uint) {
+    function _calculateReward(uint startTime, uint lenderDeposit)
+        private
+        view
+        returns (uint)
+    {
         uint interval = block.timestamp - startTime;
         uint oneYear = (10000 * 365 days);
-        uint totalReward = ((interval * rewardAPY * lenderDeposit) /
-            oneYear);
+        uint totalReward = ((interval * rewardAPY * lenderDeposit) / oneYear);
         return totalReward;
     }
 }
