@@ -42,6 +42,7 @@ contract LenderPool is ILenderPool, Ownable {
         require(amount > 0, "Lending amount is 0");
         uint allowance = stable.allowance(msg.sender, address(this));
         require(allowance >= amount, "Not enough allowance");
+
         _updatePendingReward(msg.sender);
         _deposits[msg.sender] += amount;
         emit Deposit(msg.sender, amount);
@@ -90,7 +91,9 @@ contract LenderPool is ILenderPool, Ownable {
     function claimRewards() external {
         _updatePendingReward(msg.sender);
         require(_pendingReward[msg.sender] > 0, "No pending reward");
+
         emit Withdraw(msg.sender, _pendingReward[msg.sender]);
+
         tStable.safeTransfer(msg.sender, _pendingReward[msg.sender]);
         _pendingReward[msg.sender] = 0;
     }
@@ -138,7 +141,9 @@ contract LenderPool is ILenderPool, Ownable {
     function _withdraw(uint amount) private {
         require(amount > 0, "Cannot withdraw 0 amount");
         require(_deposits[msg.sender] >= amount, "Invalid amount requested");
+
         _updatePendingReward(msg.sender);
+
         _deposits[msg.sender] -= amount;
         emit Withdraw(msg.sender, amount);
         tStable.safeTransfer(msg.sender, amount);
