@@ -74,7 +74,7 @@ interface ILenderPool {
      *
      * Emits {Withdraw} event
      */
-    function withdrawReward() external;
+    function claimRewards() external;
 
     /**
      * @notice set the value of rewardAPY
