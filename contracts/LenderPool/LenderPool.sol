@@ -111,7 +111,7 @@ contract LenderPool is ILenderPool, Ownable {
      *
      * Emits {NewRewardAPY} event
      */
-    function setAPY(uint _rewardAPY) external onlyOwner {
+    function setAPY(uint16 _rewardAPY) external onlyOwner {
         rewardAPY = _rewardAPY;
         emit NewRewardAPY(rewardAPY);
     }
@@ -120,7 +120,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @notice returns value of rewardAPY
      * @return returns value of rewardAPY
      */
-    function getAPY() external view returns (uint) {
+    function getAPY() external view returns (uint16) {
         return rewardAPY;
     }
 
