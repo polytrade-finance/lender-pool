@@ -23,7 +23,7 @@ interface ILenderPool {
      * @dev Emmited when new rewardAPY is set by the owner
      * @param rewardAPY, new value of rewardAPY
      */
-    event NewRewardAPY(uint rewardAPY);
+    event NewRewardAPY(uint16 rewardAPY);
 
     /**
      * @notice Deposit stable token to smart contract
