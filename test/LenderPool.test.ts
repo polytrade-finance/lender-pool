@@ -177,7 +177,7 @@ describe("LenderPool rewards testing", function () {
   it("should check reward after 1 year is 10 tStable token", async function () {
     await increaseTime(ONE_DAY * 365);
     const balanceBefore = await tStable.balanceOf(addresses[1]);
-    await lenderPool.connect(accounts[1]).withdrawReward();
+    await lenderPool.connect(accounts[1]).claimRewards();
     const balanceAfter = await tStable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore) === n6("10"));
   });
