@@ -222,8 +222,8 @@ describe("LenderPool rewards testing", function () {
   });
 
   it("should set APY to 40%", async function () {
-    await lenderPool.connect(accounts[0]).setAPY(40);
-    expect(await lenderPool.getAPY()).to.be.equal(40);
+    await lenderPool.connect(accounts[0]).setAPY(4000);
+    expect(await lenderPool.getAPY()).to.be.equal(4000);
   });
 
   it("should deposit 3650 stable token from account 2", async function () {
