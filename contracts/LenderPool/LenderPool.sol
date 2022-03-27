@@ -39,10 +39,10 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {Deposit} event
      */
     function deposit(uint amount) external {
-        require(amount > 0, "Lending amount invalid");
+        require(amount > 0, "Lending amount is 0");
         uint allowance = stable.allowance(msg.sender, address(this));
-        require(allowance >= amount, "Amount not approved");
-        _updatePendingReward();
+        require(allowance >= amount, "Not enough allowance");
+        _updatePendingReward(msg.sender);
         _deposits[msg.sender] += amount;
         emit Deposit(msg.sender, amount);
         stable.safeTransferFrom(msg.sender, address(this), amount);
