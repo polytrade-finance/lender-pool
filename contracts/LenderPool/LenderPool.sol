@@ -161,7 +161,7 @@ contract LenderPool is ILenderPool, Ownable {
 
     /**
      * @notice calculates the total reward
-     * @dev calulates the total reward using simple interest formula
+     * @dev calculates the total reward using simple interest formula
      * @return returns total reward
      */
     function _calculateReward() private view returns (uint) {
