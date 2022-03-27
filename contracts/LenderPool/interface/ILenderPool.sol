@@ -101,5 +101,5 @@ interface ILenderPool {
      * @dev returns the total pending reward of msg.sender
      * @return returns the total pending reward
      */
-    function getReward() external view returns (uint);
+    function rewardOf(address lender) external view returns (uint);
 }
