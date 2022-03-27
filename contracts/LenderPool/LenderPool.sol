@@ -13,7 +13,7 @@ contract LenderPool is ILenderPool, Ownable {
     using SafeERC20 for IERC20;
 
     mapping(address => uint) private _deposits;
-    mapping(address => uint) private _startTime;
+    mapping(address => uint40) private _startTime;
     mapping(address => uint) private _pendingReward;
 
     IERC20 public immutable stable;
@@ -156,7 +156,7 @@ contract LenderPool is ILenderPool, Ownable {
             uint totalReward = _calculateReward();
             _pendingReward[msg.sender] += totalReward;
         }
-        _startTime[msg.sender] = block.timestamp;
+        _startTime[lender] = uint40(block.timestamp);
     }
 
     /**
