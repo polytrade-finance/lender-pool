@@ -162,7 +162,6 @@ describe("LenderPool reward testing for fixed APY", function () {
     expect(n6("100")).to.be.equal(
       await stable.allowance(addresses[1], lenderPool.address)
     );
-
     await lenderPool.connect(accounts[1]).deposit(n6("100"));
     currentTime = await now();
     expect(await lenderPool.getDeposit(addresses[1])).to.be.equal(n6("100"));
@@ -242,11 +241,13 @@ describe("Lender pool reward testing for changing APY", function () {
     currentTime = await now();
     expect(await lenderPool.getDeposit(addresses[1])).to.be.equal(n6("100"));
   });
+  
   it("should set APY to 20%", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
     await lenderPool.setAPY(20);
     expect(await lenderPool.getLatestAPY()).to.be.equal(20);
   });
+
   it("should check reward after 1 year is 30 tStable token", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[1]);
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 2);
@@ -254,16 +255,19 @@ describe("Lender pool reward testing for changing APY", function () {
     const balanceAfter = await tStable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("30"));
   });
+
   it("should set APY to 10%", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 3);
     await lenderPool.setAPY(10);
     expect(await lenderPool.getLatestAPY()).to.be.equal(10);
   });
+
   it("should set APY to 20%", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 4);
     await lenderPool.setAPY(20);
     expect(await lenderPool.getLatestAPY()).to.be.equal(20);
   });
+
   it("should check reward after 1 year is 50 tStable token", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[1]);
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 5);
@@ -271,6 +275,7 @@ describe("Lender pool reward testing for changing APY", function () {
     const balanceAfter = await tStable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("50"));
   });
+
   it("should revert if no reward is pending", async function () {
     expect(lenderPool.connect(accounts[2]).withdrawReward()).to.be.revertedWith(
       "No pending reward"

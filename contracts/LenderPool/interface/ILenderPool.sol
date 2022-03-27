@@ -72,7 +72,7 @@ interface ILenderPool {
 
     /**
      * @notice it transfer to the lender all its rewards
-     * @dev update the pendingReward and transfers reward in tStable token to lender
+     * @dev update the pendingReward and transfers reward in tStable token to the lender
      *
      * Requirements:
      *
@@ -98,7 +98,7 @@ interface ILenderPool {
 
     /**
      * @notice returns the total pending reward of the lender
-     * @dev returns the total pending reward of lender
+     * @dev returns the total pending reward of the lender
      * @param lender, address of the lender
      * @return returns the total pending reward
      */
