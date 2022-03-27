@@ -155,8 +155,8 @@ describe("LenderPool rewards testing", function () {
   });
 
   it("should set APY to 10%", async function () {
-    await lenderPool.setAPY(10);
-    expect(await lenderPool.getAPY()).to.be.equal(10);
+    await lenderPool.setAPY(1000);
+    expect(await lenderPool.getAPY()).to.be.equal(1000);
   });
 
   it("should not be able to increase APY", async function () {
