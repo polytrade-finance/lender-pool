@@ -69,7 +69,7 @@ contract LenderPool is ILenderPool, Ownable {
 
     /**
      * @notice converts the given amount of stable token into tStable token and transfers to lender
-     * @dev checks the required condition and converts stable token to tstable and transfers to lender
+     * @dev checks the required condition and converts stable token to tStable and transfers to lender
      * @param amount, total amount of stable token to be converted to tStable token
      *
      * Requirements:
@@ -87,7 +87,7 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice tranfer lender all the reward
+     * @notice transfer lender all the reward
      * @dev update the pendingReward and transfers reward in tStable token to lender
      *
      * Requirements:
@@ -109,7 +109,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev set the value of rewardAPY to _rewardAPY, only owner can call
      * @param _rewardAPY, new value of new rewardAPY
      *
-     * Emits {NewReardAPY} event
+     * Emits {NewRewardAPY} event
      */
     function setAPY(uint _rewardAPY) external onlyOwner {
         rewardAPY = _rewardAPY;
@@ -144,7 +144,7 @@ contract LenderPool is ILenderPool, Ownable {
 
     /**
      * @notice updates the _pendingReward and _startTime mapping
-     * @dev stores all the reward received till now in _pendingRewads and set _startTime to current block timestamp
+     * @dev stores all the reward received till now in _pendingRewards and set _startTime to current block timestamp
      *
      * Requirements:
      *
