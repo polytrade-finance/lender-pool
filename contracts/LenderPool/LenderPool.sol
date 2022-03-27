@@ -19,7 +19,7 @@ contract LenderPool is ILenderPool, Ownable {
     IERC20 public immutable stable;
     IERC20 public immutable tStable;
 
-    uint public rewardAPY;
+    ApyInfo[] public apyList;
 
     constructor(address _stableAddress, address _tStableAddress) {
         stable = IERC20(_stableAddress);
@@ -42,7 +42,7 @@ contract LenderPool is ILenderPool, Ownable {
         require(amount > 0, "Lending amount invalid");
         uint allowance = stable.allowance(msg.sender, address(this));
         require(allowance >= amount, "Amount not approved");
-        _updatePendingReward();
+        _updatePendingReward(msg.sender);
         _deposits[msg.sender] += amount;
         emit Deposit(msg.sender, amount);
         stable.safeTransferFrom(msg.sender, address(this), amount);
@@ -60,7 +60,7 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function withdrawAllTStable() external {
         require(_deposits[msg.sender] > 0, "No deposit made");
-        _updatePendingReward();
+        _updatePendingReward(msg.sender);
         uint amount = _deposits[msg.sender];
         _deposits[msg.sender] = 0;
         emit Withdraw(msg.sender, amount);
@@ -80,7 +80,7 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function withdrawTStable(uint amount) external {
         require(_deposits[msg.sender] >= amount, "Invalid amount requested");
-        _updatePendingReward();
+        _updatePendingReward(msg.sender);
         _deposits[msg.sender] -= amount;
         emit Withdraw(msg.sender, amount);
         tStable.safeTransfer(msg.sender, amount);
@@ -97,7 +97,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {Withdraw} event
      */
     function withdrawReward() external {
-        _updatePendingReward();
+        _updatePendingReward(msg.sender);
         require(_pendingReward[msg.sender] > 0, "No pending reward");
         emit Withdraw(msg.sender, _pendingReward[msg.sender]);
         tStable.safeTransfer(msg.sender, _pendingReward[msg.sender]);
@@ -112,16 +112,19 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {NewReardAPY} event
      */
     function setAPY(uint _rewardAPY) external onlyOwner {
-        rewardAPY = _rewardAPY;
-        emit NewRewardAPY(rewardAPY);
+        if(apyList.length!=0){
+            apyList[apyList.length-1].endTime = block.timestamp;
+        }
+        apyList.push(ApyInfo(_rewardAPY, block.timestamp, type(uint).max));
+        emit NewRewardAPY(_rewardAPY);
     }
 
     /**
      * @notice returns value of rewardAPY
      * @return returns value of rewardAPY
      */
-    function getAPY() external view returns (uint) {
-        return rewardAPY;
+    function getLatestAPY() external view returns (uint) {
+        return apyList[apyList.length - 1].apyValue;
     }
 
     /**
@@ -138,8 +141,8 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev returns the total pending reward of msg.sender
      * @return returns the total pending reward
      */
-    function getReward() external view returns (uint) {
-        return _calculateReward() + _pendingReward[msg.sender];
+    function getReward(address lender) external view returns (uint) {
+        return _calculateReward(lender) + _pendingReward[lender];
     }
 
     /**
@@ -151,12 +154,13 @@ contract LenderPool is ILenderPool, Ownable {
      * - `_startTime` should not be 0
      *
      */
-    function _updatePendingReward() private {
-        if (_startTime[msg.sender] != 0) {
-            uint totalReward = _calculateReward();
-            _pendingReward[msg.sender] += totalReward;
+    function _updatePendingReward(address lender) private {
+        
+        if (_startTime[lender] != 0) {
+            uint totalReward = _calculateReward(lender);
+            _pendingReward[lender] += totalReward;
         }
-        _startTime[msg.sender] = block.timestamp;
+        _startTime[lender] = block.timestamp;
     }
 
     /**
@@ -164,10 +168,34 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev calulates the total reward using simple interest formula
      * @return returns total reward
      */
-    function _calculateReward() private view returns (uint) {
-        uint interval = block.timestamp - _startTime[msg.sender];
-        uint totalReward = ((interval * rewardAPY * _deposits[msg.sender]) /
-            (100 * 365 days));
-        return totalReward;
+    function _calculateReward(address lender) private view returns (uint) {
+        uint reward = 0;
+        for (uint i = 0; i < apyList.length; i++) {
+            if(_startTime[lender] <= apyList[i].startTime
+            && block.timestamp>=apyList[i].startTime
+             && block.timestamp<=apyList[i].endTime){
+                reward += (((block.timestamp - apyList[i].startTime) *
+                    apyList[i].apyValue *
+                    _deposits[lender]) / (100 * 365 days));
+            }
+            else if(_startTime[lender] <= apyList[i].startTime && block.timestamp>=apyList[i].endTime){
+                reward += (((apyList[i].endTime - apyList[i].startTime) *
+                    apyList[i].apyValue *
+                    _deposits[lender]) / (100 * 365 days));
+            }
+            else if(_startTime[lender] >= apyList[i].startTime &&
+            _startTime[lender]<=apyList[i].endTime
+             && block.timestamp>=apyList[i].endTime){
+                reward += (((apyList[i].endTime - _startTime[lender]) *
+                    apyList[i].apyValue *
+                    _deposits[lender]) / (100 * 365 days));
+            }
+            else if(_startTime[lender] >= apyList[i].startTime && block.timestamp<=apyList[i].endTime){
+                reward += ((( block.timestamp - _startTime[lender]) *
+                    apyList[i].apyValue *
+                    _deposits[lender]) / (100 * 365 days));
+            }
+        }
+        return reward;  
     }
 }

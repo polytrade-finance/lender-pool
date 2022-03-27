@@ -2,6 +2,12 @@
 pragma solidity ^0.8.12;
 
 interface ILenderPool {
+    struct ApyInfo {
+        uint apyValue;
+        uint startTime;
+        uint endTime;
+    }
+
     /**
      * @notice Emits when new fund is added to the Lender Pool
      * @dev Emitted when funds are deposited by the `lender`.
@@ -84,12 +90,6 @@ interface ILenderPool {
     function setAPY(uint _rewardAPY) external;
 
     /**
-     * @notice returns value of rewardAPY
-     * @return returns value of rewardAPY
-     */
-    function getAPY() external view returns (uint);
-
-    /**
      * @notice returns amount of stable token deposited by the lender
      * @param lender, address of lender
      * @return returns amount of stable token deposited by the lender
@@ -101,5 +101,5 @@ interface ILenderPool {
      * @dev returns the total pending reward of msg.sender
      * @return returns the total pending reward
      */
-    function getReward() external view returns (uint);
+    function getReward(address lender) external view returns (uint);
 }
