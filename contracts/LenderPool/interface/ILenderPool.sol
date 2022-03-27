@@ -81,13 +81,13 @@ interface ILenderPool {
      * @dev set the value of rewardAPY to _rewardAPY, only owner can call
      * @param _rewardAPY, new value of new rewardAPY
      */
-    function setAPY(uint _rewardAPY) external;
+    function setAPY(uint16 _rewardAPY) external;
 
     /**
      * @notice returns value of rewardAPY
      * @return returns value of rewardAPY
      */
-    function getAPY() external view returns (uint);
+    function getAPY() external view returns (uint16);
 
     /**
      * @notice returns amount of stable token deposited by the lender
