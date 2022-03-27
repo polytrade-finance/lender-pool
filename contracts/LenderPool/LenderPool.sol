@@ -19,7 +19,7 @@ contract LenderPool is ILenderPool, Ownable {
     IERC20 public immutable stable;
     IERC20 public immutable tStable;
 
-    uint public rewardAPY;
+    uint16 public rewardAPY;
 
     constructor(address _stableAddress, address _tStableAddress) {
         stable = IERC20(_stableAddress);
