@@ -176,7 +176,6 @@ contract LenderPool is ILenderPool, Ownable {
     {
         uint interval = block.timestamp - startTime;
         uint oneYear = (10000 * 365 days);
-        uint totalReward = ((interval * rewardAPY * lenderDeposit) / oneYear);
-        return totalReward;
+        return ((interval * rewardAPY * lenderDeposit) / oneYear);
     }
 }
