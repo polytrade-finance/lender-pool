@@ -65,7 +65,7 @@ interface ILenderPool {
     function withdrawTStable(uint amount) external;
 
     /**
-     * @notice tranfer lender all the reward
+     * @notice transfer lender all the reward
      * @dev update the pendingReward and transfers reward in tStable token to lender
      *
      * Requirements:
