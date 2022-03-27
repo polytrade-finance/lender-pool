@@ -2,12 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { Token, LenderPool } from "../typechain";
-import {
-  n6,
-  ONE_DAY,
-  now,
-  setNextBlockTimestamp,
-} from "./helpers";
+import { n6, ONE_DAY, now, setNextBlockTimestamp } from "./helpers";
 
 describe("LenderPool", function () {
   let accounts: SignerWithAddress[];
@@ -272,11 +267,13 @@ describe("Lender pool reward testing for changing APY", function () {
   it("should check reward after 1 year is 50 tStable token", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[1]);
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 5);
-    await lenderPool.connect(accounts[1]).withdrawReward(); 
+    await lenderPool.connect(accounts[1]).withdrawReward();
     const balanceAfter = await tStable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("50"));
   });
-  it("should revert if no reward is pending", async function(){
-    expect(lenderPool.connect(accounts[2]).withdrawReward()).to.be.revertedWith("No pending reward"); 
-  })  
+  it("should revert if no reward is pending", async function () {
+    expect(lenderPool.connect(accounts[2]).withdrawReward()).to.be.revertedWith(
+      "No pending reward"
+    );
+  });
 });

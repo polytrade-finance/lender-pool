@@ -112,8 +112,8 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {NewReardAPY} event
      */
     function setAPY(uint _rewardAPY) external onlyOwner {
-        if(apyList.length!=0){
-            apyList[apyList.length-1].endTime = block.timestamp;
+        if (apyList.length != 0) {
+            apyList[apyList.length - 1].endTime = block.timestamp;
         }
         apyList.push(ApyInfo(_rewardAPY, block.timestamp, type(uint).max));
         emit NewRewardAPY(_rewardAPY);
@@ -155,7 +155,6 @@ contract LenderPool is ILenderPool, Ownable {
      *
      */
     function _updatePendingReward(address lender) private {
-        
         if (_startTime[lender] != 0) {
             uint totalReward = _calculateReward(lender);
             _pendingReward[lender] += totalReward;
@@ -171,31 +170,38 @@ contract LenderPool is ILenderPool, Ownable {
     function _calculateReward(address lender) private view returns (uint) {
         uint reward = 0;
         for (uint i = 0; i < apyList.length; i++) {
-            if(_startTime[lender] <= apyList[i].startTime
-            && block.timestamp>=apyList[i].startTime
-             && block.timestamp<=apyList[i].endTime){
+            if (
+                _startTime[lender] <= apyList[i].startTime &&
+                block.timestamp >= apyList[i].startTime &&
+                block.timestamp <= apyList[i].endTime
+            ) {
                 reward += (((block.timestamp - apyList[i].startTime) *
                     apyList[i].apyValue *
                     _deposits[lender]) / (100 * 365 days));
-            }
-            else if(_startTime[lender] <= apyList[i].startTime && block.timestamp>=apyList[i].endTime){
+            } else if (
+                _startTime[lender] <= apyList[i].startTime &&
+                block.timestamp >= apyList[i].endTime
+            ) {
                 reward += (((apyList[i].endTime - apyList[i].startTime) *
                     apyList[i].apyValue *
                     _deposits[lender]) / (100 * 365 days));
-            }
-            else if(_startTime[lender] >= apyList[i].startTime &&
-            _startTime[lender]<=apyList[i].endTime
-             && block.timestamp>=apyList[i].endTime){
+            } else if (
+                _startTime[lender] >= apyList[i].startTime &&
+                _startTime[lender] <= apyList[i].endTime &&
+                block.timestamp >= apyList[i].endTime
+            ) {
                 reward += (((apyList[i].endTime - _startTime[lender]) *
                     apyList[i].apyValue *
                     _deposits[lender]) / (100 * 365 days));
-            }
-            else if(_startTime[lender] >= apyList[i].startTime && block.timestamp<=apyList[i].endTime){
-                reward += ((( block.timestamp - _startTime[lender]) *
+            } else if (
+                _startTime[lender] >= apyList[i].startTime &&
+                block.timestamp <= apyList[i].endTime
+            ) {
+                reward += (((block.timestamp - _startTime[lender]) *
                     apyList[i].apyValue *
                     _deposits[lender]) / (100 * 365 days));
             }
         }
-        return reward;  
+        return reward;
     }
 }
