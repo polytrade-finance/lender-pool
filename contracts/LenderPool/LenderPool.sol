@@ -59,12 +59,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {Withdraw} event
      */
     function withdrawAllTStable() external {
-        require(_deposits[msg.sender] > 0, "No deposit made");
-        _updatePendingReward();
-        uint amount = _deposits[msg.sender];
-        _deposits[msg.sender] = 0;
-        emit Withdraw(msg.sender, amount);
-        tStable.safeTransfer(msg.sender, amount);
+        _withdraw(_deposits[msg.sender]);
     }
 
     /**
@@ -79,11 +74,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {Withdraw} event
      */
     function withdrawTStable(uint amount) external {
-        require(_deposits[msg.sender] >= amount, "Invalid amount requested");
-        _updatePendingReward();
-        _deposits[msg.sender] -= amount;
-        emit Withdraw(msg.sender, amount);
-        tStable.safeTransfer(msg.sender, amount);
+        _withdraw(amount);
     }
 
     /**
@@ -140,6 +131,15 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function rewardOf(address lender) external view returns (uint) {
         return _calculateReward(_startTime[lender], _deposits[lender]) + _pendingReward[lender];
+    }
+
+    function _withdraw(uint amount) private {
+        require(amount > 0, "Cannot withdraw 0 amount");
+        require(_deposits[msg.sender] >= amount, "Invalid amount requested");
+        _updatePendingReward(msg.sender);
+        _deposits[msg.sender] -= amount;
+        emit Withdraw(msg.sender, amount);
+        tStable.safeTransfer(msg.sender, amount);
     }
 
     /**
