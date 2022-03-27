@@ -69,7 +69,7 @@ contract LenderPool is ILenderPool, Ownable {
 
     /**
      * @notice converts the given amount of stable token into tStable token and transfers to lender
-     * @dev checks the required condition and converts stable token to tstable and transfers to lender
+     * @dev checks the required condition and converts stable token to tStable and transfers to lender
      * @param amount, total amount of stable token to be converted to tStable token
      *
      * Requirements:
@@ -87,7 +87,7 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice tranfer lender all the reward
+     * @notice it transfer to the lender all its rewards
      * @dev update the pendingReward and transfers reward in tStable token to lender
      *
      * Requirements:
@@ -100,8 +100,9 @@ contract LenderPool is ILenderPool, Ownable {
         _updatePendingReward(msg.sender);
         require(_pendingReward[msg.sender] > 0, "No pending reward");
         emit Withdraw(msg.sender, _pendingReward[msg.sender]);
-        tStable.safeTransfer(msg.sender, _pendingReward[msg.sender]);
+        uint totalReward = _pendingReward[msg.sender];
         _pendingReward[msg.sender] = 0;
+        tStable.safeTransfer(msg.sender, totalReward);
     }
 
     /**
@@ -109,7 +110,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev set the value of rewardAPY to _rewardAPY, only owner can call
      * @param _rewardAPY, new value of new rewardAPY
      *
-     * Emits {NewReardAPY} event
+     * Emits {NewRewardAPY} event
      */
     function setAPY(uint _rewardAPY) external onlyOwner {
         if (apyList.length != 0) {
@@ -137,17 +138,19 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice returns the total pending reward
-     * @dev returns the total pending reward of msg.sender
+     * @notice returns the total pending reward of the lender
+     * @dev returns the total pending reward of lender
+     * @param lender, address of the lender
      * @return returns the total pending reward
      */
-    function getReward(address lender) external view returns (uint) {
+    function rewardOf(address lender) external view returns (uint) {
         return _calculateReward(lender) + _pendingReward[lender];
     }
 
     /**
-     * @notice updates the _pendingReward and _startTime mapping
-     * @dev stores all the reward received till now in _pendingRewads and set _startTime to current block timestamp
+     * @notice updates the _pendingReward and _startTime mapping of the lender
+     * @dev stores all the reward received till now in _pendingRewards and set _startTime to current block timestamp
+     * @param lender, address of the lender
      *
      * Requirements:
      *
@@ -155,7 +158,7 @@ contract LenderPool is ILenderPool, Ownable {
      *
      */
     function _updatePendingReward(address lender) private {
-        if (_startTime[lender] != 0) {
+        if (_startTime[lender] > 0) {
             uint totalReward = _calculateReward(lender);
             _pendingReward[lender] += totalReward;
         }
@@ -163,8 +166,9 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice calculates the total reward
-     * @dev calulates the total reward using simple interest formula
+     * @notice calculates the total reward of the lender
+     * @dev loops through apyList to calculate the total reward of the lender
+     * @param lender, address of the lender
      * @return returns total reward
      */
     function _calculateReward(address lender) private view returns (uint) {

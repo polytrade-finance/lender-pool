@@ -46,8 +46,8 @@ interface ILenderPool {
     function deposit(uint amount) external;
 
     /**
-     * @notice converts all the deposited stable token into tStable token and transfers them to the lender
-     * @dev calculates the tStable token lender can claim and transfers them to the lender
+     * @notice converts all the deposited stable token into tStable token and transfers to the lender
+     * @dev calculates the tStable token lender can claim and transfers it to the lender
      *
      * Requirements:
      *
@@ -59,7 +59,7 @@ interface ILenderPool {
 
     /**
      * @notice converts the given amount of stable token into tStable token and transfers to lender
-     * @dev checks the required condition and converts stable token to tstable and transfers to lender
+     * @dev checks the required condition and converts stable token to tStable and transfers to lender
      * @param amount, total amount of stable token to be converted to tStable token
      *
      * Requirements:
@@ -71,7 +71,7 @@ interface ILenderPool {
     function withdrawTStable(uint amount) external;
 
     /**
-     * @notice tranfer lender all the reward
+     * @notice it transfer to the lender all its rewards
      * @dev update the pendingReward and transfers reward in tStable token to lender
      *
      * Requirements:
@@ -97,9 +97,10 @@ interface ILenderPool {
     function getDeposit(address lender) external view returns (uint);
 
     /**
-     * @notice returns the total pending reward
-     * @dev returns the total pending reward of msg.sender
+     * @notice returns the total pending reward of the lender
+     * @dev returns the total pending reward of lender
+     * @param lender, address of the lender
      * @return returns the total pending reward
      */
-    function getReward(address lender) external view returns (uint);
+    function rewardOf(address lender) external view returns (uint);
 }

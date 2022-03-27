@@ -170,7 +170,7 @@ describe("LenderPool reward testing for fixed APY", function () {
 
   it("should check reward after 1 year is 10 tStable token", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
-    expect(await lenderPool.getReward(addresses[1])).to.be.equal(n6("10"));
+    expect(await lenderPool.rewardOf(addresses[1])).to.be.equal(n6("10"));
   });
 
   it("should deposit 100 stable token from account 1", async function () {
