@@ -15,12 +15,15 @@ contract LenderPool is ILenderPool, Ownable {
     mapping(address => uint) private _deposits;
     mapping(address => uint40) private _startTime;
     mapping(address => uint) private _pendingReward;
+    //@todo put all the mapping into one struct + startingIndex
 
     IERC20 public immutable stable;
     IERC20 public immutable tStable;
 
     uint16 public rewardAPY;
-
+    // @todo create a struct with start, ending and value 
+    // @todo create a state variable for current index 
+    // @todo create three private functions 1. if userIndex=><=currentIndex 2.
     constructor(address _stableAddress, address _tStableAddress) {
         stable = IERC20(_stableAddress);
         tStable = IERC20(_tStableAddress);
