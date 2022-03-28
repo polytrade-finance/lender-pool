@@ -51,39 +51,18 @@ contract LenderPool is ILenderPool, Ownable {
     /**
      * @notice converts all the deposited stable token into tStable token and transfers to the lender
      * @dev calculates the tStable token lender can claim and transfers it to the lender
-     *
-     * Requirements:
-     *
-     * - `deposit` should be greater than zero
-     *
-     * Emits {Withdraw} event
      */
     function withdrawAllTStable() external {
-        require(_deposits[msg.sender] > 0, "No deposit made");
-        _updatePendingReward(msg.sender);
-        uint amount = _deposits[msg.sender];
-        _deposits[msg.sender] = 0;
-        emit Withdraw(msg.sender, amount);
-        tStable.safeTransfer(msg.sender, amount);
+        _withdraw(_deposits[msg.sender]);
     }
 
     /**
      * @notice converts the given amount of stable token into tStable token and transfers to lender
      * @dev checks the required condition and converts stable token to tStable and transfers to lender
      * @param amount, total amount of stable token to be converted to tStable token
-     *
-     * Requirements:
-     *
-     * - `deposit` should be greater than tStable amount requested
-     *
-     * Emits {Withdraw} event
      */
     function withdrawTStable(uint amount) external {
-        require(_deposits[msg.sender] >= amount, "Invalid amount requested");
-        _updatePendingReward(msg.sender);
-        _deposits[msg.sender] -= amount;
-        emit Withdraw(msg.sender, amount);
-        tStable.safeTransfer(msg.sender, amount);
+        _withdraw(amount);
     }
 
     /**
@@ -112,11 +91,13 @@ contract LenderPool is ILenderPool, Ownable {
      *
      * Emits {NewRewardAPY} event
      */
-    function setAPY(uint _rewardAPY) external onlyOwner {
+    function setAPY(uint16 _rewardAPY) external onlyOwner {
         if (apyList.length != 0) {
-            apyList[apyList.length - 1].endTime = block.timestamp;
+            apyList[apyList.length - 1].endTime = uint40(block.timestamp);
         }
-        apyList.push(ApyInfo(_rewardAPY, block.timestamp, type(uint).max));
+        apyList.push(
+            ApyInfo(_rewardAPY, uint40(block.timestamp), type(uint40).max)
+        );
         emit NewRewardAPY(_rewardAPY);
     }
 
@@ -124,7 +105,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @notice returns value of rewardAPY
      * @return returns value of rewardAPY
      */
-    function getLatestAPY() external view returns (uint) {
+    function getLatestAPY() external view returns (uint16) {
         return apyList[apyList.length - 1].apyValue;
     }
 
@@ -148,6 +129,28 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
+     * @notice converts the deposited stable token of quantity `amount` into tStable token and transfers to the lender
+     * @param amount, to be transferred to the msg.sender
+     *
+     * Requirements:
+     *
+     * - deposited amount must be greater than amount requested
+     * - `amount` should be greater than zero
+     *
+     * Emits {Withdraw} event
+     */
+    function _withdraw(uint amount) private {
+        require(amount > 0, "Cannot withdraw 0 amount");
+        require(_deposits[msg.sender] >= amount, "Invalid amount requested");
+
+        _updatePendingReward(msg.sender);
+
+        _deposits[msg.sender] -= amount;
+        emit Withdraw(msg.sender, amount);
+        tStable.safeTransfer(msg.sender, amount);
+    }
+
+    /**
      * @notice updates the _pendingReward and _startTime mapping of the lender
      * @dev stores all the reward received till now in _pendingRewards and set _startTime to current block timestamp
      * @param lender, address of the lender
@@ -162,7 +165,7 @@ contract LenderPool is ILenderPool, Ownable {
             uint totalReward = _calculateReward(lender);
             _pendingReward[lender] += totalReward;
         }
-        _startTime[lender] = block.timestamp;
+        _startTime[lender] = uint40(block.timestamp);
     }
 
     /**
@@ -173,37 +176,38 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function _calculateReward(address lender) private view returns (uint) {
         uint reward = 0;
+        uint oneYear = (10000 * 365 days);
         for (uint i = 0; i < apyList.length; i++) {
             if (
                 _startTime[lender] <= apyList[i].startTime &&
-                block.timestamp >= apyList[i].startTime &&
-                block.timestamp <= apyList[i].endTime
+                uint40(block.timestamp) >= apyList[i].startTime &&
+                uint40(block.timestamp) <= apyList[i].endTime
             ) {
-                reward += (((block.timestamp - apyList[i].startTime) *
+                reward += (((uint40(block.timestamp) - apyList[i].startTime) *
                     apyList[i].apyValue *
-                    _deposits[lender]) / (100 * 365 days));
+                    _deposits[lender]) / oneYear);
             } else if (
                 _startTime[lender] <= apyList[i].startTime &&
-                block.timestamp >= apyList[i].endTime
+                uint40(block.timestamp) >= apyList[i].endTime
             ) {
                 reward += (((apyList[i].endTime - apyList[i].startTime) *
                     apyList[i].apyValue *
-                    _deposits[lender]) / (100 * 365 days));
+                    _deposits[lender]) / oneYear);
             } else if (
                 _startTime[lender] >= apyList[i].startTime &&
                 _startTime[lender] <= apyList[i].endTime &&
-                block.timestamp >= apyList[i].endTime
+                uint40(block.timestamp) >= apyList[i].endTime
             ) {
                 reward += (((apyList[i].endTime - _startTime[lender]) *
                     apyList[i].apyValue *
-                    _deposits[lender]) / (100 * 365 days));
+                    _deposits[lender]) / oneYear);
             } else if (
                 _startTime[lender] >= apyList[i].startTime &&
-                block.timestamp <= apyList[i].endTime
+                uint40(block.timestamp) <= apyList[i].endTime
             ) {
-                reward += (((block.timestamp - _startTime[lender]) *
+                reward += (((uint40(block.timestamp) - _startTime[lender]) *
                     apyList[i].apyValue *
-                    _deposits[lender]) / (100 * 365 days));
+                    _deposits[lender]) / oneYear);
             }
         }
         return reward;

@@ -3,9 +3,9 @@ pragma solidity ^0.8.12;
 
 interface ILenderPool {
     struct ApyInfo {
-        uint apyValue;
-        uint startTime;
-        uint endTime;
+        uint16 apyValue;
+        uint40 startTime;
+        uint40 endTime;
     }
 
     /**
@@ -26,7 +26,7 @@ interface ILenderPool {
 
     /**
      * @notice Emits when new rewardAPY is set
-     * @dev Emmited when new rewardAPY is set by the owner
+     * @dev Emitted when new rewardAPY is set by the owner
      * @param rewardAPY, new value of rewardAPY
      */
     event NewRewardAPY(uint rewardAPY);
@@ -48,12 +48,6 @@ interface ILenderPool {
     /**
      * @notice converts all the deposited stable token into tStable token and transfers to the lender
      * @dev calculates the tStable token lender can claim and transfers it to the lender
-     *
-     * Requirements:
-     *
-     * - `deposit` should be greater than zero
-     *
-     * Emits {Withdraw} event
      */
     function withdrawAllTStable() external;
 
@@ -61,12 +55,6 @@ interface ILenderPool {
      * @notice converts the given amount of stable token into tStable token and transfers to lender
      * @dev checks the required condition and converts stable token to tStable and transfers to lender
      * @param amount, total amount of stable token to be converted to tStable token
-     *
-     * Requirements:
-     *
-     * - `deposit` should be greater than tStable amount requested
-     *
-     * Emits {Withdraw} event
      */
     function withdrawTStable(uint amount) external;
 
@@ -87,7 +75,7 @@ interface ILenderPool {
      * @dev set the value of rewardAPY to _rewardAPY, only owner can call
      * @param _rewardAPY, new value of new rewardAPY
      */
-    function setAPY(uint _rewardAPY) external;
+    function setAPY(uint16 _rewardAPY) external;
 
     /**
      * @notice returns amount of stable token deposited by the lender

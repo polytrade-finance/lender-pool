@@ -147,12 +147,12 @@ describe("LenderPool reward testing for fixed APY", function () {
   });
 
   it("should set APY to 10%", async function () {
-    await lenderPool.setAPY(10);
-    expect(await lenderPool.getLatestAPY()).to.be.equal(10);
+    await lenderPool.setAPY(1000);
+    expect(await lenderPool.getLatestAPY()).to.be.equal(1000);
   });
 
   it("should not be able to increase APY", async function () {
-    expect(lenderPool.connect(accounts[1]).setAPY(20)).to.be.revertedWith(
+    expect(lenderPool.connect(accounts[1]).setAPY(2000)).to.be.revertedWith(
       "Ownable: caller is not the owner"
     );
   });
@@ -228,8 +228,8 @@ describe("Lender pool reward testing for changing APY", function () {
   });
 
   it("should set APY to 10%", async function () {
-    await lenderPool.setAPY(10);
-    expect(await lenderPool.getLatestAPY()).to.be.equal(10);
+    await lenderPool.setAPY(1000);
+    expect(await lenderPool.getLatestAPY()).to.be.equal(1000);
   });
 
   it("should deposit 100 stable tokens successfully from account 1 at t = 0 year", async function () {
@@ -244,8 +244,8 @@ describe("Lender pool reward testing for changing APY", function () {
 
   it("should set APY to 20% at t = 1 year", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
-    await lenderPool.setAPY(20);
-    expect(await lenderPool.getLatestAPY()).to.be.equal(20);
+    await lenderPool.setAPY(2000);
+    expect(await lenderPool.getLatestAPY()).to.be.equal(2000);
   });
 
   it("should check reward at t = 2 year is 30 tStable token", async function () {
@@ -258,14 +258,14 @@ describe("Lender pool reward testing for changing APY", function () {
 
   it("should set APY to 10% at t = 3 year", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 3);
-    await lenderPool.setAPY(10);
-    expect(await lenderPool.getLatestAPY()).to.be.equal(10);
+    await lenderPool.setAPY(1000);
+    expect(await lenderPool.getLatestAPY()).to.be.equal(1000);
   });
 
   it("should set APY to 20% at t = 4 year", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 4);
-    await lenderPool.setAPY(20);
-    expect(await lenderPool.getLatestAPY()).to.be.equal(20);
+    await lenderPool.setAPY(2000);
+    expect(await lenderPool.getLatestAPY()).to.be.equal(2000);
   });
 
   it("should check reward at t = 5 year is 50 tStable token", async function () {
