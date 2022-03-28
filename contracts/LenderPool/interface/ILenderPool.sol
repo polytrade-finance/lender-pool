@@ -20,7 +20,7 @@ interface ILenderPool {
 
     /**
      * @notice Emits when new rewardAPY is set
-     * @dev Emmited when new rewardAPY is set by the owner
+     * @dev Emitted when new rewardAPY is set by the owner
      * @param rewardAPY, new value of rewardAPY
      */
     event NewRewardAPY(uint16 rewardAPY);
