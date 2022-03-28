@@ -138,6 +138,17 @@ contract LenderPool is ILenderPool, Ownable {
             _pendingReward[lender];
     }
 
+    /**
+     * @notice converts the deposited stable token of quantity `amount` into tStable token and transfers to the lender
+     * @param amount, to be transferred to the msg.sender
+     *
+     * Requirements:
+     *
+     * - deposited amount must be greater than amount requested
+     * - `amount` should be greater than zero
+     *
+     * Emits {Withdraw} event
+     */
     function _withdraw(uint amount) private {
         require(amount > 0, "Cannot withdraw 0 amount");
         require(_deposits[msg.sender] >= amount, "Invalid amount requested");
