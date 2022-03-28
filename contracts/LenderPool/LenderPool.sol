@@ -52,12 +52,6 @@ contract LenderPool is ILenderPool, Ownable {
     /**
      * @notice converts all the deposited stable token into tStable token and transfers to the lender
      * @dev calculates the tStable token lender can claim and transfers it to the lender
-     *
-     * Requirements:
-     *
-     * - `deposit` should be greater than zero
-     *
-     * Emits {Withdraw} event
      */
     function withdrawAllTStable() external {
         _withdraw(_deposits[msg.sender]);
@@ -67,12 +61,6 @@ contract LenderPool is ILenderPool, Ownable {
      * @notice converts the given amount of stable token into tStable token and transfers to lender
      * @dev checks the required condition and converts stable token to tStable and transfers to lender
      * @param amount, total amount of stable token to be converted to tStable token
-     *
-     * Requirements:
-     *
-     * - `deposit` should be greater than tStable amount requested
-     *
-     * Emits {Withdraw} event
      */
     function withdrawTStable(uint amount) external {
         _withdraw(amount);
