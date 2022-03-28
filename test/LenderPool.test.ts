@@ -155,8 +155,8 @@ describe("LenderPool rewards testing", function () {
   });
 
   it("should set APY to 10%", async function () {
-    await lenderPool.setAPY(10);
-    expect(await lenderPool.getAPY()).to.be.equal(10);
+    await lenderPool.setAPY(1000);
+    expect(await lenderPool.getAPY()).to.be.equal(1000);
   });
 
   it("should not be able to increase APY", async function () {
@@ -177,7 +177,7 @@ describe("LenderPool rewards testing", function () {
   it("should check reward after 1 year is 10 tStable token", async function () {
     await increaseTime(ONE_DAY * 365);
     const balanceBefore = await tStable.balanceOf(addresses[1]);
-    await lenderPool.connect(accounts[1]).withdrawReward();
+    await lenderPool.connect(accounts[1]).claimRewards();
     const balanceAfter = await tStable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore) === n6("10"));
   });
@@ -194,7 +194,7 @@ describe("LenderPool rewards testing", function () {
   it("should check reward after 1 year is 20 tStable token", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[1]);
     await increaseTime(ONE_DAY * 365);
-    await lenderPool.connect(accounts[1]).withdrawReward();
+    await lenderPool.connect(accounts[1]).claimRewards();
     const balanceAfter = await tStable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("20"));
   });
@@ -203,13 +203,13 @@ describe("LenderPool rewards testing", function () {
     await lenderPool.connect(accounts[1]).withdrawTStable(n6("100"));
     await increaseTime(ONE_DAY * 365);
     const balanceBefore = await tStable.balanceOf(addresses[1]);
-    await lenderPool.connect(accounts[1]).withdrawReward();
+    await lenderPool.connect(accounts[1]).claimRewards();
     const balanceAfter = await tStable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("10"));
   });
 
   it("should check for no reward", async function () {
-    expect(lenderPool.connect(accounts[1]).withdrawReward()).to.be.revertedWith(
+    expect(lenderPool.connect(accounts[1]).claimRewards()).to.be.revertedWith(
       "No pending reward"
     );
   });
@@ -222,8 +222,8 @@ describe("LenderPool rewards testing", function () {
   });
 
   it("should set APY to 40%", async function () {
-    await lenderPool.connect(accounts[0]).setAPY(40);
-    expect(await lenderPool.getAPY()).to.be.equal(40);
+    await lenderPool.connect(accounts[0]).setAPY(4000);
+    expect(await lenderPool.getAPY()).to.be.equal(4000);
   });
 
   it("should deposit 3650 stable token from account 2", async function () {
@@ -239,7 +239,7 @@ describe("LenderPool rewards testing", function () {
   it("should withdraw reward after 1 month", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[2]);
     await setNextBlockTimestamp(currentTime + ONE_DAY * 30);
-    await lenderPool.connect(accounts[2]).withdrawReward();
+    await lenderPool.connect(accounts[2]).claimRewards();
     const balanceAfter = await tStable.balanceOf(addresses[2]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("120"));
   });
@@ -247,7 +247,7 @@ describe("LenderPool rewards testing", function () {
   it("should withdraw reward after 1 month", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[2]);
     await setNextBlockTimestamp(currentTime + ONE_DAY * 60);
-    await lenderPool.connect(accounts[2]).withdrawReward();
+    await lenderPool.connect(accounts[2]).claimRewards();
     const balanceAfter = await tStable.balanceOf(addresses[2]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("120"));
   });
@@ -263,8 +263,8 @@ describe("LenderPool rewards testing", function () {
 
   it("should withdraw all the rewards after one day", async function () {
     await increaseTime(ONE_DAY);
-    expect(await lenderPool.connect(accounts[3]).getReward()).to.be.equal(
-      n6("10.8")
-    );
+    expect(
+      await lenderPool.connect(accounts[3]).rewardOf(addresses[3])
+    ).to.be.equal(n6("10.8"));
   });
 });

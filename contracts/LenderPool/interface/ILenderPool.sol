@@ -20,10 +20,10 @@ interface ILenderPool {
 
     /**
      * @notice Emits when new rewardAPY is set
-     * @dev Emmited when new rewardAPY is set by the owner
+     * @dev Emitted when new rewardAPY is set by the owner
      * @param rewardAPY, new value of rewardAPY
      */
-    event NewRewardAPY(uint rewardAPY);
+    event NewRewardAPY(uint16 rewardAPY);
 
     /**
      * @notice Deposit stable token to smart contract
@@ -65,7 +65,7 @@ interface ILenderPool {
     function withdrawTStable(uint amount) external;
 
     /**
-     * @notice tranfer lender all the reward
+     * @notice transfer lender all the reward
      * @dev update the pendingReward and transfers reward in tStable token to lender
      *
      * Requirements:
@@ -74,20 +74,20 @@ interface ILenderPool {
      *
      * Emits {Withdraw} event
      */
-    function withdrawReward() external;
+    function claimRewards() external;
 
     /**
      * @notice set the value of rewardAPY
      * @dev set the value of rewardAPY to _rewardAPY, only owner can call
      * @param _rewardAPY, new value of new rewardAPY
      */
-    function setAPY(uint _rewardAPY) external;
+    function setAPY(uint16 _rewardAPY) external;
 
     /**
      * @notice returns value of rewardAPY
      * @return returns value of rewardAPY
      */
-    function getAPY() external view returns (uint);
+    function getAPY() external view returns (uint16);
 
     /**
      * @notice returns amount of stable token deposited by the lender
@@ -101,5 +101,5 @@ interface ILenderPool {
      * @dev returns the total pending reward of msg.sender
      * @return returns the total pending reward
      */
-    function getReward() external view returns (uint);
+    function rewardOf(address lender) external view returns (uint);
 }

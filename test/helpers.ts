@@ -7,6 +7,10 @@ export function n6(amount: string): BigNumber {
   return utils.parseUnits(amount, "6");
 }
 
+export function f6(amount: BigNumber): string {
+  return utils.formatUnits(amount, "6");
+}
+
 export async function increaseTime(duration: number) {
   await ethers.provider.send("evm_increaseTime", [duration]);
   await ethers.provider.send("evm_mine", []);
