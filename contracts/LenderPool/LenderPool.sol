@@ -193,10 +193,12 @@ contract LenderPool is ILenderPool, Ownable {
                 if (i == 0) {
                     continue;
                 }
-                console.log(_lender[lender].deposit,
+                console.log(
+                    _lender[lender].deposit,
                     _max(_lender[lender].startPeriod, round[i].startTime),
                     _min(uint40(block.timestamp), round[i].endTime),
-                    round[i].apy);
+                    round[i].apy
+                );
                 _lender[lender].pendingRewards += _calculateReward(
                     _lender[lender].deposit,
                     _max(_lender[lender].startPeriod, round[i].startTime),

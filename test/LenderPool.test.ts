@@ -236,7 +236,7 @@ describe("LenderPool rewards testing", function () {
     );
     currentTime = await now();
     await lenderPool.connect(accounts[2]).deposit(n6("3650"));
-    
+
     expect(await lenderPool.getDeposit(addresses[2])).to.be.equal(n6("3650"));
   });
   it("should withdraw all reward at t = 1 month", async function () {
