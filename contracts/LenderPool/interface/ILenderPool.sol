@@ -2,6 +2,19 @@
 pragma solidity ^0.8.12;
 
 interface ILenderPool {
+    struct Lender {
+        uint16 round;
+        uint40 startPeriod;
+        uint pendingRewards;
+        uint deposit;
+    }
+
+    struct RoundInfo {
+        uint16 apy;
+        uint40 startTime;
+        uint40 endTime;
+    }
+
     /**
      * @notice Emits when new fund is added to the Lender Pool
      * @dev Emitted when funds are deposited by the `lender`.
@@ -96,10 +109,5 @@ interface ILenderPool {
      */
     function getDeposit(address lender) external view returns (uint);
 
-    /**
-     * @notice returns the total pending reward
-     * @dev returns the total pending reward of msg.sender
-     * @return returns the total pending reward
-     */
-    function rewardOf(address lender) external view returns (uint);
+
 }

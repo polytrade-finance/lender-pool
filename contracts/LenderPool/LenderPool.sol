@@ -12,18 +12,14 @@ import "./interface/ILenderPool.sol";
 contract LenderPool is ILenderPool, Ownable {
     using SafeERC20 for IERC20;
 
-    mapping(address => uint) private _deposits;
-    mapping(address => uint40) private _startTime;
-    mapping(address => uint) private _pendingReward;
-    //@todo put all the mapping into one struct + startingIndex
+    mapping(address => Lender) private _lender;
+    mapping(uint16 => RoundInfo) public round;
 
     IERC20 public immutable stable;
     IERC20 public immutable tStable;
 
-    uint16 public rewardAPY;
-    // @todo create a struct with start, ending and value 
-    // @todo create a state variable for current index 
-    // @todo create three private functions 1. if userIndex=><=currentIndex 2.
+    uint16 public currentRound = 0;
+
     constructor(address _stableAddress, address _tStableAddress) {
         stable = IERC20(_stableAddress);
         tStable = IERC20(_tStableAddress);
@@ -45,9 +41,8 @@ contract LenderPool is ILenderPool, Ownable {
         require(amount > 0, "Lending amount is 0");
         uint allowance = stable.allowance(msg.sender, address(this));
         require(allowance >= amount, "Not enough allowance");
-
         _updatePendingReward(msg.sender);
-        _deposits[msg.sender] += amount;
+        _lender[msg.sender].deposit += amount;
         emit Deposit(msg.sender, amount);
         stable.safeTransferFrom(msg.sender, address(this), amount);
     }
@@ -57,7 +52,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev calculates the tStable token lender can claim and transfers it to the lender
      */
     function withdrawAllTStable() external {
-        _withdraw(_deposits[msg.sender]);
+        _withdraw(_lender[msg.sender].deposit);
     }
 
     /**
@@ -81,12 +76,9 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function claimRewards() external {
         _updatePendingReward(msg.sender);
-        require(_pendingReward[msg.sender] > 0, "No pending reward");
+        emit Withdraw(msg.sender, _lender[msg.sender].pendingRewards);
 
-        emit Withdraw(msg.sender, _pendingReward[msg.sender]);
-
-        tStable.safeTransfer(msg.sender, _pendingReward[msg.sender]);
-        _pendingReward[msg.sender] = 0;
+        tStable.safeTransfer(msg.sender, _lender[msg.sender].pendingRewards);
     }
 
     /**
@@ -97,8 +89,16 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {NewRewardAPY} event
      */
     function setAPY(uint16 _rewardAPY) external onlyOwner {
-        rewardAPY = _rewardAPY;
-        emit NewRewardAPY(rewardAPY);
+        if (currentRound > 0) {
+            round[currentRound].endTime = uint40(block.timestamp);
+        }
+        currentRound += 1;
+        round[currentRound] = RoundInfo(
+            _rewardAPY,
+            uint40(block.timestamp),
+            type(uint40).max
+        );
+        emit NewRewardAPY(round[currentRound].apy);
     }
 
     /**
@@ -106,7 +106,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @return returns value of rewardAPY
      */
     function getAPY() external view returns (uint16) {
-        return rewardAPY;
+        return round[currentRound].apy;
     }
 
     /**
@@ -115,7 +115,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @return returns amount of stable token deposited by the lender
      */
     function getDeposit(address lender) external view returns (uint) {
-        return _deposits[lender];
+        return _lender[lender].deposit;
     }
 
     /**
@@ -123,11 +123,11 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev returns the total pending reward of msg.sender
      * @return returns the total pending reward
      */
-    function rewardOf(address lender) external view returns (uint) {
+    /*function rewardOf(address lender) external view returns (uint) {
         return
             _calculateReward(_startTime[lender], _deposits[lender]) +
             _pendingReward[lender];
-    }
+    }*/
 
     /**
      * @notice converts the deposited stable token of quantity `amount` into tStable token and transfers to the lender
@@ -142,11 +142,14 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function _withdraw(uint amount) private {
         require(amount > 0, "Cannot withdraw 0 amount");
-        require(_deposits[msg.sender] >= amount, "Invalid amount requested");
+        require(
+            _lender[msg.sender].deposit >= amount,
+            "Invalid amount requested"
+        );
 
         _updatePendingReward(msg.sender);
 
-        _deposits[msg.sender] -= amount;
+        _lender[msg.sender].deposit -= amount;
         emit Withdraw(msg.sender, amount);
         tStable.safeTransfer(msg.sender, amount);
     }
@@ -161,14 +164,27 @@ contract LenderPool is ILenderPool, Ownable {
      *
      */
     function _updatePendingReward(address lender) private {
-        uint startTime = _startTime[lender];
-        if (startTime > 0) {
-            _pendingReward[lender] += _calculateReward(
-                startTime,
-                _deposits[lender]
+        if (_lender[lender].round == currentRound) {
+            _lender[lender].pendingRewards += _calculateReward(
+                _lender[lender].deposit,
+                    _max(_lender[lender].startPeriod, round[currentRound].startTime),
+                    _min(uint40(block.timestamp),round[currentRound].endTime),
+                round[currentRound].apy
             );
+            _lender[lender].startPeriod = uint40(block.timestamp);
         }
-        _startTime[lender] = uint40(block.timestamp);
+
+        if (_lender[lender].round < currentRound) {
+            for (uint16 i = _lender[lender].round; i <= currentRound; i++) {
+                _lender[lender].pendingRewards += _calculateReward(
+                    _lender[lender].deposit,
+                    _max(_lender[lender].startPeriod, round[i].startTime),
+                    _min(uint40(block.timestamp),round[i].endTime),
+                    round[i].apy
+                );
+            }
+            _lender[lender].round = currentRound;
+        }
     }
 
     /**
@@ -176,13 +192,24 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev calculates the total reward using simple interest formula
      * @return returns total reward
      */
-    function _calculateReward(uint startTime, uint lenderDeposit)
-        private
-        view
-        returns (uint)
-    {
-        uint interval = block.timestamp - startTime;
+    function _calculateReward(
+        uint amount,
+        uint40 start,
+        uint40 end,
+        uint16 apy
+    ) private pure returns (uint) {
+        if (start >= end) {
+            return 0;
+        }
         uint oneYear = (10000 * 365 days);
-        return ((interval * rewardAPY * lenderDeposit) / oneYear);
+        return (((start - end) * apy * amount) / oneYear);
+    }
+
+    function _max(uint40 a, uint40 b) private pure returns (uint40){
+        return a>b?a:b;
+    }
+
+    function _min(uint40 a, uint40 b) private pure returns (uint40){
+        return a>b?b:a;
     }
 }
