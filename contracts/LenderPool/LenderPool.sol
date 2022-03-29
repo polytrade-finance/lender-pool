@@ -4,7 +4,6 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interface/ILenderPool.sol";
-import "hardhat/console.sol";
 
 /**
  * @author Polytrade
@@ -151,11 +150,9 @@ contract LenderPool is ILenderPool, Ownable {
             _lender[msg.sender].deposit >= amount,
             "Invalid amount requested"
         );
-        //console.log("hello1");
         if (currentRound > 0) {
             _updatePendingReward(msg.sender);
         }
-        //console.log("hello 2");
         _lender[msg.sender].deposit -= amount;
         emit Withdraw(msg.sender, amount);
         tStable.safeTransfer(msg.sender, amount);
@@ -172,11 +169,7 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function _updatePendingReward(address lender) private {
         if (_lender[lender].round == currentRound) {
-            console.log("hello1");
-            /*console.log( _lender[lender].deposit,
-                    _max(_lender[lender].startPeriod, round[currentRound].startTime),
-                    _min(uint40(block.timestamp),round[currentRound].endTime),
-                round[currentRound].apy);*/
+
             _lender[lender].pendingRewards += _calculateReward(
                 _lender[lender].deposit,
                 _max(
@@ -193,12 +186,7 @@ contract LenderPool is ILenderPool, Ownable {
                 if (i == 0) {
                     continue;
                 }
-                console.log(
-                    _lender[lender].deposit,
-                    _max(_lender[lender].startPeriod, round[i].startTime),
-                    _min(uint40(block.timestamp), round[i].endTime),
-                    round[i].apy
-                );
+
                 _lender[lender].pendingRewards += _calculateReward(
                     _lender[lender].deposit,
                     _max(_lender[lender].startPeriod, round[i].startTime),
@@ -222,12 +210,10 @@ contract LenderPool is ILenderPool, Ownable {
         uint40 end,
         uint16 apy
     ) private view returns (uint) {
-        //console.log((end-start)/(1 days), apy, amount);
         if (start >= end) {
             return 0;
         }
         uint oneYear = (10000 * 365 days);
-        console.log(((end - start) * apy * amount) / oneYear);
         return (((end - start) * apy * amount) / oneYear);
     }
 
