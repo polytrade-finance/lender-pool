@@ -169,7 +169,6 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function _updatePendingReward(address lender) private {
         if (_lender[lender].round == currentRound) {
-
             _lender[lender].pendingRewards += _calculateReward(
                 _lender[lender].deposit,
                 _max(
@@ -209,7 +208,7 @@ contract LenderPool is ILenderPool, Ownable {
         uint40 start,
         uint40 end,
         uint16 apy
-    ) private view returns (uint) {
+    ) private pure returns (uint) {
         if (start >= end) {
             return 0;
         }
