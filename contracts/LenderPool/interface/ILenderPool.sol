@@ -108,6 +108,4 @@ interface ILenderPool {
      * @return returns amount of stable token deposited by the lender
      */
     function getDeposit(address lender) external view returns (uint);
-
-
 }
