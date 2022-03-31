@@ -184,8 +184,8 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice updates the pending rewards of the lender
-     * @dev stores all the reward received till now in _lender.pendingRewards and set _lender.startTime to current block.timestamp
+     * @notice updates round, pendingRewards and startTime of the lender
+     * @dev compares the lender round with currentRound and updates _lender accordingly
      * @param lender, address of the lender
      */
     function _updatePendingReward(address lender) private {
