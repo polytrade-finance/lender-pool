@@ -223,37 +223,6 @@ describe("LenderPool rewards testing", function () {
     const balanceAfter = await tStable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("100"));
   });
-
-  it("should set APY to 40%", async function () {
-    await lenderPool.connect(accounts[0]).setAPY(4000);
-    expect(await lenderPool.getAPY()).to.be.equal(4000);
-  });
-
-  it("should deposit 3650 stable token from account 2 at t = 0", async function () {
-    await stable.connect(accounts[2]).approve(lenderPool.address, n6("3650"));
-    expect(n6("3650")).to.be.equal(
-      await stable.allowance(addresses[2], lenderPool.address)
-    );
-    currentTime = await now();
-    await lenderPool.connect(accounts[2]).deposit(n6("3650"));
-
-    expect(await lenderPool.getDeposit(addresses[2])).to.be.equal(n6("3650"));
-  });
-  it("should withdraw all reward at t = 1 month", async function () {
-    const balanceBefore = await tStable.balanceOf(addresses[2]);
-    await setNextBlockTimestamp(currentTime + ONE_DAY * 30);
-    await lenderPool.connect(accounts[2]).claimRewards();
-    const balanceAfter = await tStable.balanceOf(addresses[2]);
-    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("120"));
-  });
-
-  it("should withdraw all reward at t = 2 month", async function () {
-    const balanceBefore = await tStable.balanceOf(addresses[2]);
-    await setNextBlockTimestamp(currentTime + ONE_DAY * 60);
-    await lenderPool.connect(accounts[2]).claimRewards();
-    const balanceAfter = await tStable.balanceOf(addresses[2]);
-    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("120"));
-  });
 });
 describe("Lender pool reward testing for changing APY", function () {
   let accounts: SignerWithAddress[];
@@ -335,6 +304,7 @@ describe("Lender pool reward testing for changing APY", function () {
   it("should check reward at t = 5 year is 50 tStable token", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[1]);
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 5);
+    console.log(await lenderPool.rewardOf(addresses[1]));
     await lenderPool.connect(accounts[1]).claimRewards();
     const balanceAfter = await tStable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("50"));
