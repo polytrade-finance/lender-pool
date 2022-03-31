@@ -125,19 +125,21 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function rewardOf(address lender) external view returns (uint) {
         if (_lender[lender].round == currentRound) {
-            return _lender[lender].pendingRewards + _calculateReward(
-                _lender[lender].deposit,
-                _max(
-                    _lender[lender].startPeriod,
-                    round[currentRound].startTime
-                ),
-                _min(uint40(block.timestamp), round[currentRound].endTime),
-                round[currentRound].apy
-            );
+            return
+                _lender[lender].pendingRewards +
+                _calculateReward(
+                    _lender[lender].deposit,
+                    _max(
+                        _lender[lender].startPeriod,
+                        round[currentRound].startTime
+                    ),
+                    _min(uint40(block.timestamp), round[currentRound].endTime),
+                    round[currentRound].apy
+                );
         }
 
         if (_lender[lender].round < currentRound) {
-            uint totalReward = 0; 
+            uint totalReward = 0;
             for (uint16 i = _lender[lender].round; i <= currentRound; i++) {
                 if (i == 0) {
                     continue;
@@ -150,7 +152,7 @@ contract LenderPool is ILenderPool, Ownable {
                     round[i].apy
                 );
             }
-            return totalReward+_lender[lender].pendingRewards;
+            return totalReward + _lender[lender].pendingRewards;
         }
 
         return 0;
