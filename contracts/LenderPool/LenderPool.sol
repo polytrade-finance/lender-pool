@@ -71,10 +71,6 @@ contract LenderPool is ILenderPool, Ownable {
      * @notice transfer lender all the reward
      * @dev update the pendingReward and transfers reward in tStable token to lender
      *
-     * Requirements:
-     *
-     * - `_pendingReward` should be greater than 0
-     *
      * Emits {Withdraw} event
      */
     function claimRewards() external {
@@ -86,9 +82,9 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice set the value of rewardAPY
-     * @dev set the value of rewardAPY to _rewardAPY, only owner can call
-     * @param _rewardAPY, new value of new rewardAPY
+     * @notice adds a new round
+     * @dev increment currentRound and adds a new round, only owner can call
+     * @param _rewardAPY, new value of new round.apy
      *
      * Emits {NewRewardAPY} event
      */
@@ -106,8 +102,8 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice returns value of rewardAPY
-     * @return returns value of rewardAPY
+     * @notice returns value of APY of current round
+     * @return returns value of APY of current round
      */
     function getAPY() external view returns (uint16) {
         return round[currentRound].apy;
@@ -127,11 +123,38 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev returns the total pending reward of msg.sender
      * @return returns the total pending reward
      */
-    /*function rewardOf(address lender) external view returns (uint) {
-        return
-            _calculateReward(_startTime[lender], _deposits[lender]) +
-            _pendingReward[lender];
-    }*/
+    function rewardOf(address lender) external view returns (uint) {
+        if (_lender[lender].round == currentRound) {
+            return _lender[lender].pendingRewards + _calculateReward(
+                _lender[lender].deposit,
+                _max(
+                    _lender[lender].startPeriod,
+                    round[currentRound].startTime
+                ),
+                _min(uint40(block.timestamp), round[currentRound].endTime),
+                round[currentRound].apy
+            );
+        }
+
+        if (_lender[lender].round < currentRound) {
+            uint totalReward = 0; 
+            for (uint16 i = _lender[lender].round; i <= currentRound; i++) {
+                if (i == 0) {
+                    continue;
+                }
+
+                totalReward += _calculateReward(
+                    _lender[lender].deposit,
+                    _max(_lender[lender].startPeriod, round[i].startTime),
+                    _min(uint40(block.timestamp), round[i].endTime),
+                    round[i].apy
+                );
+            }
+            return totalReward+_lender[lender].pendingRewards;
+        }
+
+        return 0;
+    }
 
     /**
      * @notice converts the deposited stable token of quantity `amount` into tStable token and transfers to the lender
@@ -159,13 +182,9 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice updates the _pendingReward and _startTime mapping
-     * @dev stores all the reward received till now in _pendingRewards and set _startTime to current block timestamp
-     *
-     * Requirements:
-     *
-     * - `_startTime` should not be 0
-     *
+     * @notice updates the pending rewards of the lender
+     * @dev stores all the reward received till now in _lender.pendingRewards and set _lender.startTime to current block.timestamp
+     * @param lender, address of the lender
      */
     function _updatePendingReward(address lender) private {
         if (_lender[lender].round == currentRound) {
@@ -201,6 +220,10 @@ contract LenderPool is ILenderPool, Ownable {
     /**
      * @notice calculates the total reward
      * @dev calculates the total reward using simple interest formula
+     * @param amount, principal amount
+     * @param start, start of the tenure for reward
+     * @param end, end of the tenure for reward
+     * @param apy, Annual percentage yield received during the tenure
      * @return returns total reward
      */
     function _calculateReward(
@@ -216,10 +239,24 @@ contract LenderPool is ILenderPool, Ownable {
         return (((end - start) * apy * amount) / oneYear);
     }
 
+    /**
+     * @notice returns maximum among two uint40 variables
+     * @dev compares two uint40 variables a and b and return maximum between them
+     * @param a, value of uint40 variable
+     * @param b, value of uint40 variable
+     * @return maximum between a and b
+     */
     function _max(uint40 a, uint40 b) private pure returns (uint40) {
         return a > b ? a : b;
     }
 
+    /**
+     * @notice returns minimum among two uint40 variables
+     * @dev compares two uint40 variables a and b and return minimum between them
+     * @param a, value of uint40 variable
+     * @param b, value of uint40 variable
+     * @return minimum between a and b
+     */
     function _min(uint40 a, uint40 b) private pure returns (uint40) {
         return a > b ? b : a;
     }
