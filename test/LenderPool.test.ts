@@ -147,11 +147,7 @@ describe("LenderPool rewards testing", function () {
 
   it("should transfer stable to others EOA's", async function () {
     await stable.connect(accounts[0]).transfer(addresses[1], n6("10000"));
-    await stable.connect(accounts[0]).transfer(addresses[2], n6("10000"));
-    await stable.connect(accounts[0]).transfer(addresses[3], n6("10000"));
     expect(await stable.balanceOf(addresses[1])).to.be.equal(n6("10000"));
-    expect(await stable.balanceOf(addresses[2])).to.be.equal(n6("10000"));
-    expect(await stable.balanceOf(addresses[3])).to.be.equal(n6("10000"));
   });
 
   it("should set APY to 10%", async function () {
