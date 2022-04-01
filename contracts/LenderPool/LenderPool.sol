@@ -129,7 +129,7 @@ contract LenderPool is ILenderPool, Ownable {
                 _lender[lender].pendingRewards + _calculateRewardCase1(lender);
         } else if (_lender[lender].round < currentRound) {
             return
-                _calculateRewardCase2(lender) + _lender[lender].pendingRewards;
+                _lender[lender].pendingRewards + _calculateRewardCase2(lender);
         } else {
             return 0;
         }
@@ -177,6 +177,11 @@ contract LenderPool is ILenderPool, Ownable {
         _lender[lender].startPeriod = uint40(block.timestamp);
     }
 
+    /**
+    * @notice return the total reward when lender round is equal to currentRound
+    * @param lender, address of the lender
+    * @return return total pending reward
+    */
     function _calculateRewardCase1(address lender) private view returns (uint) {
         uint reward = _calculateReward(
             _lender[lender].deposit,
@@ -187,6 +192,11 @@ contract LenderPool is ILenderPool, Ownable {
         return reward;
     }
 
+    /**
+    * @notice return the total reward when lender round is less than currentRound
+    * @param lender, address of the lender
+    * @return return total pending reward
+    */
     function _calculateRewardCase2(address lender) private view returns (uint) {
         uint reward = 0;
         for (uint16 i = _lender[lender].round; i <= currentRound; i++) {
