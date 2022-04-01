@@ -300,7 +300,6 @@ describe("Lender pool reward testing for changing APY", function () {
   it("should check reward at t = 5 year is 50 tStable token", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[1]);
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 5);
-    console.log(await lenderPool.rewardOf(addresses[1]));
     await lenderPool.connect(accounts[1]).claimRewards();
     const balanceAfter = await tStable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("50"));
@@ -310,5 +309,15 @@ describe("Lender pool reward testing for changing APY", function () {
     expect(lenderPool.connect(accounts[2]).claimRewards()).to.be.revertedWith(
       "No pending reward"
     );
+  });
+  it("should check rewardOf", async function () {
+    await stable.connect(accounts[2]).approve(lenderPool.address, n6("100"));
+    expect(n6("100")).to.be.equal(
+      await stable.allowance(addresses[2], lenderPool.address)
+    );
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 6);
+    await lenderPool.connect(accounts[2]).deposit(n6("100"));
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 7);
+    expect(await lenderPool.rewardOf(addresses[2])).to.be.equal(n6("20"));
   });
 });
