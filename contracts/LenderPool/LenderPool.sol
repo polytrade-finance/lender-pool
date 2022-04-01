@@ -126,36 +126,13 @@ contract LenderPool is ILenderPool, Ownable {
     function rewardOf(address lender) external view returns (uint) {
         if (_lender[lender].round == currentRound) {
             return
-                _lender[lender].pendingRewards +
-                _calculateReward(
-                    _lender[lender].deposit,
-                    _max(
-                        _lender[lender].startPeriod,
-                        round[currentRound].startTime
-                    ),
-                    _min(uint40(block.timestamp), round[currentRound].endTime),
-                    round[currentRound].apy
-                );
+                _lender[lender].pendingRewards + _calculateRewardCase1(lender);
+        } else if (_lender[lender].round < currentRound) {
+            return
+                _calculateRewardCase2(lender) + _lender[lender].pendingRewards;
+        } else {
+            return 0;
         }
-
-        if (_lender[lender].round < currentRound) {
-            uint totalReward = 0;
-            for (uint16 i = _lender[lender].round; i <= currentRound; i++) {
-                if (i == 0) {
-                    continue;
-                }
-
-                totalReward += _calculateReward(
-                    _lender[lender].deposit,
-                    _max(_lender[lender].startPeriod, round[i].startTime),
-                    _min(uint40(block.timestamp), round[i].endTime),
-                    round[i].apy
-                );
-            }
-            return totalReward + _lender[lender].pendingRewards;
-        }
-
-        return 0;
     }
 
     /**
@@ -190,33 +167,41 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function _updatePendingReward(address lender) private {
         if (_lender[lender].round == currentRound) {
-            _lender[lender].pendingRewards += _calculateReward(
-                _lender[lender].deposit,
-                _max(
-                    _lender[lender].startPeriod,
-                    round[currentRound].startTime
-                ),
-                _min(uint40(block.timestamp), round[currentRound].endTime),
-                round[currentRound].apy
-            );
+            _lender[lender].pendingRewards += _calculateRewardCase1(lender);
         }
 
         if (_lender[lender].round < currentRound) {
-            for (uint16 i = _lender[lender].round; i <= currentRound; i++) {
-                if (i == 0) {
-                    continue;
-                }
-
-                _lender[lender].pendingRewards += _calculateReward(
-                    _lender[lender].deposit,
-                    _max(_lender[lender].startPeriod, round[i].startTime),
-                    _min(uint40(block.timestamp), round[i].endTime),
-                    round[i].apy
-                );
-            }
+            _lender[lender].pendingRewards += _calculateRewardCase2(lender);
             _lender[lender].round = currentRound;
         }
         _lender[lender].startPeriod = uint40(block.timestamp);
+    }
+
+    function _calculateRewardCase1(address lender) private view returns (uint) {
+        uint reward = _calculateReward(
+            _lender[lender].deposit,
+            _max(_lender[lender].startPeriod, round[currentRound].startTime),
+            _min(uint40(block.timestamp), round[currentRound].endTime),
+            round[currentRound].apy
+        );
+        return reward;
+    }
+
+    function _calculateRewardCase2(address lender) private view returns (uint) {
+        uint reward = 0;
+        for (uint16 i = _lender[lender].round; i <= currentRound; i++) {
+            if (i == 0) {
+                continue;
+            }
+
+            reward += _calculateReward(
+                _lender[lender].deposit,
+                _max(_lender[lender].startPeriod, round[i].startTime),
+                _min(uint40(block.timestamp), round[i].endTime),
+                round[i].apy
+            );
+        }
+        return reward;
     }
 
     /**
