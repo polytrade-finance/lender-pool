@@ -178,10 +178,10 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-    * @notice return the total reward when lender round is equal to currentRound
-    * @param lender, address of the lender
-    * @return return total pending reward
-    */
+     * @notice return the total reward when lender round is equal to currentRound
+     * @param lender, address of the lender
+     * @return returns total pending reward
+     */
     function _calculateRewardCase1(address lender) private view returns (uint) {
         uint reward = _calculateReward(
             _lender[lender].deposit,
@@ -193,10 +193,10 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-    * @notice return the total reward when lender round is less than currentRound
-    * @param lender, address of the lender
-    * @return return total pending reward
-    */
+     * @notice return the total reward when lender round is less than currentRound
+     * @param lender, address of the lender
+     * @return returns total pending reward
+     */
     function _calculateRewardCase2(address lender) private view returns (uint) {
         uint reward = 0;
         for (uint16 i = _lender[lender].round; i <= currentRound; i++) {
@@ -215,13 +215,13 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice calculates the total reward
-     * @dev calculates the total reward using simple interest formula
+     * @notice calculates the reward
+     * @dev calculates the reward using simple interest formula
      * @param amount, principal amount
      * @param start, start of the tenure for reward
      * @param end, end of the tenure for reward
      * @param apy, Annual percentage yield received during the tenure
-     * @return returns total reward
+     * @return returns reward
      */
     function _calculateReward(
         uint amount,
@@ -241,7 +241,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev compares two uint40 variables a and b and return maximum between them
      * @param a, value of uint40 variable
      * @param b, value of uint40 variable
-     * @return maximum between a and b
+     * @return returns maximum between a and b
      */
     function _max(uint40 a, uint40 b) private pure returns (uint40) {
         return a > b ? a : b;
@@ -252,7 +252,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev compares two uint40 variables a and b and return minimum between them
      * @param a, value of uint40 variable
      * @param b, value of uint40 variable
-     * @return minimum between a and b
+     * @return returns minimum between a and b
      */
     function _min(uint40 a, uint40 b) private pure returns (uint40) {
         return a > b ? b : a;
