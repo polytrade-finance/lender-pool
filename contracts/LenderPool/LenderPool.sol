@@ -124,14 +124,12 @@ contract LenderPool is ILenderPool, Ownable {
      * @return returns the total pending reward
      */
     function rewardOf(address lender) external view returns (uint) {
-        if (_lender[lender].round == currentRound) {
-            return
-                _lender[lender].pendingRewards + _calculateRewardCase1(lender);
-        } else if (_lender[lender].round < currentRound) {
+        if (_lender[lender].round < currentRound) {
             return
                 _lender[lender].pendingRewards + _calculateRewardCase2(lender);
         } else {
-            return 0;
+            return
+                _lender[lender].pendingRewards + _calculateRewardCase1(lender);
         }
     }
 
@@ -229,9 +227,6 @@ contract LenderPool is ILenderPool, Ownable {
         uint40 end,
         uint16 apy
     ) private pure returns (uint) {
-        if (start >= end) {
-            return 0;
-        }
         uint oneYear = (10000 * 365 days);
         return (((end - start) * apy * amount) / oneYear);
     }
