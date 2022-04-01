@@ -315,9 +315,12 @@ describe("Lender pool reward testing for changing APY", function () {
     expect(n6("100")).to.be.equal(
       await stable.allowance(addresses[2], lenderPool.address)
     );
-    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 6);
     await lenderPool.connect(accounts[2]).deposit(n6("100"));
-    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 7);
+    await increaseTime(ONE_DAY * 365);
     expect(await lenderPool.rewardOf(addresses[2])).to.be.equal(n6("20"));
+    await increaseTime(ONE_DAY * 365);
+    await lenderPool.setAPY(1000);
+    await increaseTime(ONE_DAY * 365);
+    expect(await lenderPool.rewardOf(addresses[2])).to.be.equal(n6("50"));
   });
 });
