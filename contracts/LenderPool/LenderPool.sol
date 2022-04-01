@@ -126,10 +126,11 @@ contract LenderPool is ILenderPool, Ownable {
     function rewardOf(address lender) external view returns (uint) {
         if (_lender[lender].round < currentRound) {
             return
-                _lender[lender].pendingRewards + _calculateRewardCase2(lender);
+                _lender[lender].pendingRewards +
+                _calculateFromPreviousRounds(lender);
         } else {
             return
-                _lender[lender].pendingRewards + _calculateRewardCase1(lender);
+                _lender[lender].pendingRewards + _calculateCurrentRound(lender);
         }
     }
 
@@ -165,11 +166,13 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function _updatePendingReward(address lender) private {
         if (_lender[lender].round == currentRound) {
-            _lender[lender].pendingRewards += _calculateRewardCase1(lender);
+            _lender[lender].pendingRewards += _calculateCurrentRound(lender);
         }
 
         if (_lender[lender].round < currentRound) {
-            _lender[lender].pendingRewards += _calculateRewardCase2(lender);
+            _lender[lender].pendingRewards += _calculateFromPreviousRounds(
+                lender
+            );
             _lender[lender].round = currentRound;
         }
         _lender[lender].startPeriod = uint40(block.timestamp);
@@ -180,7 +183,11 @@ contract LenderPool is ILenderPool, Ownable {
      * @param lender, address of the lender
      * @return returns total pending reward
      */
-    function _calculateRewardCase1(address lender) private view returns (uint) {
+    function _calculateCurrentRound(address lender)
+        private
+        view
+        returns (uint)
+    {
         uint reward = _calculateReward(
             _lender[lender].deposit,
             _max(_lender[lender].startPeriod, round[currentRound].startTime),
@@ -195,7 +202,11 @@ contract LenderPool is ILenderPool, Ownable {
      * @param lender, address of the lender
      * @return returns total pending reward
      */
-    function _calculateRewardCase2(address lender) private view returns (uint) {
+    function _calculateFromPreviousRounds(address lender)
+        private
+        view
+        returns (uint)
+    {
         uint reward = 0;
         for (uint16 i = _lender[lender].round; i <= currentRound; i++) {
             if (i == 0) {
