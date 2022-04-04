@@ -44,6 +44,9 @@ contract LenderPool is ILenderPool, Ownable {
         if (_lender[msg.sender].startPeriod > 0) {
             _updatePendingReward(msg.sender);
         }
+        else{
+            _lender[msg.sender].startPeriod = uint40(block.timestamp);
+        }
         _lender[msg.sender].deposit += amount;
         _lender[msg.sender].round = currentRound;
         emit Deposit(msg.sender, amount);
