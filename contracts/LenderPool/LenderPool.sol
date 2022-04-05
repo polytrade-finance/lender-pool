@@ -43,8 +43,7 @@ contract LenderPool is ILenderPool, Ownable {
         require(allowance >= amount, "Not enough allowance");
         if (_lender[msg.sender].startPeriod > 0) {
             _updatePendingReward(msg.sender);
-        }
-        else{
+        } else {
             _lender[msg.sender].startPeriod = uint40(block.timestamp);
         }
         _lender[msg.sender].deposit += amount;
