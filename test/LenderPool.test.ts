@@ -116,7 +116,7 @@ describe("LenderPool", function () {
     ).to.be.revertedWith("No deposit made");
   });
 });
-describe("LenderPool rewards testing", function () {
+describe("Rewards with multiple withdrawals and deposits on a single round", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
   let lenderPool: LenderPool;
