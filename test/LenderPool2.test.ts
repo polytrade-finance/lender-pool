@@ -23,13 +23,9 @@ describe("Normal reward without withdrawals only 1 round (same APY)", function (
     await lenderPool.deployed();
   });
 
-  it("should transfer tStable to lender pool", async function () {
-    await tStable
-      .connect(accounts[0])
-      .transfer(lenderPool.address, n6("10000"));
-    expect(await tStable.balanceOf(lenderPool.address)).to.be.equal(
-      n6("10000")
-    );
+  it("should set minter", async function () {
+    tStable.setMinter(lenderPool.address);
+    expect(await tStable.getMinter()).to.be.equal(lenderPool.address);
   });
 
   it("should transfer stable to others EOA's", async function () {
@@ -78,13 +74,9 @@ describe("Normal reward without withdrawals with multiple rounds", function () {
     await lenderPool.deployed();
   });
 
-  it("should transfer tStable to lender pool", async function () {
-    await tStable
-      .connect(accounts[0])
-      .transfer(lenderPool.address, n6("10000"));
-    expect(await tStable.balanceOf(lenderPool.address)).to.be.equal(
-      n6("10000")
-    );
+  it("should set minter", async function () {
+    tStable.setMinter(lenderPool.address);
+    expect(await tStable.getMinter()).to.be.equal(lenderPool.address);
   });
 
   it("should transfer stable to others EOA's", async function () {
@@ -146,13 +138,9 @@ describe("Rewards with multiple withdrawals on a single round (same APY)", funct
     await lenderPool.deployed();
   });
 
-  it("should transfer tStable to lender pool", async function () {
-    await tStable
-      .connect(accounts[0])
-      .transfer(lenderPool.address, n6("10000"));
-    expect(await tStable.balanceOf(lenderPool.address)).to.be.equal(
-      n6("10000")
-    );
+  it("should set minter", async function () {
+    tStable.setMinter(lenderPool.address);
+    expect(await tStable.getMinter()).to.be.equal(lenderPool.address);
   });
 
   it("should transfer stable to others EOA's", async function () {
@@ -216,13 +204,9 @@ describe("Rewards with multiple withdrawals on multiple rounds (same APY)", func
     await lenderPool.deployed();
   });
 
-  it("should transfer tStable to lender pool", async function () {
-    await tStable
-      .connect(accounts[0])
-      .transfer(lenderPool.address, n6("10000"));
-    expect(await tStable.balanceOf(lenderPool.address)).to.be.equal(
-      n6("10000")
-    );
+  it("should set minter", async function () {
+    tStable.setMinter(lenderPool.address);
+    expect(await tStable.getMinter()).to.be.equal(lenderPool.address);
   });
 
   it("should transfer stable to others EOA's", async function () {
@@ -298,13 +282,9 @@ describe("Rewards with multiple withdrawals and deposits on multiple rounds", fu
     await lenderPool.deployed();
   });
 
-  it("should transfer tStable to lender pool", async function () {
-    await tStable
-      .connect(accounts[0])
-      .transfer(lenderPool.address, n6("10000"));
-    expect(await tStable.balanceOf(lenderPool.address)).to.be.equal(
-      n6("10000")
-    );
+  it("should set minter", async function () {
+    tStable.setMinter(lenderPool.address);
+    expect(await tStable.getMinter()).to.be.equal(lenderPool.address);
   });
 
   it("should transfer stable to others EOA's", async function () {
