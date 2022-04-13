@@ -26,12 +26,12 @@ contract Token is IToken, ERC20, ERC20Burnable, AccessControl {
         grantRole(MINTER_ROLE, _minter);
     }
 
-    function getMinter() external view returns (address) {
-        return _minter;
-    }
-
     function mint(address to, uint amount) external onlyRole(MINTER_ROLE) {
         _mint(to, amount);
+    }
+
+    function getMinter() external view returns (address) {
+        return _minter;
     }
 
     function decimals() public view virtual override returns (uint8) {
