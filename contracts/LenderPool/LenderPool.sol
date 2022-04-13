@@ -71,8 +71,8 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice transfer lender all the reward
-     * @dev update the pendingReward and transfers reward in tStable token to lender
+     * @notice send lender all the reward
+     * @dev update the pendingReward and mint tStable token and send to lender
      *
      * Emits {Withdraw} event
      */
@@ -138,8 +138,8 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice converts the deposited stable token of quantity `amount` into tStable token and transfers to the lender
-     * @param amount, to be transferred to the msg.sender
+     * @notice converts the deposited stable token of quantity `amount` into tStable token and send to the lender
+     * @param amount, to be sent to the msg.sender
      *
      * Requirements:
      *
