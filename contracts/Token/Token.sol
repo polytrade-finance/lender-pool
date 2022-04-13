@@ -30,7 +30,7 @@ contract Token is IToken, ERC20, ERC20Burnable, AccessControl {
         return _minter;
     }
 
-    function mint(address to, uint amount) public onlyRole(MINTER_ROLE) {
+    function mint(address to, uint amount) external onlyRole(MINTER_ROLE) {
         _mint(to, amount);
     }
 
