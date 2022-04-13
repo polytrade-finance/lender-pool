@@ -4,25 +4,26 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interface/ILenderPool.sol";
+import "../Token/interface/IToken.sol";
 
 /**
  * @author Polytrade
  * @title LenderPool V2
  */
 contract LenderPool is ILenderPool, Ownable {
-    using SafeERC20 for IERC20;
+    using SafeERC20 for IToken;
 
     mapping(address => Lender) private _lender;
     mapping(uint16 => RoundInfo) public round;
 
-    IERC20 public immutable stable;
-    IERC20 public immutable tStable;
+    IToken public immutable stable;
+    IToken public immutable tStable;
 
     uint16 public currentRound = 0;
 
     constructor(address _stableAddress, address _tStableAddress) {
-        stable = IERC20(_stableAddress);
-        tStable = IERC20(_tStableAddress);
+        stable = IToken(_stableAddress);
+        tStable = IToken(_tStableAddress);
     }
 
     /**
@@ -80,7 +81,7 @@ contract LenderPool is ILenderPool, Ownable {
         uint totalReward = _lender[msg.sender].pendingRewards;
         _lender[msg.sender].pendingRewards = 0;
         emit Withdraw(msg.sender, totalReward);
-        tStable.safeTransfer(msg.sender, totalReward);
+        tStable.mint(msg.sender, totalReward);
     }
 
     /**
@@ -158,7 +159,7 @@ contract LenderPool is ILenderPool, Ownable {
         }
         _lender[msg.sender].deposit -= amount;
         emit Withdraw(msg.sender, amount);
-        tStable.safeTransfer(msg.sender, amount);
+        tStable.mint(msg.sender, amount);
     }
 
     /**
