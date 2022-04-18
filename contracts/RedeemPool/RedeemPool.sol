@@ -16,13 +16,24 @@ contract RedeemPool is IRedeemPool {
         tStable = IToken(_tStableAddress);
     }
 
+    /**
+    * @notice
+    * @dev
+    * @param amount
+    */
     function depositStable(uint amount) external {
         require(amount > 0, "Invalid amount");
         uint allowance = stable.allowance(msg.sender, address(this));
         require(allowance >= amount, "Not enough allowance");
         stable.safeTransferFrom(msg.sender, address(this), amount);
+        emit StableDeposited(amount);
     }
 
+    /**
+    * @notice
+    * @dev
+    * @param amount
+    */
     function getStable(uint amount) external {
         uint balance = stable.balanceOf(address(this));
         require(balance >= amount, "insufficient balance in pool");
@@ -30,5 +41,6 @@ contract RedeemPool is IRedeemPool {
         require(allowance >= amount, "allowance less than amount");
         tStable.burn(msg.sender, amount);
         stable.safeTransfer(msg.sender, amount);
+        emit StableWithdrawn(amount);
     }
 }
