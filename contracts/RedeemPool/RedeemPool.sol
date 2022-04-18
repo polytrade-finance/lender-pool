@@ -7,7 +7,7 @@ import "../Token/interface/IToken.sol";
 
 /**
  * @author Polytrade
- * @title RedeemPool 
+ * @title RedeemPool
  */
 contract RedeemPool is IRedeemPool {
     using SafeERC20 for IToken;
@@ -30,7 +30,7 @@ contract RedeemPool is IRedeemPool {
      * - `amount` should be greater than zero
      * - `amount` must be approved from the stable token contract for the RedeemPool contact
      *
-     * Emits {StableDeposited} event    
+     * Emits {StableDeposited} event
      */
     function depositStable(uint amount) external {
         require(amount > 0, "Lending amount is 0");
@@ -41,7 +41,7 @@ contract RedeemPool is IRedeemPool {
     }
 
     /**
-     * @notice exchange tStable token for the stable token 
+     * @notice exchange tStable token for the stable token
      * @dev Transfers the approved tStable token from msg.sender to redeem pool and burn it
      * @dev Transfers the  equivalent amount of stable token from redeem pool to msg.sender
      * @param amount, the number of tokens to be exchanged
@@ -52,7 +52,7 @@ contract RedeemPool is IRedeemPool {
      * - `amount` must be approved from the tStable token contract for the RedeemPool contact
      * - `amount` must be less than balanceOf stable token of Redeem Pool
      *
-     * Emits {StableWithdrawn} event    
+     * Emits {StableWithdrawn} event
      */
     function getStable(uint amount) external {
         require(amount > 0, "Lending amount is 0");
