@@ -13,7 +13,6 @@ import "./interface/IToken.sol";
 contract Token is IToken, ERC20, ERC20Burnable, AccessControl {
     uint8 private immutable _decimals;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    mapping(address => bool) private _minters;
 
     constructor(
         string memory name_,
