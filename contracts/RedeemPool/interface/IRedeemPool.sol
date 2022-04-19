@@ -22,7 +22,7 @@ interface IRedeemPool {
      * Requirements:
      *
      * - `amount` should be greater than zero
-     * - `amount` must be approved from the stable token contract for the RedeemPool contact
+     * - `amount` must be approved from the stable token contract for the RedeemPool contract
      *
      * Emits {StableDeposited} event
      */
@@ -37,10 +37,10 @@ interface IRedeemPool {
      * Requirements:
      *
      * - `amount` should be greater than zero
-     * - `amount` must be approved from the tStable token contract for the RedeemPool contact
+     * - `amount` must be approved from the tStable token contract for the RedeemPool contract
      * - `amount` must be less than balanceOf stable token of Redeem Pool
      *
      * Emits {StableWithdrawn} event
      */
-    function getStable(uint amount) external;
+    function convertToStable(uint amount) external;
 }

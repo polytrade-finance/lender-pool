@@ -28,7 +28,7 @@ contract RedeemPool is IRedeemPool {
      * Requirements:
      *
      * - `amount` should be greater than zero
-     * - `amount` must be approved from the stable token contract for the RedeemPool contact
+     * - `amount` must be approved from the stable token contract for the RedeemPool contract
      *
      * Emits {StableDeposited} event
      */
@@ -49,17 +49,18 @@ contract RedeemPool is IRedeemPool {
      * Requirements:
      *
      * - `amount` should be greater than zero
-     * - `amount` must be approved from the tStable token contract for the RedeemPool contact
+     * - `amount` must be approved from the tStable token contract for the RedeemPool contract
      * - `amount` must be less than balanceOf stable token of Redeem Pool
      *
      * Emits {StableWithdrawn} event
      */
-    function getStable(uint amount) external {
+    function convertToStable(uint amount) external {
         require(amount > 0, "Lending amount is 0");
         uint balance = stable.balanceOf(address(this));
         require(balance >= amount, "insufficient balance in pool");
         uint allowance = tStable.allowance(msg.sender, address(this));
         require(allowance >= amount, "allowance less than amount");
+
         tStable.burn(msg.sender, amount);
         stable.safeTransfer(msg.sender, amount);
         emit StableWithdrawn(amount);

@@ -46,7 +46,7 @@ interface ILenderPool {
      * Requirements:
      *
      * - `amount` should be greater than zero
-     * - `amount` must be approved from the stable token contract for the LenderPool contact
+     * - `amount` must be approved from the stable token contract for the LenderPool contract
      *
      * Emits {Deposit} event
      */
