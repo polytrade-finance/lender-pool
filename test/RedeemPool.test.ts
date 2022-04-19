@@ -85,19 +85,19 @@ describe("RedeemPool", function () {
 
   it("should revert if insufficient balance in pool", async function () {
     expect(
-      redeem.connect(accounts[1]).getStable(n6("10000"))
+      redeem.connect(accounts[1]).convertToStable(n6("10000"))
     ).to.be.revertedWith("insufficient balance in pool");
   });
 
   it("should revert if not enough allowance", async function () {
     expect(
-      redeem.connect(accounts[1]).getStable(n6("1000"))
+      redeem.connect(accounts[1]).convertToStable(n6("1000"))
     ).to.be.revertedWith("allowance less than amount");
   });
 
   it("should covert tStable to stable", async function () {
     const balanceBefore = await stable.balanceOf(addresses[1]);
-    await redeem.connect(accounts[1]).getStable(n6("100"));
+    await redeem.connect(accounts[1]).convertToStable(n6("100"));
     const balanceAfter = await stable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(
       ethers.BigNumber.from(n6("100"))
