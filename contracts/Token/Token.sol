@@ -24,9 +24,6 @@ contract Token is IToken, ERC20, ERC20Burnable, AccessControl {
         _mint(msg.sender, 1_000_000_000 * (10**decimals_));
     }
 
-    function burn(address account, uint amount) external {
-        _burn(account, amount);
-    }
 
     /**
      * @notice mints ERC20 token
