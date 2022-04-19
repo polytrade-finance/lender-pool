@@ -55,18 +55,18 @@ describe("RedeemPool", function () {
   });
 
   it("should approve stable token", async function () {
-    await stable.connect(accounts[0]).approve(redeem.address, n6("1000"));
+    await stable.connect(accounts[0]).approve(redeem.address, n6("10000"));
     expect(await stable.allowance(addresses[0], redeem.address)).to.be.equal(
-      ethers.BigNumber.from(n6("1000"))
+      ethers.BigNumber.from(n6("10000"))
     );
   });
 
   it("should deposit stable to redeem pool", async function () {
     const balanceBefore = await stable.balanceOf(redeem.address);
-    await redeem.depositStable(n6("1000"));
+    await redeem.depositStable(n6("10000"));
     const balanceAfter = await stable.balanceOf(redeem.address);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(
-      ethers.BigNumber.from(n6("1000"))
+      ethers.BigNumber.from(n6("10000"))
     );
   });
 
@@ -85,14 +85,33 @@ describe("RedeemPool", function () {
 
   it("should revert if insufficient balance in pool", async function () {
     expect(
-      redeem.connect(accounts[1]).convertToStable(n6("10000"))
+      redeem.connect(accounts[1]).convertToStable(n6("20000"))
     ).to.be.revertedWith("insufficient balance in pool");
   });
 
   it("should revert if not enough allowance", async function () {
     expect(
       redeem.connect(accounts[1]).convertToStable(n6("1000"))
-    ).to.be.revertedWith("allowance less than amount");
+    ).to.be.revertedWith("ERC20: insufficient allowance");
+  });
+
+  it("should increase allowance of tStable token", async function () {
+    await tStable.connect(accounts[1]).approve(redeem.address, n6("10000"));
+    expect(await tStable.allowance(addresses[1], redeem.address)).to.be.equal(
+      ethers.BigNumber.from(n6("10000"))
+    );
+  });
+
+  it("should revert if amount is more than balance", async function () {
+    expect(
+      redeem.connect(accounts[1]).convertToStable(n6("10000"))
+    ).to.be.revertedWith("ERC20: burn amount exceeds balance");
+  });
+
+  it("should revert if amount is zero", async function () {
+    expect(
+      redeem.connect(accounts[1]).convertToStable(n6("0"))
+    ).to.be.revertedWith("Amount is 0");
   });
 
   it("should covert tStable to stable", async function () {
