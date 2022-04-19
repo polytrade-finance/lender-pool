@@ -40,7 +40,11 @@ describe("LenderPool", function () {
   });
 
   it("should set minter", async function () {
-    tStable.setMinter(lenderPool.address);
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
+
     expect(
       await tStable.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
@@ -152,7 +156,11 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
   });
 
   it("should set minter", async function () {
-    tStable.setMinter(lenderPool.address);
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
+
     expect(
       await tStable.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
@@ -253,7 +261,11 @@ describe("Lender pool reward testing for changing APY", function () {
   });
 
   it("should set minter", async function () {
-    tStable.setMinter(lenderPool.address);
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
+
     expect(
       await tStable.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),

@@ -24,7 +24,10 @@ describe("Normal reward without withdrawals only 1 round (same APY)", function (
   });
 
   it("should set minter", async function () {
-    tStable.setMinter(lenderPool.address);
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
     expect(
       await tStable.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
@@ -80,7 +83,10 @@ describe("Normal reward without withdrawals with multiple rounds", function () {
   });
 
   it("should set minter", async function () {
-    tStable.setMinter(lenderPool.address);
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
     expect(
       await tStable.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
@@ -149,7 +155,10 @@ describe("Rewards with multiple withdrawals on a single round (same APY)", funct
   });
 
   it("should set minter", async function () {
-    tStable.setMinter(lenderPool.address);
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
     expect(
       await tStable.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
@@ -220,7 +229,10 @@ describe("Rewards with multiple withdrawals on multiple rounds (same APY)", func
   });
 
   it("should set minter", async function () {
-    tStable.setMinter(lenderPool.address);
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
     expect(
       await tStable.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
@@ -303,7 +315,11 @@ describe("Rewards with multiple withdrawals and deposits on multiple rounds", fu
   });
 
   it("should set minter", async function () {
-    tStable.setMinter(lenderPool.address);
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
+
     expect(
       await tStable.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
