@@ -41,7 +41,12 @@ describe("LenderPool", function () {
 
   it("should set minter", async function () {
     tStable.setMinter(lenderPool.address);
-    expect(await tStable.getMinter()).to.be.equal(lenderPool.address);
+    expect(
+      await tStable.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+        lenderPool.address
+      )
+    );
   });
 
   it("should approve stable token", async function () {
@@ -148,7 +153,12 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
 
   it("should set minter", async function () {
     tStable.setMinter(lenderPool.address);
-    expect(await tStable.getMinter()).to.be.equal(lenderPool.address);
+    expect(
+      await tStable.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+        lenderPool.address
+      )
+    );
   });
 
   it("should set APY to 10%", async function () {
@@ -244,7 +254,12 @@ describe("Lender pool reward testing for changing APY", function () {
 
   it("should set minter", async function () {
     tStable.setMinter(lenderPool.address);
-    expect(await tStable.getMinter()).to.be.equal(lenderPool.address);
+    expect(
+      await tStable.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+        lenderPool.address
+      )
+    );
   });
 
   it("should transfer stable to others EOA's", async function () {
