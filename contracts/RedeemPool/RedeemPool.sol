@@ -33,9 +33,11 @@ contract RedeemPool is IRedeemPool {
      * Emits {StableDeposited} event
      */
     function depositStable(uint amount) external {
-        require(amount > 0, "Lending amount is 0");
-        uint allowance = stable.allowance(msg.sender, address(this));
-        require(allowance >= amount, "Not enough allowance");
+        require(amount > 0, "Amount is 0");
+        require(
+            stable.allowance(msg.sender, address(this)) >= amount,
+            "Not enough allowance"
+        );
         stable.safeTransferFrom(msg.sender, address(this), amount);
         emit StableDeposited(amount);
     }
@@ -55,13 +57,12 @@ contract RedeemPool is IRedeemPool {
      * Emits {StableWithdrawn} event
      */
     function convertToStable(uint amount) external {
-        require(amount > 0, "Lending amount is 0");
-        uint balance = stable.balanceOf(address(this));
-        require(balance >= amount, "insufficient balance in pool");
-        uint allowance = tStable.allowance(msg.sender, address(this));
-        require(allowance >= amount, "allowance less than amount");
-
-        tStable.burn(msg.sender, amount);
+        require(amount > 0, "Amount is 0");
+        require(
+            stable.balanceOf(address(this)) >= amount,
+            "Insufficient balance in pool"
+        );
+        tStable.burnToken(msg.sender, amount);
         stable.safeTransfer(msg.sender, amount);
         emit StableWithdrawn(amount);
     }
