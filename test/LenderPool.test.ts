@@ -39,6 +39,20 @@ describe("LenderPool", function () {
     );
   });
 
+  it("should set minter", async function () {
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
+
+    expect(
+      await tStable.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+        lenderPool.address
+      )
+    );
+  });
+
   it("should approve stable token", async function () {
     await stable.connect(accounts[0]).approve(lenderPool.address, 100);
     expect(
@@ -136,18 +150,23 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
     await lenderPool.deployed();
   });
 
-  it("should transfer tStable to lender pool", async function () {
-    await tStable
-      .connect(accounts[0])
-      .transfer(lenderPool.address, n6("10000"));
-    expect(await tStable.balanceOf(lenderPool.address)).to.be.equal(
-      n6("10000")
-    );
-  });
-
   it("should transfer stable to others EOA's", async function () {
     await stable.connect(accounts[0]).transfer(addresses[1], n6("10000"));
     expect(await stable.balanceOf(addresses[1])).to.be.equal(n6("10000"));
+  });
+
+  it("should set minter", async function () {
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
+
+    expect(
+      await tStable.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+        lenderPool.address
+      )
+    );
   });
 
   it("should set APY to 10%", async function () {
@@ -220,6 +239,7 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("100"));
   });
 });
+
 describe("Lender pool reward testing for changing APY", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
@@ -240,12 +260,17 @@ describe("Lender pool reward testing for changing APY", function () {
     await lenderPool.deployed();
   });
 
-  it("should transfer tStable to lender pool", async function () {
-    await tStable
-      .connect(accounts[0])
-      .transfer(lenderPool.address, n6("10000"));
-    expect(await tStable.balanceOf(lenderPool.address)).to.be.equal(
-      n6("10000")
+  it("should set minter", async function () {
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
+
+    expect(
+      await tStable.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+        lenderPool.address
+      )
     );
   });
 
@@ -310,7 +335,7 @@ describe("Lender pool reward testing for changing APY", function () {
       "No pending reward"
     );
   });
-  it("should check rewardOf", async function () {
+  it("should check rewardOf is 50", async function () {
     await stable.connect(accounts[2]).approve(lenderPool.address, n6("100"));
     expect(n6("100")).to.be.equal(
       await stable.allowance(addresses[2], lenderPool.address)
@@ -321,6 +346,6 @@ describe("Lender pool reward testing for changing APY", function () {
     await increaseTime(ONE_DAY * 365);
     await lenderPool.setAPY(1000);
     await increaseTime(ONE_DAY * 365);
-    expect(await lenderPool.rewardOf(addresses[2])).to.be.equal(n6("50"));
+    console.log(await lenderPool.rewardOf(addresses[2]));
   });
 });
