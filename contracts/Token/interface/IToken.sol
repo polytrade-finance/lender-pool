@@ -21,13 +21,4 @@ interface IToken is IERC20 {
      * - `to` cannot be the zero address.
      */
     function mint(address to, uint amount) external;
-
-    /**
-     * @notice adds new minter address
-     * @dev grants `MINTER_ROLE` to address `minter`
-     * @param minter, address of the new minter
-     *
-     * Emits a {RoleGranted} event
-     */
-    function setMinter(address minter) external;
 }

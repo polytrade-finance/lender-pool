@@ -25,17 +25,6 @@ contract Token is IToken, ERC20, ERC20Burnable, AccessControl {
     }
 
     /**
-     * @notice adds new minter address
-     * @dev grants `MINTER_ROLE` to address `minter`
-     * @param minter, address of the new minter
-     *
-     * Emits a {RoleGranted} event
-     */
-    function setMinter(address minter) external {
-        grantRole(MINTER_ROLE, minter);
-    }
-
-    /**
      * @notice mints ERC20 token
      * @dev creates `amount` tokens and assigns them to `to`, increasing the total supply.
      * @param to, receiver address of the ERC20 address
