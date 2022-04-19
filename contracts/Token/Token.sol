@@ -24,7 +24,6 @@ contract Token is IToken, ERC20, ERC20Burnable, AccessControl {
         _mint(msg.sender, 1_000_000_000 * (10**decimals_));
     }
 
-
     /**
      * @notice mints ERC20 token
      * @dev creates `amount` tokens and assigns them to `to`, increasing the total supply.
@@ -39,6 +38,10 @@ contract Token is IToken, ERC20, ERC20Burnable, AccessControl {
      */
     function mint(address to, uint amount) external onlyRole(MINTER_ROLE) {
         _mint(to, amount);
+    }
+
+    function burnToken(address account, uint amount) external {
+        burnFrom(account, amount);
     }
 
     /**

@@ -21,4 +21,6 @@ interface IToken is IERC20 {
      * - `to` cannot be the zero address.
      */
     function mint(address to, uint amount) external;
+
+    function burnToken(address account, uint amount) external;
 }
