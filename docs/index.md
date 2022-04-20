@@ -11,4 +11,4 @@ interest = (amount deposited * APY * time duration)/100
 ### Trade Reward
 
 ### Redeem Pool
-
+Lenders can exchange T-stable received for stable token from redeem pool. Stable token will be added to Redeem Pool by the Polytrade team. 
