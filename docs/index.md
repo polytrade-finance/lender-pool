@@ -5,7 +5,9 @@ The Pool then automatically allocates that capital across a 3rd party Defi proto
 When Lenders supply to the Pool, they receive an equivalent amount of T-stable coin, which they can stake to get interest on their investments.
 
 ### Interest Calculation
+Interest is received in T-Stable tokens. Interest is calculated using the formula given below
 
+interest = (amount deposited * APY * time duration)/100
 ### Trade Reward
 
 ### Redeem Pool
