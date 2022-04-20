@@ -9,6 +9,7 @@ Interest is received in T-Stable tokens. Interest is calculated using the formul
 
 interest = (amount deposited * APY * time duration)/100
 ### Trade Reward
+Lenders will receive an additional reward per block. Trade tokens will be distributed to users. 
 
 ### Redeem Pool
 Lenders can exchange T-stable received for stable token from redeem pool. Stable token will be added to Redeem Pool by the Polytrade team. 
