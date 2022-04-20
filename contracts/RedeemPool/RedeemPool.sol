@@ -62,7 +62,7 @@ contract RedeemPool is IRedeemPool {
             stable.balanceOf(address(this)) >= amount,
             "Insufficient balance in pool"
         );
-        tStable.burnToken(msg.sender, amount);
+        tStable.burnFrom(msg.sender, amount);
         stable.safeTransfer(msg.sender, amount);
         emit StableWithdrawn(amount);
     }
