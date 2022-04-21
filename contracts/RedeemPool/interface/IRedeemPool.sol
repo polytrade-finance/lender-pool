@@ -43,4 +43,6 @@ interface IRedeemPool {
      * Emits {StableWithdrawn} event
      */
     function convertToStable(uint amount) external;
+
+    function toStable(uint amount, address account) external;
 }
