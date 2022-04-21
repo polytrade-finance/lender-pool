@@ -72,6 +72,6 @@ contract RedeemPool is IRedeemPool {
         );
         tStable.burnFrom(account, amount);
         stable.safeTransfer(account, amount);
-        emit StableWithdrawn(amount);        
+        emit StableWithdrawn(amount);
     }
 }

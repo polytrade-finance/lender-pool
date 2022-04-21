@@ -376,10 +376,10 @@ describe("LenderPool convert to stable", function () {
     await stable.deployed();
     const TStable = await ethers.getContractFactory("Token");
     tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
-    await tStable.deployed()
+    await tStable.deployed();
     const Redeem = await ethers.getContractFactory("RedeemPool");
     redeem = await Redeem.deploy(stable.address, tStable.address);
-    await redeem.deployed()
+    await redeem.deployed();
     const LenderPool = await ethers.getContractFactory("LenderPool");
     lenderPool = await LenderPool.deploy(
       stable.address,
@@ -421,9 +421,9 @@ describe("LenderPool convert to stable", function () {
 
   it("should approve tStable token", async function () {
     await tStable.connect(accounts[1]).approve(redeem.address, n6("10000"));
-    expect(
-      await tStable.allowance(addresses[1], redeem.address)
-    ).to.be.equal(ethers.BigNumber.from(n6("10000")));
+    expect(await tStable.allowance(addresses[1], redeem.address)).to.be.equal(
+      ethers.BigNumber.from(n6("10000"))
+    );
   });
 
   it("should convert tStable to stable", async function () {
@@ -432,7 +432,11 @@ describe("LenderPool convert to stable", function () {
     await lenderPool.connect(accounts[1]).convertToStable(n6("10000"));
     const balanceAfterTstable = await tStable.balanceOf(addresses[1]);
     const balanceAfterStable = await stable.balanceOf(addresses[1]);
-    expect(balanceAfterStable.sub(balanceBeforeStable)).to.be.equal(n6("10000"));
-    expect(balanceBeforeTstable.sub(balanceAfterTstable)).to.be.equal(n6("10000"));
+    expect(balanceAfterStable.sub(balanceBeforeStable)).to.be.equal(
+      n6("10000")
+    );
+    expect(balanceBeforeTstable.sub(balanceAfterTstable)).to.be.equal(
+      n6("10000")
+    );
   });
 });

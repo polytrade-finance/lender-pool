@@ -23,7 +23,11 @@ contract LenderPool is ILenderPool, Ownable {
 
     uint16 public currentRound = 0;
 
-    constructor(address _stableAddress, address _tStableAddress, address _redeemPool) {
+    constructor(
+        address _stableAddress,
+        address _tStableAddress,
+        address _redeemPool
+    ) {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
         redeemPool = IRedeemPool(_redeemPool);
@@ -107,8 +111,8 @@ contract LenderPool is ILenderPool, Ownable {
         emit NewRewardAPY(round[currentRound].apy);
     }
 
-    function convertToStable(uint amount) external{
-        redeemPool.toStable(amount,msg.sender);
+    function convertToStable(uint amount) external {
+        redeemPool.toStable(amount, msg.sender);
     }
 
     /**
