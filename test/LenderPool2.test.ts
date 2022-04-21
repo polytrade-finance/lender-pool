@@ -19,7 +19,11 @@ describe("Normal reward without withdrawals only 1 round (same APY)", function (
     const TStable = await ethers.getContractFactory("Token");
     tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
     const LenderPool = await ethers.getContractFactory("LenderPool");
-    lenderPool = await LenderPool.deploy(stable.address, tStable.address);
+    lenderPool = await LenderPool.deploy(
+      stable.address,
+      tStable.address,
+      ethers.constants.AddressZero
+    );
     await lenderPool.deployed();
   });
 
@@ -78,7 +82,11 @@ describe("Normal reward without withdrawals with multiple rounds", function () {
     const TStable = await ethers.getContractFactory("Token");
     tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
     const LenderPool = await ethers.getContractFactory("LenderPool");
-    lenderPool = await LenderPool.deploy(stable.address, tStable.address);
+    lenderPool = await LenderPool.deploy(
+      stable.address,
+      tStable.address,
+      ethers.constants.AddressZero
+    );
     await lenderPool.deployed();
   });
 
@@ -150,7 +158,11 @@ describe("Rewards with multiple withdrawals on a single round (same APY)", funct
     const TStable = await ethers.getContractFactory("Token");
     tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
     const LenderPool = await ethers.getContractFactory("LenderPool");
-    lenderPool = await LenderPool.deploy(stable.address, tStable.address);
+    lenderPool = await LenderPool.deploy(
+      stable.address,
+      tStable.address,
+      ethers.constants.AddressZero
+    );
     await lenderPool.deployed();
   });
 
@@ -224,7 +236,11 @@ describe("Rewards with multiple withdrawals on multiple rounds (same APY)", func
     const TStable = await ethers.getContractFactory("Token");
     tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
     const LenderPool = await ethers.getContractFactory("LenderPool");
-    lenderPool = await LenderPool.deploy(stable.address, tStable.address);
+    lenderPool = await LenderPool.deploy(
+      stable.address,
+      tStable.address,
+      ethers.constants.AddressZero
+    );
     await lenderPool.deployed();
   });
 
@@ -310,7 +326,11 @@ describe("Rewards with multiple withdrawals and deposits on multiple rounds", fu
     const TStable = await ethers.getContractFactory("Token");
     tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
     const LenderPool = await ethers.getContractFactory("LenderPool");
-    lenderPool = await LenderPool.deploy(stable.address, tStable.address);
+    lenderPool = await LenderPool.deploy(
+      stable.address,
+      tStable.address,
+      ethers.constants.AddressZero
+    );
     await lenderPool.deployed();
   });
 
