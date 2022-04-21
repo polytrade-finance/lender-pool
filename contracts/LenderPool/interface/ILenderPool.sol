@@ -83,6 +83,13 @@ interface ILenderPool {
     function setAPY(uint16 _rewardAPY) external;
 
     /**
+     * @notice exchanges tStable token for the stable token
+     * @dev calls toStable function from RedeemPool smart contract
+     * @param amount, the number of tokens to be exchanged
+     */
+    function convertToStable(uint amount) external;
+
+    /**
      * @notice returns value of APY of current round
      * @return returns value of APY of current round
      */

@@ -111,6 +111,11 @@ contract LenderPool is ILenderPool, Ownable {
         emit NewRewardAPY(round[currentRound].apy);
     }
 
+    /**
+     * @notice exchanges tStable token for the stable token
+     * @dev calls toStable function from RedeemPool smart contract
+     * @param amount, the number of tokens to be exchanged
+     */
     function convertToStable(uint amount) external {
         redeemPool.toStable(amount, msg.sender);
     }

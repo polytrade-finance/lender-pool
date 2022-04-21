@@ -30,19 +30,15 @@ interface IRedeemPool {
 
     /**
      * @notice exchange tStable token for the stable token
-     * @dev Transfers the approved tStable token from msg.sender to redeem pool and burn it
-     * @dev Transfers the  equivalent amount of stable token from redeem pool to msg.sender
+     * @dev users can directly call this function using EOA
      * @param amount, the number of tokens to be exchanged
-     *
-     * Requirements:
-     *
-     * - `amount` should be greater than zero
-     * - `amount` must be approved from the tStable token contract for the RedeemPool contract
-     * - `amount` must be less than balanceOf stable token of Redeem Pool
-     *
-     * Emits {StableWithdrawn} event
      */
     function convertToStable(uint amount) external;
 
+    /**
+     * @notice exchange tStable token for the stable token
+     * @dev this function can be called using another smart contract
+     * @param amount, the number of tokens to be exchanged
+     */
     function toStable(uint amount, address account) external;
 }

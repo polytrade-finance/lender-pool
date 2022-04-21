@@ -44,8 +44,26 @@ contract RedeemPool is IRedeemPool {
 
     /**
      * @notice exchange tStable token for the stable token
-     * @dev Transfers the approved tStable token from msg.sender to redeem pool and burn it
-     * @dev Transfers the  equivalent amount of stable token from redeem pool to msg.sender
+     * @dev users can directly call this function using EOA
+     * @param amount, the number of tokens to be exchanged
+     */
+    function convertToStable(uint amount) external {
+        _convertToStable(amount, msg.sender);
+    }
+
+    /**
+     * @notice exchange tStable token for the stable token
+     * @dev this function can be called using another smart contract
+     * @param amount, the number of tokens to be exchanged
+     */
+    function toStable(uint amount, address account) external {
+        _convertToStable(amount, account);
+    }
+
+    /**
+     * @notice exchange tStable token for the stable token
+     * @dev Transfers the approved tStable token from account to redeem pool and burn it
+     * @dev Transfers the  equivalent amount of stable token from redeem pool to account
      * @param amount, the number of tokens to be exchanged
      *
      * Requirements:
@@ -56,14 +74,6 @@ contract RedeemPool is IRedeemPool {
      *
      * Emits {StableWithdrawn} event
      */
-    function convertToStable(uint amount) external {
-        _convertToStable(amount, msg.sender);
-    }
-
-    function toStable(uint amount, address account) external {
-        _convertToStable(amount, account);
-    }
-
     function _convertToStable(uint amount, address account) private {
         require(amount > 0, "Amount is 0");
         require(
