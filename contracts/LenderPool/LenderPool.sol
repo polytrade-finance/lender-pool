@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interface/ILenderPool.sol";
 import "../Token/interface/IToken.sol";
+import "../RedeemPool/interface/IRedeemPool.sol";
 
 /**
  * @author Polytrade
@@ -18,12 +19,14 @@ contract LenderPool is ILenderPool, Ownable {
 
     IToken public immutable stable;
     IToken public immutable tStable;
+    IRedeemPool public immutable redeemPool;
 
     uint16 public currentRound = 0;
 
-    constructor(address _stableAddress, address _tStableAddress) {
+    constructor(address _stableAddress, address _tStableAddress, address _redeemPool) {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
+        redeemPool = IRedeemPool(_redeemPool);
     }
 
     /**
@@ -102,6 +105,10 @@ contract LenderPool is ILenderPool, Ownable {
             type(uint40).max
         );
         emit NewRewardAPY(round[currentRound].apy);
+    }
+
+    function convertToStable(uint amount) external{
+        redeemPool.toStable(amount,msg.sender);
     }
 
     /**
