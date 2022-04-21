@@ -57,13 +57,21 @@ contract RedeemPool is IRedeemPool {
      * Emits {StableWithdrawn} event
      */
     function convertToStable(uint amount) external {
+        _convertToStable(amount, msg.sender);
+    }
+
+    function toStable(uint amount, address account) external {
+        _convertToStable(amount, account);
+    }
+
+    function _convertToStable(uint amount, address account) private {
         require(amount > 0, "Amount is 0");
         require(
             stable.balanceOf(address(this)) >= amount,
             "Insufficient balance in pool"
         );
-        tStable.burnFrom(msg.sender, amount);
-        stable.safeTransfer(msg.sender, amount);
-        emit StableWithdrawn(amount);
+        tStable.burnFrom(account, amount);
+        stable.safeTransfer(account, amount);
+        emit StableWithdrawn(amount);        
     }
 }
