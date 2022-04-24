@@ -114,10 +114,12 @@ contract LenderPool is ILenderPool, Ownable {
     /**
      * @notice exchanges tStable token for the stable token
      * @dev calls toStable function from RedeemPool smart contract
-     * @param amount, the number of tokens to be exchanged
      */
-    function redeemStable(uint amount) external {
-        
+    function redeemStableAll() external {
+        _updatePendingReward(msg.sender);
+        uint amount = _lender[msg.sender].pendingRewards + _lender[msg.sender].deposit;  
+        _lender[msg.sender].pendingRewards = 0;
+        _lender[msg.sender].deposit = 0;
         redeemPool.toStable(amount, msg.sender);
     }
 
