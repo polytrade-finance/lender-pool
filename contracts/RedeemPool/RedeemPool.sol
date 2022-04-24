@@ -3,18 +3,20 @@ pragma solidity ^0.8.12;
 
 import "./interface/IRedeemPool.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "../Token/interface/IToken.sol";
 
 /**
  * @author Polytrade
  * @title RedeemPool
  */
-contract RedeemPool is IRedeemPool {
+contract RedeemPool is IRedeemPool, Ownable {
     using SafeERC20 for IToken;
 
     IToken public immutable stable;
     IToken public immutable tStable;
-
+    
+    mapping(address=>bool) public lenderPool;
     constructor(address _stableAddress, address _tStableAddress) {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
@@ -42,6 +44,14 @@ contract RedeemPool is IRedeemPool {
         emit StableDeposited(amount);
     }
 
+    function setLenderPool(address poolAddress) external onlyOwner{
+        lenderPool[poolAddress] = true;
+    }
+
+    function deletePoolAddress(address poolAddress) external onlyOwner{
+        lenderPool[poolAddress] = false;
+    }
+
     /**
      * @notice exchange tStable token for the stable token
      * @dev users can directly call this function using EOA
@@ -57,6 +67,7 @@ contract RedeemPool is IRedeemPool {
      * @param amount, the number of tokens to be exchanged
      */
     function toStable(uint amount, address account) external {
+        require(lenderPool[msg.sender],"Invalid pool address");
         _convertToStable(amount, account);
     }
 
