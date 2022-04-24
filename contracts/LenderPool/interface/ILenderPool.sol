@@ -87,7 +87,7 @@ interface ILenderPool {
      * @dev calls toStable function from RedeemPool smart contract
      * @param amount, the number of tokens to be exchanged
      */
-    function convertToStable(uint amount) external;
+    function redeemStable(uint amount) external;
 
     /**
      * @notice returns value of APY of current round

@@ -116,7 +116,8 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev calls toStable function from RedeemPool smart contract
      * @param amount, the number of tokens to be exchanged
      */
-    function convertToStable(uint amount) external {
+    function redeemStable(uint amount) external {
+        
         redeemPool.toStable(amount, msg.sender);
     }
 
