@@ -15,8 +15,9 @@ contract RedeemPool is IRedeemPool, Ownable {
 
     IToken public immutable stable;
     IToken public immutable tStable;
-    
-    mapping(address=>bool) public lenderPool;
+
+    mapping(address => bool) public lenderPool;
+
     constructor(address _stableAddress, address _tStableAddress) {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
@@ -44,14 +45,6 @@ contract RedeemPool is IRedeemPool, Ownable {
         emit StableDeposited(amount);
     }
 
-    function setLenderPool(address poolAddress) external onlyOwner{
-        lenderPool[poolAddress] = true;
-    }
-
-    function deletePoolAddress(address poolAddress) external onlyOwner{
-        lenderPool[poolAddress] = false;
-    }
-
     /**
      * @notice exchange tStable token for the stable token
      * @dev users can directly call this function using EOA
@@ -67,7 +60,6 @@ contract RedeemPool is IRedeemPool, Ownable {
      * @param amount, the number of tokens to be exchanged
      */
     function toStable(uint amount, address account) external {
-        require(lenderPool[msg.sender],"Invalid pool address");
         _convertToStable(amount, account);
     }
 
@@ -86,6 +78,14 @@ contract RedeemPool is IRedeemPool, Ownable {
      * Emits {StableWithdrawn} event
      */
     function _convertToStable(uint amount, address account) private {
+        require(
+            tStable.balanceOf(msg.sender) >= amount,
+            "Insufficient balance"
+        );
+        require(
+            tStable.allowance(msg.sender, address(this)) >= amount,
+            "Insufficient allowance"
+        );
         require(amount > 0, "Amount is 0");
         require(
             stable.balanceOf(address(this)) >= amount,
