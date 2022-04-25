@@ -125,4 +125,21 @@ describe("RedeemPool", function () {
       redeem.connect(accounts[1]).convertToStable(n6("1000"))
     ).to.be.revertedWith("Insufficient balance in pool");
   });
+
+  it("should approve tStable token from account 2", async function () {
+    await tStable.connect(accounts[2]).approve(redeem.address, n6("500"));
+    expect(await tStable.allowance(addresses[2], redeem.address)).to.be.equal(
+      ethers.BigNumber.from(n6("500"))
+    );
+  });
+
+  it("should covert tStable to stable", async function () {
+    const balanceBefore = await stable.balanceOf(addresses[1]);
+    await redeem.connect(accounts[2]).toStable(n6("500"), addresses[1]);
+    const balanceAfter = await stable.balanceOf(addresses[1]);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(
+      ethers.BigNumber.from(n6("500"))
+    );
+  });
+
 });
