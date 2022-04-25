@@ -117,9 +117,15 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function redeemStableAll() external {
         _updatePendingReward(msg.sender);
-        uint amount = _lender[msg.sender].pendingRewards + _lender[msg.sender].deposit;  
+        uint amount = _lender[msg.sender].pendingRewards +
+            _lender[msg.sender].deposit;
+        require(
+            stable.balanceOf(address(redeemPool)) >= amount,
+            "Insufficient balance in pool"
+        );
         _lender[msg.sender].pendingRewards = 0;
         _lender[msg.sender].deposit = 0;
+        tStable.approve(address(redeemPool), amount);
         redeemPool.toStable(amount, msg.sender);
     }
 
