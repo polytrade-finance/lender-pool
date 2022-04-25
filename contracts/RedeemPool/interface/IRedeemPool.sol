@@ -39,6 +39,7 @@ interface IRedeemPool {
      * @notice exchange tStable token for the stable token
      * @dev this function can be called using another smart contract
      * @param amount, the number of tokens to be exchanged
+     * @param account, address of the account that will receive the stable token
      */
     function toStable(uint amount, address account) external;
 }

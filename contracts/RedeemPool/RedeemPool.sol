@@ -58,6 +58,7 @@ contract RedeemPool is IRedeemPool, Ownable {
      * @notice exchange tStable token for the stable token
      * @dev this function can be called using another smart contract
      * @param amount, the number of tokens to be exchanged
+     * @param account, address of the account that will receive the stable token
      */
     function toStable(uint amount, address account) external {
         _convertToStable(amount, account);
@@ -68,6 +69,7 @@ contract RedeemPool is IRedeemPool, Ownable {
      * @dev Transfers the approved tStable token from account to redeem pool and burn it
      * @dev Transfers the  equivalent amount of stable token from redeem pool to account
      * @param amount, the number of tokens to be exchanged
+     * @param account, address of the account that will receive the stable token
      *
      * Requirements:
      *
