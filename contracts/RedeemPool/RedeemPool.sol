@@ -56,7 +56,7 @@ contract RedeemPool is IRedeemPool, Ownable {
 
     /**
      * @notice exchange tStable token for the stable token
-     * @dev this function can be called using another smart contract
+     * @dev burns the tStable from msg.sender and sends stable to `account`
      * @param amount, the number of tokens to be exchanged
      * @param account, address of the account that will receive the stable token
      */
