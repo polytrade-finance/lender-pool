@@ -73,9 +73,9 @@ describe("RedeemPool", function () {
   });
 
   it("should transfer tStable to others EOA's", async function () {
-    await tStable.connect(accounts[0]).transfer(addresses[1], n6("1000"));
+    await tStable.connect(accounts[0]).transfer(addresses[1], n6("1500"));
     await tStable.connect(accounts[0]).transfer(addresses[2], n6("1000"));
-    expect(await tStable.balanceOf(addresses[1])).to.be.equal(n6("1000"));
+    expect(await tStable.balanceOf(addresses[1])).to.be.equal(n6("1500"));
     expect(await tStable.balanceOf(addresses[2])).to.be.equal(n6("1000"));
   });
 
@@ -123,6 +123,6 @@ describe("RedeemPool", function () {
   it("should revert if insufficient balance in pool", async function () {
     expect(
       redeem.connect(accounts[1]).convertToStable(n6("1000"))
-    ).to.be.revertedWith("Insufficient balance");
+    ).to.be.revertedWith("Insufficient balance in pool");
   });
 });
