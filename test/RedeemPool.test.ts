@@ -141,5 +141,4 @@ describe("RedeemPool", function () {
       ethers.BigNumber.from(n6("500"))
     );
   });
-
 });
