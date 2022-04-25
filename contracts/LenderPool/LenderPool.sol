@@ -125,6 +125,7 @@ contract LenderPool is ILenderPool, Ownable {
         );
         _lender[msg.sender].pendingRewards = 0;
         _lender[msg.sender].deposit = 0;
+        tStable.mint(address(this), amount);
         tStable.approve(address(redeemPool), amount);
         redeemPool.toStable(amount, msg.sender);
     }
