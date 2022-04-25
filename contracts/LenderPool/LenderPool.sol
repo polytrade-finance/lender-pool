@@ -112,8 +112,14 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice exchanges tStable token for the stable token
-     * @dev calls toStable function from RedeemPool smart contract
+     * @notice transfers user all the reward in stable token
+     * @dev calculates and mint the reward
+     * @dev calls toStable function from RedeemPool to convert tStable to stable
+     *
+     * Requirements:
+     *
+     * - total reward should be not more than stable tokens in RedeemPool
+     *
      */
     function redeemStableAll() external {
         _updatePendingReward(msg.sender);
