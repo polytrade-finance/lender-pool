@@ -368,6 +368,7 @@ describe("LenderPool convert to stable", function () {
   let stable: Token;
   let tStable: Token;
   let redeem: RedeemPool;
+  let currentTime: number = 0;
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
@@ -405,29 +406,46 @@ describe("LenderPool convert to stable", function () {
     );
   });
 
-  it("should transfer tStable to others EOA's", async function () {
-    await tStable.connect(accounts[0]).transfer(addresses[1], n6("10000"));
-    expect(await tStable.balanceOf(addresses[1])).to.be.equal(n6("10000"));
+  it("should set APY to 10%", async function () {
+    await lenderPool.setAPY(1000);
+    expect(await lenderPool.getAPY()).to.be.equal(1000);
   });
 
-  it("should approve tStable token before exchange", async function () {
-    await tStable.connect(accounts[1]).approve(redeem.address, n6("10000"));
-    expect(await tStable.allowance(addresses[1], redeem.address)).to.be.equal(
-      ethers.BigNumber.from(n6("10000"))
+  it("should transfer Stable to others EOA's", async function () {
+    await stable.connect(accounts[0]).transfer(addresses[1], n6("10000"));
+    expect(await stable.balanceOf(addresses[1])).to.be.equal(n6("10000"));
+  });
+
+  it("should set minter", async function () {
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
+
+    expect(
+      await tStable.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+        lenderPool.address
+      )
     );
   });
 
-  it("should convert tStable to stable", async function () {
+  it("should deposit 100 stable tokens successfully from account 1 at t = 0 year", async function () {
+    await stable.connect(accounts[1]).approve(lenderPool.address, n6("100"));
+    expect(n6("100")).to.be.equal(
+      await stable.allowance(addresses[1], lenderPool.address)
+    );
+    currentTime = await now();
+    await lenderPool.connect(accounts[1]).deposit(n6("100"));
+    expect(await lenderPool.getDeposit(addresses[1])).to.be.equal(n6("100"));
+  });
+
+  it("should withdraw stable directly", async function () {
     const balanceBeforeStable = await stable.balanceOf(addresses[1]);
-    const balanceBeforeTstable = await tStable.balanceOf(addresses[1]);
-    await lenderPool.connect(accounts[1]).convertToStable(n6("10000"));
-    const balanceAfterTstable = await tStable.balanceOf(addresses[1]);
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
+    await lenderPool.connect(accounts[1]).redeemStableAll();
     const balanceAfterStable = await stable.balanceOf(addresses[1]);
-    expect(balanceAfterStable.sub(balanceBeforeStable)).to.be.equal(
-      n6("10000")
-    );
-    expect(balanceBeforeTstable.sub(balanceAfterTstable)).to.be.equal(
-      n6("10000")
-    );
+    console.log(balanceAfterStable.sub(balanceBeforeStable));
+    expect(balanceAfterStable.sub(balanceBeforeStable)).to.be.equal(n6("110"));
   });
 });
