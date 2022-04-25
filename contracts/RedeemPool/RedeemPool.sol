@@ -91,7 +91,7 @@ contract RedeemPool is IRedeemPool, Ownable {
             stable.balanceOf(address(this)) >= amount,
             "Insufficient balance in pool"
         );
-        tStable.burnFrom(account, amount);
+        tStable.burnFrom(msg.sender, amount);
         stable.safeTransfer(account, amount);
         emit StableWithdrawn(amount);
     }
