@@ -47,7 +47,7 @@ contract RedeemPool is IRedeemPool, Ownable {
 
     /**
      * @notice exchange tStable token for the stable token
-     * @dev users can directly call this function using EOA
+     * @dev users can directly call this function using EOA after approving `amount`
      * @param amount, the number of tokens to be exchanged
      */
     function convertToStable(uint amount) external {
