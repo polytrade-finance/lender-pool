@@ -425,9 +425,9 @@ describe("LenderPool convert to stable", function () {
 
   it("should withdraw stable directly", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 0.2);
-    expect(
-      lenderPool.connect(accounts[1]).redeemAll()
-    ).to.be.revertedWith("Insufficient balance in pool");
+    expect(lenderPool.connect(accounts[1]).redeemAll()).to.be.revertedWith(
+      "Insufficient balance in pool"
+    );
   });
 
   it("should deposit stable to redeem pool", async function () {
