@@ -92,7 +92,7 @@ interface ILenderPool {
      * - total reward should be not more than stable tokens in RedeemPool
      *
      */
-    function redeemStableAll() external;
+    function redeemAll() external;
 
     /**
      * @notice returns value of APY of current round

@@ -19,7 +19,7 @@ interface IRedeemPool {
      * @dev users can directly call this function using EOA after approving `amount`
      * @param amount, the number of tokens to be exchanged
      */
-    function convertToStable(uint amount) external;
+    function redeemStable(uint amount) external;
 
     /**
      * @notice exchange tStable token for the stable token

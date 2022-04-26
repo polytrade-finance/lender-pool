@@ -121,7 +121,7 @@ contract LenderPool is ILenderPool, Ownable {
      * - total reward should be not more than stable tokens in RedeemPool
      *
      */
-    function redeemStableAll() external {
+    function redeemAll() external {
         _updatePendingReward(msg.sender);
         uint amount = _lender[msg.sender].pendingRewards +
             _lender[msg.sender].deposit;

@@ -76,7 +76,7 @@ describe("RedeemPool", function () {
 
   it("should revert if not enough allowance", async function () {
     expect(
-      redeem.connect(accounts[1]).convertToStable(n6("1000"))
+      redeem.connect(accounts[1]).redeemStable(n6("1000"))
     ).to.be.revertedWith("ERC20: insufficient allowance");
   });
 
@@ -89,19 +89,19 @@ describe("RedeemPool", function () {
 
   it("should revert if amount is more than balance", async function () {
     expect(
-      redeem.connect(accounts[1]).convertToStable(n6("10000"))
+      redeem.connect(accounts[1]).redeemStable(n6("10000"))
     ).to.be.revertedWith("ERC20: burn amount exceeds balance");
   });
 
   it("should revert if amount is zero", async function () {
     expect(
-      redeem.connect(accounts[1]).convertToStable(n6("0"))
+      redeem.connect(accounts[1]).redeemStable(n6("0"))
     ).to.be.revertedWith("Amount is 0");
   });
 
   it("should covert tStable to stable", async function () {
     const balanceBefore = await stable.balanceOf(addresses[1]);
-    await redeem.connect(accounts[1]).convertToStable(n6("500"));
+    await redeem.connect(accounts[1]).redeemStable(n6("500"));
     const balanceAfter = await stable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(
       ethers.BigNumber.from(n6("500"))
@@ -110,7 +110,7 @@ describe("RedeemPool", function () {
 
   it("should revert if insufficient balance in pool", async function () {
     expect(
-      redeem.connect(accounts[1]).convertToStable(n6("1000"))
+      redeem.connect(accounts[1]).redeemStable(n6("1000"))
     ).to.be.revertedWith("Insufficient balance in pool");
   });
 
