@@ -114,7 +114,7 @@ contract LenderPool is ILenderPool, Ownable {
     /**
      * @notice transfers user all the reward in stable token
      * @dev calculates and mint the reward
-     * @dev calls toStable function from RedeemPool to convert tStable to stable
+     * @dev calls redeemStableTo function from RedeemPool to convert tStable to stable
      *
      * Requirements:
      *
@@ -133,7 +133,7 @@ contract LenderPool is ILenderPool, Ownable {
         _lender[msg.sender].deposit = 0;
         tStable.mint(address(this), amount);
         tStable.approve(address(redeemPool), amount);
-        redeemPool.toStable(amount, msg.sender);
+        redeemPool.redeemStableTo(amount, msg.sender);
     }
 
     /**

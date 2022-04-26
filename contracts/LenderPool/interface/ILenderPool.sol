@@ -85,7 +85,7 @@ interface ILenderPool {
     /**
      * @notice transfers user all the reward in stable token
      * @dev calculates and mint the reward
-     * @dev calls toStable function from RedeemPool to convert tStable to stable
+     * @dev calls redeemStableTo function from RedeemPool to convert tStable to stable
      *
      * Requirements:
      *

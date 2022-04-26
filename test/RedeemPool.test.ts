@@ -123,7 +123,7 @@ describe("RedeemPool", function () {
 
   it("should covert tStable to stable", async function () {
     const balanceBefore = await stable.balanceOf(addresses[1]);
-    await redeem.connect(accounts[2]).toStable(n6("500"), addresses[1]);
+    await redeem.connect(accounts[2]).redeemStableTo(n6("500"), addresses[1]);
     const balanceAfter = await stable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(
       ethers.BigNumber.from(n6("500"))
