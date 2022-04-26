@@ -24,28 +24,6 @@ contract RedeemPool is IRedeemPool, Ownable {
     }
 
     /**
-     * @notice Deposit stable token to smart contract
-     * @dev Transfers the approved stable token from msg.sender to redeem pool
-     * @param amount, the number of stable token deposited
-     *
-     * Requirements:
-     *
-     * - `amount` should be greater than zero
-     * - `amount` must be approved from the stable token contract for the RedeemPool contract
-     *
-     * Emits {StableDeposited} event
-     */
-    function depositStable(uint amount) external {
-        require(amount > 0, "Amount is 0");
-        require(
-            stable.allowance(msg.sender, address(this)) >= amount,
-            "Not enough allowance"
-        );
-        stable.safeTransferFrom(msg.sender, address(this), amount);
-        emit StableDeposited(amount);
-    }
-
-    /**
      * @notice exchange tStable token for the stable token
      * @dev users can directly call this function using EOA after approving `amount`
      * @param amount, the number of tokens to be exchanged
