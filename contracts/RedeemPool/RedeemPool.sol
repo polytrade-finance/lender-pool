@@ -20,7 +20,6 @@ contract RedeemPool is IRedeemPool, AccessControl {
 
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
 
-
     constructor(address _stableAddress, address _tStableAddress) {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
@@ -42,7 +41,10 @@ contract RedeemPool is IRedeemPool, AccessControl {
      * @param amount, the number of tokens to be exchanged
      * @param account, address of the account that will receive the stable token
      */
-    function redeemStableTo(uint amount, address account) external onlyRole(LENDER_POOL){
+    function redeemStableTo(uint amount, address account)
+        external
+        onlyRole(LENDER_POOL)
+    {
         _convertToStable(amount, account);
     }
 

@@ -113,5 +113,4 @@ describe("RedeemPool", function () {
       redeem.connect(accounts[1]).redeemStable(n6("1000"))
     ).to.be.revertedWith("Insufficient balance in pool");
   });
-
 });
