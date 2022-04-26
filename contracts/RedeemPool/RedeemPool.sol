@@ -47,7 +47,7 @@ contract RedeemPool is IRedeemPool, AccessControl {
      * @param amount, the number of tokens to be exchanged
      */
     function redeemStable(uint amount) external {
-        _convertToStable(amount, msg.sender);
+        _redeemStable(amount, msg.sender);
     }
 
     /**
@@ -60,7 +60,7 @@ contract RedeemPool is IRedeemPool, AccessControl {
         external
         onlyRole(LENDER_POOL)
     {
-        _convertToStable(amount, account);
+        _redeemStable(amount, account);
     }
 
     /**
@@ -78,7 +78,7 @@ contract RedeemPool is IRedeemPool, AccessControl {
      *
      * Emits {StableWithdrawn} event
      */
-    function _convertToStable(uint amount, address account) private {
+    function _redeemStable(uint amount, address account) private {
         require(
             tStable.balanceOf(msg.sender) >= amount,
             "Insufficient balance"
