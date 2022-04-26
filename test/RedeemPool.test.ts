@@ -47,19 +47,14 @@ describe("RedeemPool", function () {
   });
 
   it("should not be able to deposit stable", async function () {
-    expect(redeem.depositStable(n6("0"))).to.be.revertedWith("Invalid amount");
-  });
-
-  it("should approve stable token", async function () {
-    await stable.connect(accounts[0]).approve(redeem.address, n6("1000"));
-    expect(await stable.allowance(addresses[0], redeem.address)).to.be.equal(
-      ethers.BigNumber.from(n6("1000"))
+    expect(stable.transfer(redeem.address, n6("0"))).to.be.revertedWith(
+      "Invalid amount"
     );
   });
 
   it("should deposit stable to redeem pool", async function () {
     const balanceBefore = await stable.balanceOf(redeem.address);
-    await redeem.depositStable(n6("1000"));
+    await stable.transfer(redeem.address, n6("1000"));
     const balanceAfter = await stable.balanceOf(redeem.address);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(
       ethers.BigNumber.from(n6("1000"))
@@ -67,7 +62,7 @@ describe("RedeemPool", function () {
   });
 
   it("should not be able to deposit stable", async function () {
-    expect(redeem.depositStable(n6("100"))).to.be.revertedWith(
+    expect(stable.transfer(redeem.address, n6("100"))).to.be.revertedWith(
       "Not enough allowance"
     );
   });
@@ -77,13 +72,6 @@ describe("RedeemPool", function () {
     await tStable.connect(accounts[0]).transfer(addresses[2], n6("1000"));
     expect(await tStable.balanceOf(addresses[1])).to.be.equal(n6("1500"));
     expect(await tStable.balanceOf(addresses[2])).to.be.equal(n6("1000"));
-  });
-
-  it("should approve tStable token", async function () {
-    await tStable.connect(accounts[1]).approve(redeem.address, n6("500"));
-    expect(await tStable.allowance(addresses[1], redeem.address)).to.be.equal(
-      ethers.BigNumber.from(n6("500"))
-    );
   });
 
   it("should revert if not enough allowance", async function () {

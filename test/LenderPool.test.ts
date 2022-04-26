@@ -390,13 +390,6 @@ describe("LenderPool convert to stable", function () {
     await lenderPool.deployed();
   });
 
-  it("should approve stable token before deposit to redeem pool", async function () {
-    await stable.connect(accounts[0]).approve(redeem.address, n6("10000"));
-    expect(await stable.allowance(addresses[0], redeem.address)).to.be.equal(
-      ethers.BigNumber.from(n6("10000"))
-    );
-  });
-
   it("should set APY to 10%", async function () {
     await lenderPool.setAPY(1000);
     expect(await lenderPool.getAPY()).to.be.equal(1000);
@@ -439,7 +432,7 @@ describe("LenderPool convert to stable", function () {
 
   it("should deposit stable to redeem pool", async function () {
     const balanceBefore = await stable.balanceOf(redeem.address);
-    await redeem.depositStable(n6("10000"));
+    await stable.transfer(redeem.address, n6("10000"));
     const balanceAfter = await stable.balanceOf(redeem.address);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(
       ethers.BigNumber.from(n6("10000"))
