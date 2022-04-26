@@ -102,7 +102,7 @@ describe("RedeemPool", function () {
     ).to.be.revertedWith("Amount is 0");
   });
 
-  it("should covert tStable to stable", async function () {
+  it("should convert tStable to stable", async function () {
     const balanceBefore = await stable.balanceOf(addresses[1]);
     await redeem.connect(accounts[1]).redeemStable(n6("500"));
     const balanceAfter = await stable.balanceOf(addresses[1]);
