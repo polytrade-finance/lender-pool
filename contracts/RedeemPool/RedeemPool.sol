@@ -3,14 +3,14 @@ pragma solidity ^0.8.12;
 
 import "./interface/IRedeemPool.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../Token/interface/IToken.sol";
 
 /**
  * @author Polytrade
  * @title RedeemPool
  */
-contract RedeemPool is IRedeemPool, Ownable {
+contract RedeemPool is IRedeemPool, AccessControl {
     using SafeERC20 for IToken;
 
     IToken public immutable stable;
@@ -18,9 +18,13 @@ contract RedeemPool is IRedeemPool, Ownable {
 
     mapping(address => bool) public lenderPool;
 
+    bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
+
+
     constructor(address _stableAddress, address _tStableAddress) {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     /**
@@ -38,7 +42,7 @@ contract RedeemPool is IRedeemPool, Ownable {
      * @param amount, the number of tokens to be exchanged
      * @param account, address of the account that will receive the stable token
      */
-    function redeemStableTo(uint amount, address account) external {
+    function redeemStableTo(uint amount, address account) external onlyRole(LENDER_POOL){
         _convertToStable(amount, account);
     }
 

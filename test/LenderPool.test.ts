@@ -413,6 +413,19 @@ describe("LenderPool convert to stable", function () {
     );
   });
 
+  it("should set LENDER_POOL role in redeem", async function () {
+    redeem.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
+    expect(
+      await redeem.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
+      )
+    );
+  });
+
   it("should deposit 100 stable tokens successfully from account 1 at t = 0 year", async function () {
     await stable.connect(accounts[1]).approve(lenderPool.address, n6("100"));
     expect(n6("100")).to.be.equal(
