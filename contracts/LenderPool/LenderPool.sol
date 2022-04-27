@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interface/ILenderPool.sol";
 import "../Token/interface/IToken.sol";
+import "../RedeemPool/interface/IRedeemPool.sol";
 
 /**
  * @author Polytrade
@@ -18,12 +19,18 @@ contract LenderPool is ILenderPool, Ownable {
 
     IToken public immutable stable;
     IToken public immutable tStable;
+    IRedeemPool public immutable redeemPool;
 
     uint16 public currentRound = 0;
 
-    constructor(address _stableAddress, address _tStableAddress) {
+    constructor(
+        address _stableAddress,
+        address _tStableAddress,
+        address _redeemPool
+    ) {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
+        redeemPool = IRedeemPool(_redeemPool);
     }
 
     /**
@@ -34,7 +41,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Requirements:
      *
      * - `amount` should be greater than zero
-     * - `amount` must be approved from the stable token contract for the LenderPool contact
+     * - `amount` must be approved from the stable token contract for the LenderPool contract
      *
      * Emits {Deposit} event
      */
@@ -102,6 +109,31 @@ contract LenderPool is ILenderPool, Ownable {
             type(uint40).max
         );
         emit NewRewardAPY(round[currentRound].apy);
+    }
+
+    /**
+     * @notice transfers user all the reward in stable token
+     * @dev calculates and mint the reward
+     * @dev calls redeemStableTo function from RedeemPool to convert tStable to stable
+     *
+     * Requirements:
+     *
+     * - total reward should be not more than stable tokens in RedeemPool
+     *
+     */
+    function redeemAll() external {
+        _updatePendingReward(msg.sender);
+        uint amount = _lender[msg.sender].pendingRewards +
+            _lender[msg.sender].deposit;
+        require(
+            stable.balanceOf(address(redeemPool)) >= amount,
+            "Insufficient balance in pool"
+        );
+        _lender[msg.sender].pendingRewards = 0;
+        _lender[msg.sender].deposit = 0;
+        tStable.mint(address(this), amount);
+        tStable.approve(address(redeemPool), amount);
+        redeemPool.redeemStableTo(amount, msg.sender);
     }
 
     /**

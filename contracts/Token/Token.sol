@@ -3,14 +3,13 @@ pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "./interface/IToken.sol";
 
 /**
  * @author Polytrade
  * @title Token
  */
-contract Token is IToken, ERC20, ERC20Burnable, AccessControl {
+contract Token is IToken, ERC20, AccessControl {
     uint8 private immutable _decimals;
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -38,6 +37,22 @@ contract Token is IToken, ERC20, ERC20Burnable, AccessControl {
      */
     function mint(address to, uint amount) external onlyRole(MINTER_ROLE) {
         _mint(to, amount);
+    }
+
+    /**
+     * @dev Destroys `amount` tokens from `account`, deducting from the caller's
+     * allowance.
+     *
+     * See {ERC20-_burn} and {ERC20-allowance}.
+     *
+     * Requirements:
+     *
+     * - the caller must have allowance for ``accounts``'s tokens of at least
+     * `amount`.
+     */
+    function burnFrom(address account, uint amount) external {
+        _spendAllowance(account, _msgSender(), amount);
+        _burn(account, amount);
     }
 
     /**
