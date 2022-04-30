@@ -7,10 +7,6 @@ import "../RedeemPool/interface/IRedeemPool.sol";
 import "../Verification/interface/IVerification.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./interface/ILenderPool.sol";
-import "../Token/interface/IToken.sol";
-import "../RedeemPool/interface/IRedeemPool.sol";
 
 /**
  * @author Polytrade
@@ -28,6 +24,7 @@ contract LenderPool is ILenderPool, Ownable {
     IVerification public verification;
 
     uint16 public currentRound = 0;
+    uint public depositLimit;
 
     constructor(
         address _stableAddress,
