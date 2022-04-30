@@ -64,9 +64,12 @@ contract LenderPool is ILenderPool, Ownable {
         } else {
             _lender[msg.sender].startPeriod = uint40(block.timestamp);
         }
+
         _lender[msg.sender].deposit += amount;
         _lender[msg.sender].round = currentRound;
+
         emit Deposit(msg.sender, amount);
+
         stable.safeTransferFrom(msg.sender, address(this), amount);
     }
 
