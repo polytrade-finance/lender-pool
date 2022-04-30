@@ -52,6 +52,13 @@ contract LenderPool is ILenderPool, Ownable {
         require(amount > 0, "Lending amount is 0");
         uint allowance = stable.allowance(msg.sender, address(this));
         require(allowance >= amount, "Not enough allowance");
+
+        require(
+            (_lender[msg.sender].deposit + amount < depositLimit) ||
+                verification.isValid(msg.sender),
+            "Need to have valid KYC"
+        );
+
         if (_lender[msg.sender].startPeriod > 0) {
             _updatePendingReward(msg.sender);
         } else {
