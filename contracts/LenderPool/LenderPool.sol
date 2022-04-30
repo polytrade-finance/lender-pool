@@ -105,6 +105,37 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
+     * @notice Updates the Verification contract address
+     * @dev changes verification Contract must complies with `IVerification`
+     * @param _verificationAddress, address of the new Verification contract
+     *
+     * Emits {VerificationContractUpdated} event
+     */
+    function updateVerificationContract(address _verificationAddress)
+        external
+        onlyOwner
+    {
+        address oldVerificationAddress = address(verification);
+        verification = IVerification(_verificationAddress);
+        emit VerificationContractUpdated(
+            oldVerificationAddress,
+            _verificationAddress
+        );
+    }
+
+    /**
+     * @notice Updates the limit for the KYC to be required
+     * @dev updates depositLimit variable
+     * @param _depositLimit, new value of depositLimit
+     *
+     * Emits {NewDepositLimit} event
+     */
+    function updateDepositLimit(uint _depositLimit) external onlyOwner {
+        depositLimit = _depositLimit;
+        emit NewDepositLimit(_depositLimit);
+    }
+
+    /**
      * @notice adds a new round
      * @dev increment currentRound and adds a new round, only owner can call
      * @param _rewardAPY, new value of new round.apy
