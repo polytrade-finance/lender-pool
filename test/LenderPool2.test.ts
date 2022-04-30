@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Token, LenderPool } from "../typechain";
+import { Token, LenderPool, Verification } from "../typechain";
 import { n6, ONE_DAY, now, setNextBlockTimestamp } from "./helpers";
 describe("Normal reward without withdrawals only 1 round (same APY)", function () {
   let accounts: SignerWithAddress[];
@@ -9,6 +9,7 @@ describe("Normal reward without withdrawals only 1 round (same APY)", function (
   let lenderPool: LenderPool;
   let stable: Token;
   let tStable: Token;
+  let verification: Verification;
   let currentTime: number = 0;
   before(async () => {
     accounts = await ethers.getSigners();
@@ -25,6 +26,13 @@ describe("Normal reward without withdrawals only 1 round (same APY)", function (
       ethers.constants.AddressZero
     );
     await lenderPool.deployed();
+
+    const Verification = await ethers.getContractFactory("Verification");
+    verification = await Verification.deploy();
+    await verification.deployed();
+
+    await lenderPool.updateVerificationContract(verification.address);
+    await lenderPool.updateDepositLimit(n6("5000"));
   });
 
   it("should set minter", async function () {
@@ -72,6 +80,7 @@ describe("Normal reward without withdrawals with multiple rounds", function () {
   let lenderPool: LenderPool;
   let stable: Token;
   let tStable: Token;
+  let verification: Verification;
   let currentTime: number = 0;
   before(async () => {
     accounts = await ethers.getSigners();
@@ -88,6 +97,12 @@ describe("Normal reward without withdrawals with multiple rounds", function () {
       ethers.constants.AddressZero
     );
     await lenderPool.deployed();
+    const Verification = await ethers.getContractFactory("Verification");
+    verification = await Verification.deploy();
+    await verification.deployed();
+
+    await lenderPool.updateVerificationContract(verification.address);
+    await lenderPool.updateDepositLimit(n6("5000"));
   });
 
   it("should set minter", async function () {
@@ -126,7 +141,7 @@ describe("Normal reward without withdrawals with multiple rounds", function () {
 
   it("should set APY to 200%", async function () {
     await lenderPool.setAPY(20000);
-    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 1);
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
     expect(await lenderPool.getAPY()).to.be.equal(20000);
   });
 
@@ -148,7 +163,9 @@ describe("Rewards with multiple withdrawals on a single round (same APY)", funct
   let lenderPool: LenderPool;
   let stable: Token;
   let tStable: Token;
+  let verification: Verification;
   let currentTime: number = 0;
+
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
@@ -164,6 +181,12 @@ describe("Rewards with multiple withdrawals on a single round (same APY)", funct
       ethers.constants.AddressZero
     );
     await lenderPool.deployed();
+    const Verification = await ethers.getContractFactory("Verification");
+    verification = await Verification.deploy();
+    await verification.deployed();
+
+    await lenderPool.updateVerificationContract(verification.address);
+    await lenderPool.updateDepositLimit(n6("5000"));
   });
 
   it("should set minter", async function () {
@@ -226,7 +249,9 @@ describe("Rewards with multiple withdrawals on multiple rounds (same APY)", func
   let lenderPool: LenderPool;
   let stable: Token;
   let tStable: Token;
+  let verification: Verification;
   let currentTime: number = 0;
+
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
@@ -242,6 +267,12 @@ describe("Rewards with multiple withdrawals on multiple rounds (same APY)", func
       ethers.constants.AddressZero
     );
     await lenderPool.deployed();
+    const Verification = await ethers.getContractFactory("Verification");
+    verification = await Verification.deploy();
+    await verification.deployed();
+
+    await lenderPool.updateVerificationContract(verification.address);
+    await lenderPool.updateDepositLimit(n6("5000"));
   });
 
   it("should set minter", async function () {
@@ -267,11 +298,25 @@ describe("Rewards with multiple withdrawals on multiple rounds (same APY)", func
     expect(await lenderPool.getAPY()).to.be.equal(10000);
   });
 
-  it("should deposit 5000 stable tokens successfully from account 3 at t = 0 year", async function () {
+  it("should approve 5000 stable to the Lender Pool", async () => {
     await stable.connect(accounts[3]).approve(lenderPool.address, n6("5000"));
     expect(n6("5000")).to.be.equal(
       await stable.allowance(addresses[3], lenderPool.address)
     );
+  });
+
+  it("should fail deposit if no valid KYC", async () => {
+    await expect(
+      lenderPool.connect(accounts[3]).deposit(n6("5000"))
+    ).to.be.revertedWith("Need to have valid KYC");
+  });
+
+  it("should approve KYC for user3", async () => {
+    await verification.setKYC(addresses[3], true);
+    expect(await verification.isValid(addresses[3])).to.equal(true);
+  });
+
+  it("should deposit 5000 stable tokens successfully from account 3 at t = 0 year", async function () {
     await lenderPool.connect(accounts[3]).deposit(n6("5000"));
     currentTime = await now();
     expect(await lenderPool.getDeposit(addresses[3])).to.be.equal(n6("5000"));
@@ -316,7 +361,9 @@ describe("Rewards with multiple withdrawals and deposits on multiple rounds", fu
   let lenderPool: LenderPool;
   let stable: Token;
   let tStable: Token;
+  let verification: Verification;
   let currentTime: number = 0;
+
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
@@ -332,6 +379,12 @@ describe("Rewards with multiple withdrawals and deposits on multiple rounds", fu
       ethers.constants.AddressZero
     );
     await lenderPool.deployed();
+    const Verification = await ethers.getContractFactory("Verification");
+    verification = await Verification.deploy();
+    await verification.deployed();
+
+    await lenderPool.updateVerificationContract(verification.address);
+    await lenderPool.updateDepositLimit(n6("5000"));
   });
 
   it("should set minter", async function () {
@@ -356,6 +409,11 @@ describe("Rewards with multiple withdrawals and deposits on multiple rounds", fu
   it("should set APY to 100%", async function () {
     await lenderPool.setAPY(10000);
     expect(await lenderPool.getAPY()).to.be.equal(10000);
+  });
+
+  it("should approve KYC for user3", async () => {
+    await verification.setKYC(addresses[3], true);
+    expect(await verification.isValid(addresses[3])).to.equal(true);
   });
 
   it("should deposit 5000 stable tokens successfully from account 3 at t = 0 year", async function () {

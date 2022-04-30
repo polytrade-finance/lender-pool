@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Token, LenderPool, RedeemPool } from "../typechain";
+import { Token, LenderPool, RedeemPool, Verification } from "../typechain";
 import {
   increaseTime,
   n6,
@@ -16,6 +16,7 @@ describe("LenderPool", function () {
   let lenderPool: LenderPool;
   let stable: Token;
   let tStable: Token;
+  let verification: Verification;
 
   before(async () => {
     accounts = await ethers.getSigners();
@@ -32,6 +33,14 @@ describe("LenderPool", function () {
       ethers.constants.AddressZero
     );
     await lenderPool.deployed();
+
+    const Verification = await ethers.getContractFactory("Verification");
+    verification = await Verification.deploy();
+    await verification.deployed();
+  });
+
+  it("Should set verification contract to LenderPool", async () => {
+    await lenderPool.updateVerificationContract(verification.address);
   });
 
   it("should deploy contracts successfully", async function () {
@@ -44,7 +53,7 @@ describe("LenderPool", function () {
   });
 
   it("should set minter", async function () {
-    tStable.grantRole(
+    await tStable.grantRole(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
       lenderPool.address
     );
@@ -73,6 +82,16 @@ describe("LenderPool", function () {
 
   it("should check balance of user is zero", async function () {
     expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(0);
+  });
+
+  it("should fail deposits stable token without KYC", async function () {
+    await expect(
+      lenderPool.connect(accounts[0]).deposit(100)
+    ).to.be.revertedWith("Need to have valid KYC");
+  });
+
+  it("should increase the minimum deposit before KYC", async () => {
+    await lenderPool.updateDepositLimit(n6("5000"));
   });
 
   it("should deposit stable token successfully", async function () {
@@ -140,6 +159,7 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
   let lenderPool: LenderPool;
   let stable: Token;
   let tStable: Token;
+  let verification: Verification;
   let currentTime: number = 0;
   before(async () => {
     accounts = await ethers.getSigners();
@@ -156,6 +176,13 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
       ethers.constants.AddressZero
     );
     await lenderPool.deployed();
+
+    const Verification = await ethers.getContractFactory("Verification");
+    verification = await Verification.deploy();
+    await verification.deployed();
+
+    await lenderPool.updateVerificationContract(verification.address);
+    await lenderPool.updateDepositLimit(n6("5000"));
   });
 
   it("should transfer stable to others EOA's", async function () {
@@ -254,7 +281,9 @@ describe("Lender pool reward testing for changing APY", function () {
   let lenderPool: LenderPool;
   let stable: Token;
   let tStable: Token;
+  let verification: Verification;
   let currentTime: number = 0;
+
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
@@ -270,6 +299,12 @@ describe("Lender pool reward testing for changing APY", function () {
       ethers.constants.AddressZero
     );
     await lenderPool.deployed();
+    const Verification = await ethers.getContractFactory("Verification");
+    verification = await Verification.deploy();
+    await verification.deployed();
+
+    await lenderPool.updateVerificationContract(verification.address);
+    await lenderPool.updateDepositLimit(n6("5000"));
   });
 
   it("should set minter", async function () {
@@ -368,7 +403,9 @@ describe("LenderPool convert to stable", function () {
   let stable: Token;
   let tStable: Token;
   let redeem: RedeemPool;
+  let verification: Verification;
   let currentTime: number = 0;
+
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
@@ -388,6 +425,12 @@ describe("LenderPool convert to stable", function () {
       redeem.address
     );
     await lenderPool.deployed();
+    const Verification = await ethers.getContractFactory("Verification");
+    verification = await Verification.deploy();
+    await verification.deployed();
+
+    await lenderPool.updateVerificationContract(verification.address);
+    await lenderPool.updateDepositLimit(n6("5000"));
   });
 
   it("should set APY to 10%", async function () {
