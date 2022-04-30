@@ -25,6 +25,7 @@ contract LenderPool is ILenderPool, Ownable {
     IToken public immutable stable;
     IToken public immutable tStable;
     IRedeemPool public immutable redeemPool;
+    IVerification public verification;
 
     uint16 public currentRound = 0;
 
