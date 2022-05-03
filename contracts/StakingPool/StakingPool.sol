@@ -7,6 +7,10 @@ import "./interface/IAaveLendingPool.sol";
 import "../Token/interface/IToken.sol";
 import "./interface/IStakingPool.sol";
 
+/**
+ * @author Polytrade
+ * @title StakingPool
+ */
 contract StakingPool is IStakingPool, AccessControl {
     using SafeERC20 for IToken;
 
