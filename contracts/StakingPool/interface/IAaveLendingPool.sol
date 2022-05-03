@@ -37,5 +37,5 @@ interface IAaveLendingPool {
         address asset,
         uint amount,
         address to
-    ) external;
-}
+    ) external returns(uint);
+}   
