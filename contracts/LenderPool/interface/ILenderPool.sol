@@ -46,7 +46,7 @@ interface ILenderPool {
      * Requirements:
      *
      * - `amount` should be greater than zero
-     * - `amount` must be approved from the stable token contract for the LenderPool contact
+     * - `amount` must be approved from the stable token contract for the LenderPool contract
      *
      * Emits {Deposit} event
      */
@@ -81,6 +81,18 @@ interface ILenderPool {
      * Emits {NewRewardAPY} event
      */
     function setAPY(uint16 _rewardAPY) external;
+
+    /**
+     * @notice transfers user all the reward in stable token
+     * @dev calculates and mint the reward
+     * @dev calls redeemStableTo function from RedeemPool to convert tStable to stable
+     *
+     * Requirements:
+     *
+     * - total reward should be not more than stable tokens in RedeemPool
+     *
+     */
+    function redeemAll() external;
 
     /**
      * @notice returns value of APY of current round

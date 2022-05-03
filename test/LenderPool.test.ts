@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Token, LenderPool } from "../typechain";
+import { Token, LenderPool, RedeemPool } from "../typechain";
 import {
   increaseTime,
   n6,
@@ -26,7 +26,11 @@ describe("LenderPool", function () {
     const TStable = await ethers.getContractFactory("Token");
     tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
     const LenderPool = await ethers.getContractFactory("LenderPool");
-    lenderPool = await LenderPool.deploy(stable.address, tStable.address);
+    lenderPool = await LenderPool.deploy(
+      stable.address,
+      tStable.address,
+      ethers.constants.AddressZero
+    );
     await lenderPool.deployed();
   });
 
@@ -146,7 +150,11 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
     const TStable = await ethers.getContractFactory("Token");
     tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
     const LenderPool = await ethers.getContractFactory("LenderPool");
-    lenderPool = await LenderPool.deploy(stable.address, tStable.address);
+    lenderPool = await LenderPool.deploy(
+      stable.address,
+      tStable.address,
+      ethers.constants.AddressZero
+    );
     await lenderPool.deployed();
   });
 
@@ -256,7 +264,11 @@ describe("Lender pool reward testing for changing APY", function () {
     const TStable = await ethers.getContractFactory("Token");
     tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
     const LenderPool = await ethers.getContractFactory("LenderPool");
-    lenderPool = await LenderPool.deploy(stable.address, tStable.address);
+    lenderPool = await LenderPool.deploy(
+      stable.address,
+      tStable.address,
+      ethers.constants.AddressZero
+    );
     await lenderPool.deployed();
   });
 
@@ -347,5 +359,105 @@ describe("Lender pool reward testing for changing APY", function () {
     await lenderPool.setAPY(1000);
     await increaseTime(ONE_DAY * 365);
     console.log(await lenderPool.rewardOf(addresses[2]));
+  });
+});
+describe("LenderPool convert to stable", function () {
+  let accounts: SignerWithAddress[];
+  let addresses: string[];
+  let lenderPool: LenderPool;
+  let stable: Token;
+  let tStable: Token;
+  let redeem: RedeemPool;
+  let currentTime: number = 0;
+  before(async () => {
+    accounts = await ethers.getSigners();
+    addresses = accounts.map((account: SignerWithAddress) => account.address);
+    const Token = await ethers.getContractFactory("Token");
+    stable = await Token.deploy("Tether", "USDT", 6);
+    await stable.deployed();
+    const TStable = await ethers.getContractFactory("Token");
+    tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
+    await tStable.deployed();
+    const Redeem = await ethers.getContractFactory("RedeemPool");
+    redeem = await Redeem.deploy(stable.address, tStable.address);
+    await redeem.deployed();
+    const LenderPool = await ethers.getContractFactory("LenderPool");
+    lenderPool = await LenderPool.deploy(
+      stable.address,
+      tStable.address,
+      redeem.address
+    );
+    await lenderPool.deployed();
+  });
+
+  it("should set APY to 10%", async function () {
+    await lenderPool.setAPY(1000);
+    expect(await lenderPool.getAPY()).to.be.equal(1000);
+  });
+
+  it("should transfer Stable to others EOA's", async function () {
+    await stable.connect(accounts[0]).transfer(addresses[1], n6("10000"));
+    expect(await stable.balanceOf(addresses[1])).to.be.equal(n6("10000"));
+  });
+
+  it("should set minter", async function () {
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
+    expect(
+      await tStable.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+        lenderPool.address
+      )
+    );
+  });
+
+  it("should set LENDER_POOL role in redeem", async function () {
+    redeem.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
+    expect(
+      await redeem.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
+      )
+    );
+  });
+
+  it("should deposit 100 stable tokens successfully from account 1 at t = 0 year", async function () {
+    await stable.connect(accounts[1]).approve(lenderPool.address, n6("100"));
+    expect(n6("100")).to.be.equal(
+      await stable.allowance(addresses[1], lenderPool.address)
+    );
+    currentTime = await now();
+    await lenderPool.connect(accounts[1]).deposit(n6("100"));
+    expect(await lenderPool.getDeposit(addresses[1])).to.be.equal(n6("100"));
+  });
+
+  it("should withdraw stable directly", async function () {
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 0.2);
+    expect(lenderPool.connect(accounts[1]).redeemAll()).to.be.revertedWith(
+      "Insufficient balance in pool"
+    );
+  });
+
+  it("should deposit stable to redeem pool", async function () {
+    const balanceBefore = await stable.balanceOf(redeem.address);
+    await stable.transfer(redeem.address, n6("10000"));
+    const balanceAfter = await stable.balanceOf(redeem.address);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(
+      ethers.BigNumber.from(n6("10000"))
+    );
+  });
+
+  it("should withdraw stable directly", async function () {
+    const balanceBeforeStable = await stable.balanceOf(addresses[1]);
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
+    await lenderPool.connect(accounts[1]).redeemAll();
+    const balanceAfterStable = await stable.balanceOf(addresses[1]);
+    console.log(balanceAfterStable.sub(balanceBeforeStable));
+    expect(balanceAfterStable.sub(balanceBeforeStable)).to.be.equal(n6("110"));
   });
 });
