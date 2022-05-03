@@ -26,14 +26,17 @@ contract StakingPool is IStakingPool, AccessControl {
     }
 
     function deposit(uint amount) external {
-        require(stable.transferFrom(msg.sender, address(this), amount), "stable Transfer failed!");
+        require(
+            stable.transferFrom(msg.sender, address(this), amount),
+            "stable Transfer failed!"
+        );
         stable.approve(address(aave), amount);
         aave.deposit(address(stable), amount, address(this), 0);
         emit Deposit(amount);
     }
 
     function withdraw(uint amount) external onlyRole(LENDER_POOL) {
-        aave.withdraw(address(stable),amount,msg.sender);
+        aave.withdraw(address(stable), amount, msg.sender);
         emit Withdraw(amount);
     }
 }
