@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { StakingPool,Token,LenderPool,RedeemPool } from "../typechain";
+import { StakingPool, Token, LenderPool, RedeemPool } from "../typechain";
 import { n6 } from "./helpers";
 import {
   USDTAddress,
@@ -38,7 +38,7 @@ describe("StakingPool", async function () {
     ).to.be.length.above(10);
   });
 
-  it("should deploy lender pool", async function(){
+  it("should deploy lender pool", async function () {
     const TStable = await ethers.getContractFactory("Token");
     tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
     await tStable.deployed();
@@ -52,19 +52,6 @@ describe("StakingPool", async function () {
       redeem.address
     );
     await lenderPool.deployed();
-  })
-
-  it("should set LENDER_POOL role in redeem", async function () {
-    stakingPool.grantRole(
-      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
-      lenderPool.address
-    );
-    expect(
-      await stakingPool.hasRole(
-        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
-        lenderPool.address
-      )
-    );
   });
 
   it("should impersonate account", async function () {
@@ -108,11 +95,31 @@ describe("StakingPool", async function () {
     await stakingPool.connect(accounts[1]).deposit(n6("1"));
   });
 
-  it("should set staking pool", async function(){
+  it("should set staking pool", async function () {
     lenderPool.setStakingPool(stakingPool.address);
   });
 
   it("should deposit funds to staking pool through lender pool", async function () {
     await lenderPool.depositInStakingPool(n6("50"));
+  });
+
+  it("should set LENDER_POOL role in redeem", async function () {
+    stakingPool.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
+    expect(
+      await stakingPool.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
+      )
+    );
+    console.log(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")));
+    await lenderPool.withdrawFromStakingPool(n6("50"));
+  });
+
+  it("should withdraw from staking pool", async function () {
+    console.log(lenderPool.address, addresses[0]);
+    await lenderPool.withdrawFromStakingPool(n6("50"));
   });
 });

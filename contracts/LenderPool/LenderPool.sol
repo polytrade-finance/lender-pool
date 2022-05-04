@@ -40,17 +40,17 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev
      * @param _address,
      */
-    function setStakingPool(address _address) external onlyOwner{
+    function setStakingPool(address _address) external onlyOwner {
         stakingPool = StakingPool(_address);
     }
 
-    function depositInStakingPool(uint amount) external onlyOwner{
+    function depositInStakingPool(uint amount) external onlyOwner {
         stable.approve(address(stakingPool), amount);
         stakingPool.deposit(amount);
     }
 
-    function withdrawFromStakingPool() external onlyOwner{
-        
+    function withdrawFromStakingPool(uint amount) external onlyOwner {
+        stakingPool.withdraw(amount);
     }
 
     /**

@@ -35,7 +35,8 @@ contract StakingPool is IStakingPool, AccessControl {
         emit Deposit(amount);
     }
 
-    function withdraw(uint amount) external onlyRole(LENDER_POOL) {
+    function withdraw(uint amount) external {
+        //add access control
         aave.withdraw(address(stable), amount, msg.sender);
         emit Withdraw(amount);
     }
