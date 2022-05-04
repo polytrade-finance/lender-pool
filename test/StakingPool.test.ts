@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { StakingPool } from "../typechain";
+import { StakingPool,Token,LenderPool,RedeemPool } from "../typechain";
 import { n6 } from "./helpers";
 import {
   USDTAddress,
@@ -14,6 +14,9 @@ describe("StakingPool", async function () {
   let addresses: string[];
   let stakingPool: StakingPool;
   let stable: any;
+  let tStable: Token;
+  let redeem: RedeemPool;
+  let lenderPool: LenderPool;
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
@@ -26,13 +29,42 @@ describe("StakingPool", async function () {
     );
   });
 
-  it("should deploy contracts successfully", async function () {
+  it("should deploy staking pool contract successfully", async function () {
     const StakingPool = await ethers.getContractFactory("StakingPool");
     stakingPool = await StakingPool.deploy(stable.address);
     await stakingPool.deployed();
     expect(
       await ethers.provider.getCode(stakingPool.address)
     ).to.be.length.above(10);
+  });
+
+  it("should deploy lender pool", async function(){
+    const TStable = await ethers.getContractFactory("Token");
+    tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
+    await tStable.deployed();
+    const Redeem = await ethers.getContractFactory("RedeemPool");
+    redeem = await Redeem.deploy(stable.address, tStable.address);
+    await redeem.deployed();
+    const LenderPool = await ethers.getContractFactory("LenderPool");
+    lenderPool = await LenderPool.deploy(
+      stable.address,
+      tStable.address,
+      redeem.address
+    );
+    await lenderPool.deployed();
+  })
+
+  it("should set LENDER_POOL role in redeem", async function () {
+    stakingPool.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
+    expect(
+      await stakingPool.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
+      )
+    );
   });
 
   it("should impersonate account", async function () {
@@ -51,9 +83,18 @@ describe("StakingPool", async function () {
 
   it("should transfer to account 1", async function () {
     const balanceBefore = await stable.balanceOf(addresses[1]);
-    await stable.connect(accounts[0]).transfer(addresses[1], n6("1"));
+    await stable.connect(accounts[0]).transfer(addresses[1], n6("100"));
     const balanceAfter = await stable.balanceOf(addresses[1]);
-    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("1"));
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("100"));
+  });
+
+  it("should deposit 50 stable tokens successfully from account 1", async function () {
+    await stable.connect(accounts[1]).approve(lenderPool.address, n6("50"));
+    expect(n6("50")).to.be.equal(
+      await stable.allowance(addresses[1], lenderPool.address)
+    );
+    await lenderPool.connect(accounts[1]).deposit(n6("50"));
+    expect(await lenderPool.getDeposit(addresses[1])).to.be.equal(n6("50"));
   });
 
   it("should increase allowance", async function () {
@@ -63,7 +104,15 @@ describe("StakingPool", async function () {
     );
   });
 
-  it("should deposit funds through staking pool", async function () {
+  it("should deposit funds to staking pool", async function () {
     await stakingPool.connect(accounts[1]).deposit(n6("1"));
+  });
+
+  it("should set staking pool", async function(){
+    lenderPool.setStakingPool(stakingPool.address);
+  });
+
+  it("should deposit funds to staking pool through lender pool", async function () {
+    await lenderPool.depositInStakingPool(n6("50"));
   });
 });

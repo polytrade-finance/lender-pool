@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interface/ILenderPool.sol";
 import "../Token/interface/IToken.sol";
 import "../RedeemPool/interface/IRedeemPool.sol";
+import "../StakingPool/StakingPool.sol";
 
 /**
  * @author Polytrade
@@ -20,6 +21,7 @@ contract LenderPool is ILenderPool, Ownable {
     IToken public immutable stable;
     IToken public immutable tStable;
     IRedeemPool public immutable redeemPool;
+    IStakingPool public stakingPool;
 
     uint16 public currentRound = 0;
 
@@ -31,6 +33,24 @@ contract LenderPool is ILenderPool, Ownable {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
         redeemPool = IRedeemPool(_redeemPool);
+    }
+
+    /**
+     * @notice
+     * @dev
+     * @param _address,
+     */
+    function setStakingPool(address _address) external onlyOwner{
+        stakingPool = StakingPool(_address);
+    }
+
+    function depositInStakingPool(uint amount) external onlyOwner{
+        stable.approve(address(stakingPool), amount);
+        stakingPool.deposit(amount);
+    }
+
+    function withdrawFromStakingPool() external onlyOwner{
+        
     }
 
     /**
