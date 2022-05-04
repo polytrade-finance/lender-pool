@@ -1,6 +1,6 @@
 export const [USDTAddress, AccountToImpersonateUSDT]: string[] = [
-  "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-  "0x2ff42B2E81649E6a0d8B2D7DBE79513b8562273E",
+  "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+  "0xD50D167DD35D256e19E2FB76d6b9Bf9F4c571A3E",
 ];
 
 export const extraTime: number = 60 * 60 * 24;

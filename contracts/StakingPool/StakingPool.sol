@@ -17,7 +17,7 @@ contract StakingPool is IStakingPool, AccessControl {
     IToken public stable;
 
     IAaveLendingPool public aave =
-        IAaveLendingPool(0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9);
+        IAaveLendingPool(0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf);
 
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
 
