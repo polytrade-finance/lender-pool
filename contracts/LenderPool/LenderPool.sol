@@ -36,19 +36,29 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice
-     * @dev
-     * @param _address,
+     * @notice set staking pool smart contract
+     * @dev only owner can call this function
+     * @param _address, address of the staking pool
      */
     function setStakingPool(address _address) external onlyOwner {
         stakingPool = StakingPool(_address);
     }
 
+    /**
+     * @notice deposit stable token to staking pool
+     * @dev only owner can call this function
+     * @param amount, total amount to deposit
+     */
     function depositInStakingPool(uint amount) external onlyOwner {
         stable.approve(address(stakingPool), amount);
         stakingPool.deposit(amount);
     }
 
+    /**
+     * @notice withdraw stable token from staking pool
+     * @dev only owner can call this function
+     * @param amount, total amount to withdraw
+     */
     function withdrawFromStakingPool(uint amount) external onlyOwner {
         stakingPool.withdraw(amount);
     }

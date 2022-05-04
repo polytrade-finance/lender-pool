@@ -3,30 +3,28 @@ pragma solidity ^0.8.12;
 
 interface IStakingPool {
     /**
-     * @notice
-     * @dev
-     * @param amount,
+     * @notice Emitted when funds are deposited
+     * @param amount, total amount deposited
      */
     event Deposit(uint amount);
 
     /**
-     * @notice
-     * @dev
-     * @param amount,
+     * @notice Emitted when funds are withdrawn from lender pool
+     * @param amount, total amount withdrawn
      */
     event Withdraw(uint amount);
 
     /**
-     * @notice
-     * @dev
-     * @param amount,
+     * @notice transfer funds to aave lending pool
+     * @dev accepts token from msg.sender and transfers to aave lending pool
+     * @param amount, total amount accepted from user and transferred to aave
      */
     function deposit(uint amount) external;
 
     /**
-     * @notice
-     * @dev
-     * @param amount,
+     * @notice withdraw funds from aave and send to lending pool
+     * @dev can be called by only lender pool
+     * @param amount, total amount accepted from user and transferred to aave
      */
     function withdraw(uint amount) external;
 }

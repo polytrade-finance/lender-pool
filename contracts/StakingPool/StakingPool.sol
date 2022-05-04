@@ -25,6 +25,11 @@ contract StakingPool is IStakingPool, AccessControl {
         stable = IToken(_stable);
     }
 
+    /**
+     * @notice transfer funds to aave lending pool
+     * @dev accepts token from msg.sender and transfers to aave lending pool
+     * @param amount, total amount accepted from user and transferred to aave
+     */
     function deposit(uint amount) external {
         require(
             stable.transferFrom(msg.sender, address(this), amount),
@@ -35,6 +40,11 @@ contract StakingPool is IStakingPool, AccessControl {
         emit Deposit(amount);
     }
 
+    /**
+     * @notice withdraw funds from aave and send to lending pool
+     * @dev can be called by only lender pool
+     * @param amount, total amount accepted from user and transferred to aave
+     */
     function withdraw(uint amount) external {
         //add access control
         aave.withdraw(address(stable), amount, msg.sender);

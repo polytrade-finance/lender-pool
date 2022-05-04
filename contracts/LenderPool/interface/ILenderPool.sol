@@ -39,6 +39,27 @@ interface ILenderPool {
     event NewRewardAPY(uint16 rewardAPY);
 
     /**
+     * @notice set staking pool smart contract
+     * @dev only owner can call this function
+     * @param _address, address of the staking pool
+     */
+    function setStakingPool(address _address) external;
+
+    /**
+     * @notice deposit stable token to staking pool
+     * @dev only owner can call this function
+     * @param amount, total amount to deposit
+     */
+    function depositInStakingPool(uint amount) external;
+
+    /**
+     * @notice withdraw stable token from staking pool
+     * @dev only owner can call this function
+     * @param amount, total amount to withdraw
+     */
+    function withdrawFromStakingPool(uint amount) external;
+
+    /**
      * @notice Deposit stable token to smart contract
      * @dev Transfers the approved stable token from msg.sender to lender pool
      * @param amount, the number of stable token to be deposited

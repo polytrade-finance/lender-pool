@@ -114,7 +114,9 @@ describe("StakingPool", async function () {
         lenderPool.address
       )
     );
-    console.log(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")));
+    console.log(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL"))
+    );
     await lenderPool.withdrawFromStakingPool(n6("50"));
   });
 
