@@ -167,6 +167,13 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
+     * @notice returns staking pool smart contract address
+     */
+    function getStakingPool() external view returns (address) {
+        return address(stakingPool);
+    }
+
+    /**
      * @notice returns value of APY of current round
      * @return returns value of APY of current round
      */

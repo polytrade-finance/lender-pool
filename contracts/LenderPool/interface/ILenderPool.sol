@@ -116,6 +116,11 @@ interface ILenderPool {
     function redeemAll() external;
 
     /**
+     * @notice returns staking pool smart contract address
+     */
+    function getStakingPool() external view returns (address);
+
+    /**
      * @notice returns value of APY of current round
      * @return returns value of APY of current round
      */
