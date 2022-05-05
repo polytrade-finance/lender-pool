@@ -92,11 +92,15 @@ describe("StakingPool", async function () {
   });
 
   it("should deposit funds to staking pool", async function () {
+    const balanceBefore = await stable.balanceOf(addresses[1]);
     await stakingPool.connect(accounts[1]).deposit(n6("1"));
+    const balanceAfter = await stable.balanceOf(addresses[1]);
+    expect(balanceBefore.sub(balanceAfter)).to.be.equal(n6("1"));
   });
 
   it("should set staking pool", async function () {
     lenderPool.setStakingPool(stakingPool.address);
+    expect(await lenderPool.getStakingPool()).to.be.equal(stakingPool.address);
   });
 
   it("should deposit funds to staking pool through lender pool", async function () {
