@@ -38,11 +38,13 @@ It is used to do the KYC.
 
 ### Staking Pool
 
-`constructor`
+`constructor(address _stable, address _aStable)`
 
 ### Lender Pool
 
+`constructor( address _stableAddress, address _tStableAddress, address _redeemPool)`
 
 ### Redeem Pool
 
+`constructor(address _stableAddress, address _tStableAddress)`
 
