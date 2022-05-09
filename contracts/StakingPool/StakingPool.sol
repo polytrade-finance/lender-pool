@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interface/IAaveLendingPool.sol";
 import "../Token/interface/IToken.sol";
 import "./interface/IStakingPool.sol";
+
 /**
  * @author Polytrade
  * @title StakingPool
@@ -48,10 +49,10 @@ contract StakingPool is IStakingPool, AccessControl {
      * @dev can be called by only lender pool
      * @param amount, total amount accepted from user and transferred to aave
      */
-    function withdraw(uint amount) external onlyRole(LENDING_POOL){
+    function withdraw(uint amount) external onlyRole(LENDING_POOL) {
         //add access control onlyRole(LENDER_POOL)
         //aStable.approve(address(aave), amount);
         aave.withdraw(address(stable), amount, msg.sender);
         emit Withdraw(amount);
-    } 
+    }
 }
