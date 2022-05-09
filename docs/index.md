@@ -28,5 +28,21 @@ Lenders can exchange T-stable received for stable token from redeem pool. Stable
 
 ### Staking Pool
 Staking Pool helps Lender Pool to put stable ERC20 token to work and earning passive income while funds are not used by polytrade.
-Staking Pool helps Lender Pool connect with other smart contracts such as AAVE, Compound(one at a time). The funds will be transferred to such protocol to earn reward. Later the funds will be withdrawn to the Lender Pool.
+Staking Pool helps Lender Pool connect with other smart contracts such as AAVE, Compound(one at a time).The funds will be transferred to such protocol to earn reward. Later the funds will be withdrawn to the Lender Pool.
+
+### Verification 
+
+It is used to do the KYC.
+
+### Step-By-Step Guide for developers
+
+### Staking Pool
+
+`constructor`
+
+### Lender Pool
+
+
+### Redeem Pool
+
 
