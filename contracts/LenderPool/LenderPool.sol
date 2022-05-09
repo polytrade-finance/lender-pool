@@ -35,32 +35,13 @@ contract LenderPool is ILenderPool, Ownable {
         redeemPool = IRedeemPool(_redeemPool);
     }
 
-    /**
-     * @notice set staking pool smart contract
-     * @dev only owner can call this function
-     * @param _address, address of the staking pool
-     */
-    function setStakingPool(address _address) external onlyOwner {
-        stakingPool = StakingPool(_address);
-    }
-
-    /**
-     * @notice deposit stable token to staking pool
-     * @dev only owner can call this function
-     * @param amount, total amount to deposit
-     */
-    function depositInStakingPool(uint amount) external onlyOwner {
-        stable.approve(address(stakingPool), amount);
-        stakingPool.deposit(amount);
-    }
-
-    /**
-     * @notice withdraw stable token from staking pool
-     * @dev only owner can call this function
-     * @param amount, total amount to withdraw
-     */
-    function withdrawFromStakingPool(uint amount) external onlyOwner {
-        stakingPool.withdraw(amount);
+    function updateStakingPool(address newStakingPool, uint amount)
+        external
+        onlyOwner
+    {
+        withdrawFromStakingPool(amount);
+        setStakingPool(newStakingPool);
+        depositInStakingPool(amount);
     }
 
     /**
@@ -204,6 +185,34 @@ contract LenderPool is ILenderPool, Ownable {
             return
                 _lender[lender].pendingRewards + _calculateCurrentRound(lender);
         }
+    }
+
+    /**
+     * @notice set staking pool smart contract
+     * @dev only owner can call this function
+     * @param _address, address of the staking pool
+     */
+    function setStakingPool(address _address) public onlyOwner {
+        stakingPool = StakingPool(_address);
+    }
+
+    /**
+     * @notice deposit stable token to staking pool
+     * @dev only owner can call this function
+     * @param amount, total amount to deposit
+     */
+    function depositInStakingPool(uint amount) public onlyOwner {
+        stable.approve(address(stakingPool), amount);
+        stakingPool.deposit(amount);
+    }
+
+    /**
+     * @notice withdraw stable token from staking pool
+     * @dev only owner can call this function
+     * @param amount, total amount to withdraw
+     */
+    function withdrawFromStakingPool(uint amount) public onlyOwner {
+        stakingPool.withdraw(amount);
     }
 
     /**
