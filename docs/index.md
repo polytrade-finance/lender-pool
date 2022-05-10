@@ -106,76 +106,287 @@ _can be called by only lender pool_
 
 
 
-### lenderPool
+## LenderPool
+
+### _lender
 
 ```solidity
-mapping(address &#x3D;&gt; bool) lenderPool
+mapping(address &#x3D;&gt; struct ILenderPool.Lender) _lender
+```
+
+### round
+
+```solidity
+mapping(uint16 &#x3D;&gt; struct ILenderPool.RoundInfo) round
+```
+
+### stable
+
+```solidity
+contract IToken stable
+```
+
+### tStable
+
+```solidity
+contract IToken tStable
+```
+
+### redeemPool
+
+```solidity
+contract IRedeemPool redeemPool
+```
+
+### currentRound
+
+```solidity
+uint16 currentRound
 ```
 
 ### constructor
 
 ```solidity
-constructor(address _stableAddress, address _tStableAddress) public
+constructor(address _stableAddress, address _tStableAddress, address _redeemPool) public
 ```
 
-### depositStable
+### deposit
 
 ```solidity
-function depositStable(uint256 amount) external
+function deposit(uint256 amount) external
 ```
 
 Deposit stable token to smart contract
 
-_Transfers the approved stable token from msg.sender to redeem pool_
+_Transfers the approved stable token from msg.sender to lender pool_
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | amount | uint256 |  |
 
-### convertToStable
+### withdrawAllTStable
 
 ```solidity
-function convertToStable(uint256 amount) external
+function withdrawAllTStable() external
 ```
 
-exchange tStable token for the stable token
+converts all the deposited stable token into tStable token and transfers to the lender
 
-_users can directly call this function using EOA_
+_calculates the tStable token lender can claim and transfers it to the lender_
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| amount | uint256 |  |
-
-### toStable
+### withdrawTStable
 
 ```solidity
-function toStable(uint256 amount, address account) external
+function withdrawTStable(uint256 amount) external
 ```
 
-exchange tStable token for the stable token
+converts the given amount of stable token into tStable token and transfers to lender
 
-_this function can be called using another smart contract_
+_checks the required condition and converts stable token to tStable and transfers to lender_
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | amount | uint256 |  |
-| account | address |  |
 
-### _convertToStable
+### claimRewards
 
 ```solidity
-function _convertToStable(uint256 amount, address account) private
+function claimRewards() external
 ```
 
-exchange tStable token for the stable token
+send lender all the reward
 
-_Transfers the approved tStable token from account to redeem pool and burn it
-Transfers the  equivalent amount of stable token from redeem pool to account_
+_update the pendingReward and mint tStable token and send to lender
+
+Emits {Withdraw} event_
+
+### setAPY
+
+```solidity
+function setAPY(uint16 _rewardAPY) external
+```
+
+adds a new round
+
+_increment currentRound and adds a new round, only owner can call_
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| _rewardAPY | uint16 |  |
+
+### redeemAll
+
+```solidity
+function redeemAll() external
+```
+
+transfers user all the reward in stable token
+
+_calculates and mint the reward
+calls redeemStableTo function from RedeemPool to convert tStable to stable
+
+Requirements:
+
+- total reward should be not more than stable tokens in RedeemPool_
+
+### getAPY
+
+```solidity
+function getAPY() external view returns (uint16)
+```
+
+returns value of APY of current round
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint16 | returns value of APY of current round |
+
+### getDeposit
+
+```solidity
+function getDeposit(address lender) external view returns (uint256)
+```
+
+returns amount of stable token deposited by the lender
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| lender | address |  |
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | returns amount of stable token deposited by the lender |
+
+### rewardOf
+
+```solidity
+function rewardOf(address lender) external view returns (uint256)
+```
+
+returns the total pending reward
+
+_returns the total pending reward of msg.sender_
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | returns the total pending reward |
+
+### _withdraw
+
+```solidity
+function _withdraw(uint256 amount) private
+```
+
+converts the deposited stable token of quantity &#x60;amount&#x60; into tStable token and send to the lender
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | amount | uint256 |  |
-| account | address |  |
+
+### _updatePendingReward
+
+```solidity
+function _updatePendingReward(address lender) private
+```
+
+updates round, pendingRewards and startTime of the lender
+
+_compares the lender round with currentRound and updates _lender accordingly_
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| lender | address |  |
+
+### _calculateCurrentRound
+
+```solidity
+function _calculateCurrentRound(address lender) private view returns (uint256)
+```
+
+return the total reward when lender round is equal to currentRound
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| lender | address |  |
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | returns total pending reward |
+
+### _calculateFromPreviousRounds
+
+```solidity
+function _calculateFromPreviousRounds(address lender) private view returns (uint256)
+```
+
+return the total reward when lender round is less than currentRound
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| lender | address |  |
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | returns total pending reward |
+
+### _calculateReward
+
+```solidity
+function _calculateReward(uint256 amount, uint40 start, uint40 end, uint16 apy) private pure returns (uint256)
+```
+
+calculates the reward
+
+_calculates the reward using simple interest formula_
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| amount | uint256 |  |
+| start | uint40 | of the tenure for reward |
+| end | uint40 | of the tenure for reward |
+| apy | uint16 |  |
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint256 | returns reward |
+
+### _max
+
+```solidity
+function _max(uint40 a, uint40 b) private pure returns (uint40)
+```
+
+returns maximum among two uint40 variables
+
+_compares two uint40 variables a and b and return maximum between them_
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| a | uint40 |  |
+| b | uint40 |  |
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint40 | returns maximum between a and b |
+
+### _min
+
+```solidity
+function _min(uint40 a, uint40 b) private pure returns (uint40)
+```
+
+returns minimum among two uint40 variables
+
+_compares two uint40 variables a and b and return minimum between them_
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| a | uint40 |  |
+| b | uint40 |  |
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| [0] | uint40 | returns minimum between a and b |
 
 
 ## RedeemPool
