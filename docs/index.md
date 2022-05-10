@@ -60,7 +60,7 @@ _Transfers the approved stable token from msg.sender to lender pool_
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| amount | uint256 |  |
+| amount | uint256 |  the number of stable token to be deposited |
 
 ### withdrawAllTStable
 
@@ -169,122 +169,6 @@ _returns the total pending reward of msg.sender_
 | ---- | ---- | ----------- |
 | [0] | uint256 | returns the total pending reward |
 
-### _withdraw
-
-```solidity
-function _withdraw(uint256 amount) private
-```
-
-converts the deposited stable token of quantity &#x60;amount&#x60; into tStable token and send to the lender
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| amount | uint256 | to be sent to the msg.sender |
-
-### _updatePendingReward
-
-```solidity
-function _updatePendingReward(address lender) private
-```
-
-updates round, pendingRewards and startTime of the lender
-
-_compares the lender round with currentRound and updates _lender accordingly_
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| lender | address | address of the lender |
-
-### _calculateCurrentRound
-
-```solidity
-function _calculateCurrentRound(address lender) private view returns (uint256)
-```
-
-return the total reward when lender round is equal to currentRound
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| lender | address | address of the lender |
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | returns total pending reward |
-
-### _calculateFromPreviousRounds
-
-```solidity
-function _calculateFromPreviousRounds(address lender) private view returns (uint256)
-```
-
-return the total reward when lender round is less than currentRound
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| lender | address | address of the lender |
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | returns total pending reward |
-
-### _calculateReward
-
-```solidity
-function _calculateReward(uint256 amount, uint40 start, uint40 end, uint16 apy) private pure returns (uint256)
-```
-
-calculates the reward
-
-_calculates the reward using simple interest formula_
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| amount | uint256 | principal amount |
-| start | uint40 | of the tenure for reward |
-| end | uint40 | of the tenure for reward |
-| apy | uint16 | Annual percentage yield received during the tenure |
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint256 | returns reward |
-
-### _max
-
-```solidity
-function _max(uint40 a, uint40 b) private pure returns (uint40)
-```
-
-returns maximum among two uint40 variables
-
-_compares two uint40 variables a and b and return maximum between them_
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| a | uint40 | value of uint40 variable |
-| b | uint40 |  value of uint40 variable|
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint40 | returns maximum between a and b |
-
-### _min
-
-```solidity
-function _min(uint40 a, uint40 b) private pure returns (uint40)
-```
-
-returns minimum among two uint40 variables
-
-_compares two uint40 variables a and b and return minimum between them_
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| a | uint40 | value of uint40 variable |
-| b | uint40 | value of uint40 variable |
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| [0] | uint40 | returns minimum between a and b |
 
 
 ## RedeemPool
@@ -296,20 +180,47 @@ constructor(address _stableAddress, address _tStableAddress) public
 ```
 
 
-### convertToStable
+### withdrawStuckToken
 
 ```solidity
-function convertToStable(uint256 amount) external
+function withdrawStuckToken(address tokenAddress, uint amount) external
 ```
 
-exchange tStable token for the stable token
+withdraw any token sent to RedeemPool by mistake
 
-_Transfers the approved tStable token from msg.sender to redeem pool and burn it
-Transfers the  equivalent amount of stable token from redeem pool to msg.sender_
+callable by only owner
+
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| amount | uint256 |  |
+| tokenAddress | uint256 | address of the token |
+|amount|uint256|the number of tokens to be sent |
+
+### redeemStable
+
+```solidity
+function redeemStable(uint amount) external
+```
+exchange tStable token for the stable token
+
+users can directly call this function using EOA after approving `amount`
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+|amount|uint256| the number of tokens to be exchanged|
+
+### redeemStableTo
+
+```solidity
+ function redeemStableTo(uint amount, address account) external
+```
+ exchange tStable token for the stable token
+
+ burns the tStable from msg.sender and sends stable to `account`
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+|amount|uint256|the number of tokens to be exchanged|
+|account|address|address of the account that will receive the stable token |
 
 ## Token
 
@@ -343,8 +254,8 @@ _creates &#x60;amount&#x60; tokens and assigns them to &#x60;to&#x60;, increasin
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| to | address |  |
-| amount | uint256 | of ERC20 token minted Emits a {Transfer} event with &#x60;from&#x60; set to the zero address. Requirements: - &#x60;to&#x60; cannot be the zero address. |
+| to | address | receiver address of the ERC20 address |
+| amount | uint256 | amount of ERC20 token minted|
 
 ### decimals
 
@@ -355,36 +266,6 @@ function decimals() public view virtual returns (uint8)
 _Returns the number of decimals used to get its user representation._
 
 ## StakingPool
-
-### stable
-
-```solidity
-contract IToken stable
-```
-
-### aStable
-
-```solidity
-contract IToken aStable
-```
-
-### aave
-
-```solidity
-contract IAaveLendingPool aave
-```
-
-### LENDER_POOL
-
-```solidity
-bytes32 LENDER_POOL
-```
-
-### LENDING_POOL
-
-```solidity
-bytes32 LENDING_POOL
-```
 
 ### constructor
 
@@ -404,7 +285,7 @@ _accepts token from msg.sender and transfers to aave lending pool_
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| amount | uint256 |  |
+| amount | uint256 | total amount accepted from user and transferred to aave |
 
 ### withdraw
 
@@ -418,6 +299,6 @@ _can be called by only lender pool_
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| amount | uint256 |  |
+| amount | uint256 | total amount accepted from user and transferred to aave |
 
 
