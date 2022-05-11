@@ -108,30 +108,19 @@ describe("StakingPool", async function () {
   });
 
   it("should set LENDER_POOL role in redeem", async function () {
-    redeem.grantRole(
+    await stakingPool.grantRole(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDING_POOL")),
       lenderPool.address
     );
     expect(
-      await redeem.hasRole(
+      await stakingPool.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDING_POOL")),
         lenderPool.address
       )
     );
-    console.log(
-      "role",
-      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDING_POOL"))
-    );
   });
 
   it("should withdraw from staking pool", async function () {
-    console.log(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MY_ROLE")));
-    console.log(
-      "lender pool",
-      lenderPool.address,
-      "message sender",
-      addresses[0]
-    );
     const balanceBefore1 = await stable.balanceOf(lenderPool.address);
     const balanceBefore2 = await aStable.balanceOf(lenderPool.address);
     await lenderPool.withdrawFromStakingPool(n6("100"));
