@@ -50,7 +50,6 @@ contract StakingPool is IStakingPool, AccessControl {
      * @param amount, total amount accepted from user and transferred to aave
      */
     function withdraw(uint amount) external onlyRole(LENDING_POOL) {
-        //add access control onlyRole(LENDER_POOL)
         //aStable.approve(address(aave), amount);
         aave.withdraw(address(stable), amount, msg.sender);
         emit Withdraw(amount);
