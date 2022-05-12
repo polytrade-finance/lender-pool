@@ -27,7 +27,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url: process.env.MAINNET_URL || "",
+        url: process.env.POLYGON_URL || "",
       },
       accounts: {
         accountsBalance: "1000000000000000000000000",
