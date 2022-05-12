@@ -43,4 +43,4 @@ jobs:
       - name: Run tests
         run: npm run compile && npm run test:coverage
         env:
-          POLYGON_URL: ${{ secrets.POLYGON }}
+          POLYGON: ${{ secrets.POLYGON }}
