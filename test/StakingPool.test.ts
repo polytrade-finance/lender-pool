@@ -85,6 +85,9 @@ describe("StakingPool", async function () {
   });
 
   it("should deposit 100 stable tokens successfully from account 1", async function () {
+
+    await lenderPool.updateKYCLimit(n6("500000000"));
+
     await stable.connect(accounts[1]).approve(lenderPool.address, n6("100"));
     expect(n6("100")).to.be.equal(
       await stable.allowance(addresses[1], lenderPool.address)
