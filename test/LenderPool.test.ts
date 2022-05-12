@@ -91,7 +91,7 @@ describe("LenderPool", function () {
   });
 
   it("should increase the minimum deposit before KYC", async () => {
-    await lenderPool.updateDepositLimit(n6("5000"));
+    await lenderPool.updateKYCLimit(n6("5000"));
   });
 
   it("should deposit stable token successfully", async function () {
@@ -182,7 +182,7 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
     await verification.deployed();
 
     await lenderPool.updateVerificationContract(verification.address);
-    await lenderPool.updateDepositLimit(n6("5000"));
+    await lenderPool.updateKYCLimit(n6("5000"));
   });
 
   it("should transfer stable to others EOA's", async function () {
@@ -304,7 +304,7 @@ describe("Lender pool reward testing for changing APY", function () {
     await verification.deployed();
 
     await lenderPool.updateVerificationContract(verification.address);
-    await lenderPool.updateDepositLimit(n6("5000"));
+    await lenderPool.updateKYCLimit(n6("5000"));
   });
 
   it("should set minter", async function () {
@@ -430,7 +430,7 @@ describe("LenderPool convert to stable", function () {
     await verification.deployed();
 
     await lenderPool.updateVerificationContract(verification.address);
-    await lenderPool.updateDepositLimit(n6("5000"));
+    await lenderPool.updateKYCLimit(n6("5000"));
   });
 
   it("should set APY to 10%", async function () {

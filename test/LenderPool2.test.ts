@@ -32,7 +32,7 @@ describe("Normal reward without withdrawals only 1 round (same APY)", function (
     await verification.deployed();
 
     await lenderPool.updateVerificationContract(verification.address);
-    await lenderPool.updateDepositLimit(n6("5000"));
+    await lenderPool.updateKYCLimit(n6("5000"));
   });
 
   it("should set minter", async function () {
@@ -102,7 +102,7 @@ describe("Normal reward without withdrawals with multiple rounds", function () {
     await verification.deployed();
 
     await lenderPool.updateVerificationContract(verification.address);
-    await lenderPool.updateDepositLimit(n6("5000"));
+    await lenderPool.updateKYCLimit(n6("5000"));
   });
 
   it("should set minter", async function () {
@@ -186,7 +186,7 @@ describe("Rewards with multiple withdrawals on a single round (same APY)", funct
     await verification.deployed();
 
     await lenderPool.updateVerificationContract(verification.address);
-    await lenderPool.updateDepositLimit(n6("5000"));
+    await lenderPool.updateKYCLimit(n6("5000"));
   });
 
   it("should set minter", async function () {
@@ -272,7 +272,7 @@ describe("Rewards with multiple withdrawals on multiple rounds (same APY)", func
     await verification.deployed();
 
     await lenderPool.updateVerificationContract(verification.address);
-    await lenderPool.updateDepositLimit(n6("5000"));
+    await lenderPool.updateKYCLimit(n6("5000"));
   });
 
   it("should set minter", async function () {
@@ -384,7 +384,7 @@ describe("Rewards with multiple withdrawals and deposits on multiple rounds", fu
     await verification.deployed();
 
     await lenderPool.updateVerificationContract(verification.address);
-    await lenderPool.updateDepositLimit(n6("5000"));
+    await lenderPool.updateKYCLimit(n6("5000"));
   });
 
   it("should set minter", async function () {
