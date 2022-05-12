@@ -32,6 +32,24 @@ interface ILenderPool {
     event Withdraw(address indexed lender, uint amount);
 
     /**
+     * @notice Emits when new DepositLimit is set
+     * @dev Emitted when new DepositLimit is set by the owner
+     * @param oldVerificationAddress, old verification Address
+     * @param newVerificationAddress, new verification Address
+     */
+    event VerificationContractUpdated(
+        address oldVerificationAddress,
+        address newVerificationAddress
+    );
+
+    /**
+     * @notice Emits when new kyc Limit is set
+     * @dev Emitted when new kycLimit is set by the owner
+     * @param kycLimit, new value of kycLimit
+     */
+    event NewKYCLimit(uint kycLimit);
+
+    /**
      * @notice Emits when new rewardAPY is set
      * @dev Emitted when new rewardAPY is set by the owner
      * @param rewardAPY, new value of rewardAPY

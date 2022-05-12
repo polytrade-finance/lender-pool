@@ -1,12 +1,13 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interface/ILenderPool.sol";
 import "../Token/interface/IToken.sol";
 import "../RedeemPool/interface/IRedeemPool.sol";
 import "../StakingPool/StakingPool.sol";
+import "../Verification/interface/IVerification.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @author Polytrade
@@ -22,8 +23,10 @@ contract LenderPool is ILenderPool, Ownable {
     IToken public immutable tStable;
     IRedeemPool public immutable redeemPool;
     IStakingPool public stakingPool;
+    IVerification public verification;
 
     uint16 public currentRound = 0;
+    uint public kycLimit;
 
     constructor(
         address _stableAddress,
@@ -60,14 +63,24 @@ contract LenderPool is ILenderPool, Ownable {
         require(amount > 0, "Lending amount is 0");
         uint allowance = stable.allowance(msg.sender, address(this));
         require(allowance >= amount, "Not enough allowance");
+
+        require(
+            (_lender[msg.sender].deposit + amount < kycLimit) ||
+                verification.isValid(msg.sender),
+            "Need to have valid KYC"
+        );
+
         if (_lender[msg.sender].startPeriod > 0) {
             _updatePendingReward(msg.sender);
         } else {
             _lender[msg.sender].startPeriod = uint40(block.timestamp);
         }
+
         _lender[msg.sender].deposit += amount;
         _lender[msg.sender].round = currentRound;
+
         emit Deposit(msg.sender, amount);
+
         stable.safeTransferFrom(msg.sender, address(this), amount);
     }
 
@@ -100,6 +113,37 @@ contract LenderPool is ILenderPool, Ownable {
         _lender[msg.sender].pendingRewards = 0;
         emit Withdraw(msg.sender, totalReward);
         tStable.mint(msg.sender, totalReward);
+    }
+
+    /**
+     * @notice Updates the Verification contract address
+     * @dev changes verification Contract must complies with `IVerification`
+     * @param _verificationAddress, address of the new Verification contract
+     *
+     * Emits {VerificationContractUpdated} event
+     */
+    function updateVerificationContract(address _verificationAddress)
+        external
+        onlyOwner
+    {
+        address oldVerificationAddress = address(verification);
+        verification = IVerification(_verificationAddress);
+        emit VerificationContractUpdated(
+            oldVerificationAddress,
+            _verificationAddress
+        );
+    }
+
+    /**
+     * @notice Updates the limit for the KYC to be required
+     * @dev updates kycLimit variable
+     * @param _kycLimit, new value of depositLimit
+     *
+     * Emits {NewKYCLimit} event
+     */
+    function updateKYCLimit(uint _kycLimit) external onlyOwner {
+        kycLimit = _kycLimit;
+        emit NewKYCLimit(_kycLimit);
     }
 
     /**
