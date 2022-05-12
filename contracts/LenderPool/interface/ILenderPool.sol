@@ -43,11 +43,11 @@ interface ILenderPool {
     );
 
     /**
-     * @notice Emits when new DepositLimit is set
-     * @dev Emitted when new DepositLimit is set by the owner
-     * @param depositLimit, new value of DepositLimit
+     * @notice Emits when new kyc Limit is set
+     * @dev Emitted when new kycLimit is set by the owner
+     * @param kycLimit, new value of kycLimit
      */
-    event NewDepositLimit(uint depositLimit);
+    event NewKYCLimit(uint kycLimit);
 
     /**
      * @notice Emits when new rewardAPY is set

@@ -24,7 +24,7 @@ contract LenderPool is ILenderPool, Ownable {
     IVerification public verification;
 
     uint16 public currentRound = 0;
-    uint public depositLimit;
+    uint public kycLimit;
 
     constructor(
         address _stableAddress,
@@ -54,7 +54,7 @@ contract LenderPool is ILenderPool, Ownable {
         require(allowance >= amount, "Not enough allowance");
 
         require(
-            (_lender[msg.sender].deposit + amount < depositLimit) ||
+            (_lender[msg.sender].deposit + amount < kycLimit) ||
                 verification.isValid(msg.sender),
             "Need to have valid KYC"
         );
@@ -125,14 +125,14 @@ contract LenderPool is ILenderPool, Ownable {
 
     /**
      * @notice Updates the limit for the KYC to be required
-     * @dev updates depositLimit variable
-     * @param _depositLimit, new value of depositLimit
+     * @dev updates kycLimit variable
+     * @param _kycLimit, new value of depositLimit
      *
-     * Emits {NewDepositLimit} event
+     * Emits {NewKYCLimit} event
      */
-    function updateDepositLimit(uint _depositLimit) external onlyOwner {
-        depositLimit = _depositLimit;
-        emit NewDepositLimit(_depositLimit);
+    function updateKYCLimit(uint _kycLimit) external onlyOwner {
+        kycLimit = _kycLimit;
+        emit NewKYCLimit(_kycLimit);
     }
 
     /**
