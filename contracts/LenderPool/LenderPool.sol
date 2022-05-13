@@ -38,11 +38,12 @@ contract LenderPool is ILenderPool, Ownable {
         redeemPool = IRedeemPool(_redeemPool);
     }
 
-    function updateStakingStrategy(address newStakingStrategy, uint amount)
+    function updateStakingStrategy(address newStakingStrategy)
         external
         onlyOwner
     {
-        withdrawFromStakingStrategy(amount);
+        uint amount = _getStakingStrategyReward();
+        withdrawFromStakingStrategy();
         setStakingStrategy(newStakingStrategy);
         depositInStakingStrategy(amount);
     }
@@ -231,6 +232,19 @@ contract LenderPool is ILenderPool, Ownable {
         }
     }
 
+    function getStakingStrategyReward() external view onlyOwner returns (uint) {
+        return stakingStrategy.getBalance();
+    }
+
+    /**
+     * @notice withdraw stable token from staking pool
+     * @dev only owner can call this function
+     */
+    function withdrawFromStakingStrategy() public onlyOwner {
+        uint amount = _getStakingStrategyReward();
+        stakingStrategy.withdraw(amount);
+    }
+
     /**
      * @notice set staking pool smart contract
      * @dev only owner can call this function
@@ -248,15 +262,6 @@ contract LenderPool is ILenderPool, Ownable {
     function depositInStakingStrategy(uint amount) public onlyOwner {
         stable.approve(address(stakingStrategy), amount);
         stakingStrategy.deposit(amount);
-    }
-
-    /**
-     * @notice withdraw stable token from staking pool
-     * @dev only owner can call this function
-     * @param amount, total amount to withdraw
-     */
-    function withdrawFromStakingStrategy(uint amount) public onlyOwner {
-        stakingStrategy.withdraw(amount);
     }
 
     /**
@@ -301,6 +306,10 @@ contract LenderPool is ILenderPool, Ownable {
             _lender[lender].round = currentRound;
         }
         _lender[lender].startPeriod = uint40(block.timestamp);
+    }
+
+    function _getStakingStrategyReward() private view returns (uint) {
+        return stakingStrategy.getBalance();
     }
 
     /**
