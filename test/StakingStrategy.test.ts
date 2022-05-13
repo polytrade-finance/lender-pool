@@ -117,8 +117,18 @@ describe("StakingStrategy", async function () {
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
       lenderPool.address
     );
+    await stakingStrategy2.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
     expect(
       await stakingStrategy.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
+      )
+    );
+    expect(
+      await stakingStrategy2.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
         lenderPool.address
       )
@@ -143,7 +153,19 @@ describe("StakingStrategy", async function () {
   });
 
   it("should update staking pool", async function () {
+    await increaseTime(ONE_DAY * 365);
+    const balanceOldStrategy = await stakingStrategy.getBalance();
     await lenderPool.switchStrategy(stakingStrategy2.address);
-    console.log(await lenderPool.getStakingStrategyReward());
+    const balanceNewStrategy = await stakingStrategy2.getBalance();
+    expect(balanceOldStrategy.sub(balanceNewStrategy)).to.be.equal("0");
+    expect(await stakingStrategy.getBalance()).to.be.equal("0");
   });
+
+  it("should withdraw from staking pool", async function(){
+    const aStableBalance = await stakingStrategy2.getBalance();
+    const stableBefore = await stable.balanceOf(lenderPool.address);
+    await lenderPool.withdrawFromStakingStrategy();
+    const stableAfter = await stable.balanceOf(lenderPool.address);
+    expect(stableAfter.sub(stableBefore)).to.be.equal(aStableBalance);
+  })
 });
