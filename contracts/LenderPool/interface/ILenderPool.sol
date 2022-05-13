@@ -57,7 +57,7 @@ interface ILenderPool {
     event NewRewardAPY(uint16 rewardAPY);
 
     /**
-     * @notice Emitted when straking strategy is switched
+     * @notice Emitted when staking strategy is switched
      * @dev Emitted when switchStrategy function is called by owner
      * @param oldStakingStrategy, address of the old staking strategy
      * @param newStakingStrategy, address of the new staking strategy
@@ -68,7 +68,7 @@ interface ILenderPool {
     );
 
     /**
-     * @notice switch the strategy, withdraws all reward and deposit to new strategy
+     * @notice move all the funds from the old strategy to the new strategy
      * @dev can be called by only owner
      * @param newStakingStrategy, address of the new staking strategy
      * Emits {SwitchStrategy} event
