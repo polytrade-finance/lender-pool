@@ -91,7 +91,7 @@ function claimRewards() external
 
 send lender all the reward
 
-\_update the pendingReward and mint tStable token and send to lender
+update the pendingReward and mint tStable token and send to lender
 
 Emits {Withdraw} event
 
