@@ -174,9 +174,9 @@ describe("StakingStrategy", async function () {
     await lenderPool.depositAllInStakingStrategy();
     const stableAfter = await stable.balanceOf(lenderPool.address);
     expect(stableAfter).to.be.equal("0");
-    console.log((await lenderPool.getStakingStrategyBalance()).sub(
-      stableBefore
-    ));
+    console.log(
+      (await lenderPool.getStakingStrategyBalance()).sub(stableBefore)
+    );
   });
 
   it("should not be able to withdraw", async function () {
