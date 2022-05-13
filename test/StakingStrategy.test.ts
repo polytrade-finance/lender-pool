@@ -2,12 +2,11 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { StakingStrategy, Token, LenderPool, RedeemPool } from "../typechain";
-import { n6 } from "./helpers";
+import { n6, increaseTime, ONE_DAY } from "./helpers";
 import {
   USDTAddress,
   aUSDTAddress,
   AccountToImpersonateUSDT,
-  aaveAddress,
   // eslint-disable-next-line node/no-missing-import
 } from "./constants/constants.helpers";
 
@@ -15,6 +14,7 @@ describe("StakingStrategy", async function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
   let stakingStrategy: StakingStrategy;
+  let stakingStrategy2: StakingStrategy;
   let stable: any;
   let aStable: any;
   let tStable: Token;
@@ -35,10 +35,21 @@ describe("StakingStrategy", async function () {
 
   it("should deploy staking pool contract successfully", async function () {
     const StakingStrategy = await ethers.getContractFactory("StakingStrategy");
-    stakingStrategy = await StakingStrategy.deploy(stable.address, aStable.address);
+    stakingStrategy = await StakingStrategy.deploy(
+      stable.address,
+      aStable.address
+    );
+    stakingStrategy2 = await StakingStrategy.deploy(
+      stable.address,
+      aStable.address
+    );
     await stakingStrategy.deployed();
+    await stakingStrategy2.deployed();
     expect(
       await ethers.provider.getCode(stakingStrategy.address)
+    ).to.be.length.above(10);
+    expect(
+      await ethers.provider.getCode(stakingStrategy2.address)
     ).to.be.length.above(10);
   });
 
@@ -74,39 +85,34 @@ describe("StakingStrategy", async function () {
 
   it("should transfer to account 1", async function () {
     const balanceBefore = await stable.balanceOf(addresses[1]);
-    await stable.connect(accounts[0]).transfer(addresses[1], n6("100"));
+    await stable.connect(accounts[0]).transfer(addresses[1], n6("200"));
     const balanceAfter = await stable.balanceOf(addresses[1]);
-    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("100"));
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("200"));
   });
 
   it("should set staking pool", async function () {
     lenderPool.setStakingStrategy(stakingStrategy.address);
-    expect(await lenderPool.getStakingStrategy()).to.be.equal(stakingStrategy.address);
+    expect(await lenderPool.getStakingStrategy()).to.be.equal(
+      stakingStrategy.address
+    );
   });
 
   it("should deposit 100 stable tokens successfully from account 1", async function () {
     await lenderPool.updateKYCLimit(n6("500000000"));
 
-    await stable.connect(accounts[1]).approve(lenderPool.address, n6("100"));
-    expect(n6("100")).to.be.equal(
+    await stable.connect(accounts[1]).approve(lenderPool.address, n6("200"));
+    expect(n6("200")).to.be.equal(
       await stable.allowance(addresses[1], lenderPool.address)
     );
-    await lenderPool.connect(accounts[1]).deposit(n6("100"));
-    expect(await lenderPool.getDeposit(addresses[1])).to.be.equal(n6("100"));
+    await lenderPool.connect(accounts[1]).deposit(n6("200"));
+    expect(await lenderPool.getDeposit(addresses[1])).to.be.equal(n6("200"));
   });
 
   it("should deposit funds to staking pool through lender pool", async function () {
     const balanceBefore1 = await stable.balanceOf(lenderPool.address);
-    const balanceBefore2 = await stable.balanceOf(aaveAddress);
-    const balanceBefore3 = await aStable.balanceOf(lenderPool.address);
     await lenderPool.depositInStakingStrategy(n6("100"));
     const balanceAfter1 = await stable.balanceOf(lenderPool.address);
-    const balanceAfter2 = await stable.balanceOf(aaveAddress);
-    const balanceAfter3 = await aStable.balanceOf(lenderPool.address);
     expect(balanceBefore1.sub(balanceAfter1)).to.be.equal(n6("100"));
-    console.log(balanceBefore1.sub(balanceAfter1));
-    console.log(balanceBefore2.sub(balanceAfter2));
-    console.log(balanceBefore3.sub(balanceAfter3));
   });
 
   it("should set LENDER_POOL role in redeem", async function () {
@@ -122,14 +128,25 @@ describe("StakingStrategy", async function () {
     );
   });
 
-  it("should withdraw from staking pool", async function () {
+  it("should check and withdraw from staking pool", async function () {
+    await increaseTime(ONE_DAY * 365);
+    console.log(await lenderPool.getStakingStrategyReward());
     const balanceBefore1 = await stable.balanceOf(lenderPool.address);
-    const balanceBefore2 = await aStable.balanceOf(lenderPool.address);
-    await lenderPool.withdrawFromStakingStrategy(n6("100"));
-    const balanceAfter2 = await aStable.balanceOf(lenderPool.address);
+    await increaseTime(ONE_DAY * 365);
+    await lenderPool.withdrawFromStakingStrategy();
     const balanceAfter1 = await stable.balanceOf(lenderPool.address);
     console.log(balanceAfter1.sub(balanceBefore1));
-    console.log(balanceBefore2.sub(balanceAfter2));
-    expect(balanceAfter1.sub(balanceBefore1)).to.be.equal(n6("100"));
+  });
+
+  it("should deposit funds to staking pool through lender pool", async function () {
+    const balanceBefore1 = await stable.balanceOf(lenderPool.address);
+    await lenderPool.depositInStakingStrategy(n6("100"));
+    const balanceAfter1 = await stable.balanceOf(lenderPool.address);
+    expect(balanceBefore1.sub(balanceAfter1)).to.be.equal(n6("100"));
+  });
+
+  it("should update staking pool", async function () {
+    await lenderPool.updateStakingStrategy(stakingStrategy2.address);
+    console.log(await lenderPool.getStakingStrategyReward());
   });
 });
