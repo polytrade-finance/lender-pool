@@ -91,7 +91,7 @@ describe("StakingStrategy", async function () {
   });
 
   it("should set staking pool", async function () {
-    lenderPool.setStakingStrategy(stakingStrategy.address);
+    lenderPool.switchStrategy(stakingStrategy.address);
   });
 
   it("should deposit 100 stable tokens successfully from account 1", async function () {

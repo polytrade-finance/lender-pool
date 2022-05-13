@@ -45,11 +45,15 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {SwitchStrategy} event
      */
     function switchStrategy(address newStakingStrategy) external onlyOwner {
-        uint amount = _getStakingStrategyBalance();
         address oldStakingStrategy = address(stakingStrategy);
-        withdrawFromStakingStrategy();
-        setStakingStrategy(newStakingStrategy);
-        depositInStakingStrategy(amount);
+        if (oldStakingStrategy == address(0)) {
+            stakingStrategy = StakingStrategy(newStakingStrategy);
+        } else {
+            uint amount = _getStakingStrategyBalance();
+            withdrawFromStakingStrategy();
+            stakingStrategy = StakingStrategy(newStakingStrategy);
+            depositInStakingStrategy(amount);
+        }
         emit SwitchStrategy(oldStakingStrategy, newStakingStrategy);
     }
 
@@ -246,15 +250,6 @@ contract LenderPool is ILenderPool, Ownable {
     function withdrawFromStakingStrategy() public onlyOwner {
         uint amount = _getStakingStrategyBalance();
         stakingStrategy.withdraw(amount);
-    }
-
-    /**
-     * @notice set staking pool smart contract
-     * @dev only owner can call this function
-     * @param _address, address of the staking pool
-     */
-    function setStakingStrategy(address _address) public onlyOwner {
-        stakingStrategy = StakingStrategy(_address);
     }
 
     /**

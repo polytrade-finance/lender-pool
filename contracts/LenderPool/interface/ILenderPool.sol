@@ -76,13 +76,6 @@ interface ILenderPool {
     function switchStrategy(address newStakingStrategy) external;
 
     /**
-     * @notice set staking pool smart contract
-     * @dev only owner can call this function
-     * @param _address, address of the staking pool
-     */
-    function setStakingStrategy(address _address) external;
-
-    /**
      * @notice deposit stable token to staking pool
      * @dev only owner can call this function
      * @param amount, total amount to deposit
