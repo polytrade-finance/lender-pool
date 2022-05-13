@@ -1,6 +1,11 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
+/**
+ * @author Polytrade
+ * @title Interface AAVE
+ * @notice It will interact will Staking Strategy Contract of Lender Pool V2
+ */
 interface IAaveLendingPool {
     //AAVE V2 is used
 
