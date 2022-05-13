@@ -32,7 +32,6 @@ const config: HardhatUserConfig = {
       accounts: {
         accountsBalance: "1000000000000000000000000",
       },
-      gas: 2100000,
     },
     mumbai: {
       url: process.env.MUMBAI_URL || "",
