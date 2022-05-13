@@ -1,12 +1,13 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "../StakingStrategy/StakingStrategy.sol";
 import "./interface/ILenderPool.sol";
 import "../Token/interface/IToken.sol";
 import "../RedeemPool/interface/IRedeemPool.sol";
 import "../Verification/interface/IVerification.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @author Polytrade
@@ -21,6 +22,7 @@ contract LenderPool is ILenderPool, Ownable {
     IToken public immutable stable;
     IToken public immutable tStable;
     IRedeemPool public immutable redeemPool;
+    IStakingStrategy public stakingStrategy;
     IVerification public verification;
 
     uint16 public currentRound = 0;
@@ -34,6 +36,24 @@ contract LenderPool is ILenderPool, Ownable {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
         redeemPool = IRedeemPool(_redeemPool);
+    }
+
+    /**
+     * @notice move all the funds from the old strategy to the new strategy
+     * @dev can be called by only owner
+     * @param newStakingStrategy, address of the new staking strategy
+     * Emits {SwitchStrategy} event
+     */
+    function switchStrategy(address newStakingStrategy) external onlyOwner {
+        address oldStakingStrategy = address(stakingStrategy);
+        if (oldStakingStrategy != address(0)) {
+            uint amount = _getStakingStrategyBalance();
+            withdrawAllFromStakingStrategy();
+            stakingStrategy = StakingStrategy(newStakingStrategy);
+            depositInStakingStrategy(amount);
+        }
+        stakingStrategy = StakingStrategy(newStakingStrategy);
+        emit SwitchStrategy(oldStakingStrategy, newStakingStrategy);
     }
 
     /**
@@ -213,6 +233,57 @@ contract LenderPool is ILenderPool, Ownable {
         }
     }
 
+    function getStakingStrategyBalance()
+        external
+        view
+        onlyOwner
+        returns (uint)
+    {
+        return _getStakingStrategyBalance();
+    }
+
+    /**
+     * @notice withdraw all stable token from staking pool
+     * @dev only owner can call this function
+     */
+    function withdrawAllFromStakingStrategy() public onlyOwner {
+        uint amount = _getStakingStrategyBalance();
+        stakingStrategy.withdraw(amount);
+    }
+
+    /**
+     * @notice withdraw stable token from staking pool
+     * @dev only owner can call this function
+     * @param amount, total amount to be withdrawn from staking strategy
+     */
+    function withdrawFromStakingStrategy(uint amount) public onlyOwner {
+        require(
+            _getStakingStrategyBalance() >= amount,
+            "Balance less than requested."
+        );
+        stakingStrategy.withdraw(amount);
+    }
+
+    /**
+     * @notice deposit stable token to staking strategy
+     * @dev only owner can call this function
+     * @param amount, total amount to deposit
+     */
+    function depositInStakingStrategy(uint amount) public onlyOwner {
+        stable.approve(address(stakingStrategy), amount);
+        stakingStrategy.deposit(amount);
+    }
+
+    /**
+     * @notice deposit all stable token to staking strategy
+     * @dev only owner can call this function
+     */
+    function depositAllInStakingStrategy() public onlyOwner {
+        uint amount = stable.balanceOf(address(this));
+        stable.approve(address(stakingStrategy), amount);
+        stakingStrategy.deposit(amount);
+    }
+
     /**
      * @notice converts the deposited stable token of quantity `amount` into tStable token and send to the lender
      * @param amount, to be sent to the msg.sender
@@ -255,6 +326,10 @@ contract LenderPool is ILenderPool, Ownable {
             _lender[lender].round = currentRound;
         }
         _lender[lender].startPeriod = uint40(block.timestamp);
+    }
+
+    function _getStakingStrategyBalance() private view returns (uint) {
+        return stakingStrategy.getBalance();
     }
 
     /**

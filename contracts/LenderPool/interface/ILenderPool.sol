@@ -57,6 +57,51 @@ interface ILenderPool {
     event NewRewardAPY(uint16 rewardAPY);
 
     /**
+     * @notice Emitted when staking strategy is switched
+     * @dev Emitted when switchStrategy function is called by owner
+     * @param oldStakingStrategy, address of the old staking strategy
+     * @param newStakingStrategy, address of the new staking strategy
+     */
+    event SwitchStrategy(
+        address oldStakingStrategy,
+        address newStakingStrategy
+    );
+
+    /**
+     * @notice move all the funds from the old strategy to the new strategy
+     * @dev can be called by only owner
+     * @param newStakingStrategy, address of the new staking strategy
+     * Emits {SwitchStrategy} event
+     */
+    function switchStrategy(address newStakingStrategy) external;
+
+    /**
+     * @notice deposit stable token to staking pool
+     * @dev only owner can call this function
+     * @param amount, total amount to deposit
+     */
+    function depositInStakingStrategy(uint amount) external;
+
+    /**
+     * @notice deposit all stable token to staking strategy
+     * @dev only owner can call this function
+     */
+    function depositAllInStakingStrategy() external;
+
+    /**
+     * @notice withdraw all stable token from staking strategy
+     * @dev only owner can call this function
+     */
+    function withdrawAllFromStakingStrategy() external;
+
+    /**
+     * @notice withdraw stable token from staking pool
+     * @dev only owner can call this function
+     * @param amount, total amount to be withdrawn from staking strategy
+     */
+    function withdrawFromStakingStrategy(uint amount) external;
+
+    /**
      * @notice Deposit stable token to smart contract
      * @dev Transfers the approved stable token from msg.sender to lender pool
      * @param amount, the number of stable token to be deposited
