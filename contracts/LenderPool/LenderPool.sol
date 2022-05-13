@@ -45,7 +45,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {SwitchStrategy} event
      */
     function switchStrategy(address newStakingStrategy) external onlyOwner {
-        uint amount = _getStakingStrategyReward();
+        uint amount = _getStakingStrategyBalance();
         address oldStakingStrategy = address(stakingStrategy);
         withdrawFromStakingStrategy();
         setStakingStrategy(newStakingStrategy);
@@ -230,7 +230,12 @@ contract LenderPool is ILenderPool, Ownable {
         }
     }
 
-    function getStakingStrategyReward() external view onlyOwner returns (uint) {
+    function getStakingStrategyBalance()
+        external
+        view
+        onlyOwner
+        returns (uint)
+    {
         return stakingStrategy.getBalance();
     }
 
@@ -239,7 +244,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev only owner can call this function
      */
     function withdrawFromStakingStrategy() public onlyOwner {
-        uint amount = _getStakingStrategyReward();
+        uint amount = _getStakingStrategyBalance();
         stakingStrategy.withdraw(amount);
     }
 
@@ -306,7 +311,7 @@ contract LenderPool is ILenderPool, Ownable {
         _lender[lender].startPeriod = uint40(block.timestamp);
     }
 
-    function _getStakingStrategyReward() private view returns (uint) {
+    function _getStakingStrategyBalance() private view returns (uint) {
         return stakingStrategy.getBalance();
     }
 
