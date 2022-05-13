@@ -92,9 +92,6 @@ describe("StakingStrategy", async function () {
 
   it("should set staking pool", async function () {
     lenderPool.setStakingStrategy(stakingStrategy.address);
-    expect(await lenderPool.getStakingStrategy()).to.be.equal(
-      stakingStrategy.address
-    );
   });
 
   it("should deposit 100 stable tokens successfully from account 1", async function () {
@@ -117,12 +114,12 @@ describe("StakingStrategy", async function () {
 
   it("should set LENDER_POOL role in redeem", async function () {
     await stakingStrategy.grantRole(
-      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDING_POOL")),
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
       lenderPool.address
     );
     expect(
       await stakingStrategy.hasRole(
-        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDING_POOL")),
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
         lenderPool.address
       )
     );
@@ -146,7 +143,7 @@ describe("StakingStrategy", async function () {
   });
 
   it("should update staking pool", async function () {
-    await lenderPool.updateStakingStrategy(stakingStrategy2.address);
+    await lenderPool.switchStrategy(stakingStrategy2.address);
     console.log(await lenderPool.getStakingStrategyReward());
   });
 });
