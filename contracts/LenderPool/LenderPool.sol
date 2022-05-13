@@ -38,14 +38,19 @@ contract LenderPool is ILenderPool, Ownable {
         redeemPool = IRedeemPool(_redeemPool);
     }
 
-    function updateStakingStrategy(address newStakingStrategy)
-        external
-        onlyOwner
-    {
+    /**
+     * @notice switch the strategy, withdraws all reward and deposit to new strategy
+     * @dev can be called by only owner
+     * @param newStakingStrategy, address of the new staking strategy
+     * Emits {SwitchStrategy} event
+     */
+    function switchStrategy(address newStakingStrategy) external onlyOwner {
         uint amount = _getStakingStrategyReward();
+        address oldStakingStrategy = address(stakingStrategy);
         withdrawFromStakingStrategy();
         setStakingStrategy(newStakingStrategy);
         depositInStakingStrategy(amount);
+        emit SwitchStrategy(oldStakingStrategy, newStakingStrategy);
     }
 
     /**
@@ -190,13 +195,6 @@ contract LenderPool is ILenderPool, Ownable {
         tStable.mint(address(this), amount);
         tStable.approve(address(redeemPool), amount);
         redeemPool.redeemStableTo(amount, msg.sender);
-    }
-
-    /**
-     * @notice returns staking pool smart contract address
-     */
-    function getStakingStrategy() external view returns (address) {
-        return address(stakingStrategy);
     }
 
     /**

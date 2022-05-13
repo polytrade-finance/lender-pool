@@ -57,6 +57,25 @@ interface ILenderPool {
     event NewRewardAPY(uint16 rewardAPY);
 
     /**
+     * @notice Emitted when straking strategy is switched
+     * @dev Emitted when switchStrategy function is called by owner
+     * @param oldStakingStrategy, address of the old staking strategy
+     * @param newStakingStrategy, address of the new staking strategy
+     */
+    event SwitchStrategy(
+        address oldStakingStrategy,
+        address newStakingStrategy
+    );
+
+    /**
+     * @notice switch the strategy, withdraws all reward and deposit to new strategy
+     * @dev can be called by only owner
+     * @param newStakingStrategy, address of the new staking strategy
+     * Emits {SwitchStrategy} event
+     */
+    function switchStrategy(address newStakingStrategy) external;
+
+    /**
      * @notice set staking pool smart contract
      * @dev only owner can call this function
      * @param _address, address of the staking pool
@@ -131,11 +150,6 @@ interface ILenderPool {
      *
      */
     function redeemAll() external;
-
-    /**
-     * @notice returns staking pool smart contract address
-     */
-    function getStakingStrategy() external view returns (address);
 
     /**
      * @notice returns value of APY of current round
