@@ -53,4 +53,13 @@ contract StakingStrategy is IStakingStrategy, AccessControl {
         aave.withdraw(address(stable), amount, msg.sender);
         emit Withdraw(amount);
     }
+
+    /**
+     * @notice get aStable balance of staking strategy smart contract
+     * returns total amount of aStable token in contract
+     */
+
+    function getBalance() external view returns (uint) {
+        return aStable.balanceOf(address(this));
+    }
 }

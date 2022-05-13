@@ -27,4 +27,10 @@ interface IStakingStrategy {
      * @param amount, total amount accepted from user and transferred to aave
      */
     function withdraw(uint amount) external;
+
+    /**
+     * @notice get aStable balance of staking strategy smart contract
+     * returns total amount of aStable token in contract
+     */
+    function getBalance() external view returns (uint);
 }
