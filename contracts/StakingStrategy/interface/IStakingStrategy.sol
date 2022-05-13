@@ -30,7 +30,7 @@ interface IStakingStrategy {
 
     /**
      * @notice get aStable balance of staking strategy smart contract
-     * returns total amount of aStable token in contract
+     * @return total amount of aStable token in this contract
      */
     function getBalance() external view returns (uint);
 }
