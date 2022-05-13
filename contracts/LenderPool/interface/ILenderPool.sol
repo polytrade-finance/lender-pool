@@ -83,10 +83,23 @@ interface ILenderPool {
     function depositInStakingStrategy(uint amount) external;
 
     /**
-     * @notice withdraw stable token from staking pool
+     * @notice deposit all stable token to staking strategy
+     * @dev only owner can call this function
+     */
+    function depositAllInStakingStrategy() external;
+
+    /**
+     * @notice withdraw all stable token from staking strategy
      * @dev only owner can call this function
      */
     function withdrawAllFromStakingStrategy() external;
+
+    /**
+     * @notice withdraw stable token from staking pool
+     * @dev only owner can call this function
+     * @param amount, total amount to be withdrawn from staking strategy
+     */
+    function withdrawFromStakingStrategy(uint amount) external;
 
     /**
      * @notice Deposit stable token to smart contract

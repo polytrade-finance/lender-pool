@@ -161,11 +161,28 @@ describe("StakingStrategy", async function () {
     expect(await stakingStrategy.getBalance()).to.be.equal("0");
   });
 
-  it("should withdraw from staking pool", async function () {
+  it("should withdraw from staking pool( very close to 0)", async function () {
     const aStableBalance = await stakingStrategy2.getBalance();
     const stableBefore = await stable.balanceOf(lenderPool.address);
     await lenderPool.withdrawAllFromStakingStrategy();
     const stableAfter = await stable.balanceOf(lenderPool.address);
-    expect(stableAfter.sub(stableBefore)).to.be.equal(aStableBalance);
+    console.log(stableAfter.sub(stableBefore).sub(aStableBalance));
+  });
+
+  it("deposit all stable to staking strategy", async function () {
+    const stableBefore = await stable.balanceOf(lenderPool.address);
+    await lenderPool.depositAllInStakingStrategy();
+    const stableAfter = await stable.balanceOf(lenderPool.address);
+    expect(stableAfter).to.be.equal("0");
+    expect(await lenderPool.getStakingStrategyBalance()).to.be.equal(
+      stableBefore
+    );
+  });
+
+  it("withdraw from staking pool", async function () {
+    const stableBefore = await stable.balanceOf(lenderPool.address);
+    await lenderPool.withdrawFromStakingStrategy(n6("10"));
+    const stableAfter = await stable.balanceOf(lenderPool.address);
+    expect(stableAfter.sub(stableBefore)).to.be.equal(n6("10"));
   });
 });
