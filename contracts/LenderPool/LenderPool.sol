@@ -50,7 +50,7 @@ contract LenderPool is ILenderPool, Ownable {
             stakingStrategy = StakingStrategy(newStakingStrategy);
         } else {
             uint amount = _getStakingStrategyBalance();
-            withdrawFromStakingStrategy();
+            withdrawAllFromStakingStrategy();
             stakingStrategy = StakingStrategy(newStakingStrategy);
             depositInStakingStrategy(amount);
         }
@@ -247,7 +247,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @notice withdraw stable token from staking pool
      * @dev only owner can call this function
      */
-    function withdrawFromStakingStrategy() public onlyOwner {
+    function withdrawAllFromStakingStrategy() public onlyOwner {
         uint amount = _getStakingStrategyBalance();
         stakingStrategy.withdraw(amount);
     }

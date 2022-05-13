@@ -140,7 +140,7 @@ describe("StakingStrategy", async function () {
     console.log(await lenderPool.getStakingStrategyBalance());
     const balanceBefore1 = await stable.balanceOf(lenderPool.address);
     await increaseTime(ONE_DAY * 365);
-    await lenderPool.withdrawFromStakingStrategy();
+    await lenderPool.withdrawAllFromStakingStrategy();
     const balanceAfter1 = await stable.balanceOf(lenderPool.address);
     console.log(balanceAfter1.sub(balanceBefore1));
   });
@@ -164,7 +164,7 @@ describe("StakingStrategy", async function () {
   it("should withdraw from staking pool", async function () {
     const aStableBalance = await stakingStrategy2.getBalance();
     const stableBefore = await stable.balanceOf(lenderPool.address);
-    await lenderPool.withdrawFromStakingStrategy();
+    await lenderPool.withdrawAllFromStakingStrategy();
     const stableAfter = await stable.balanceOf(lenderPool.address);
     expect(stableAfter.sub(stableBefore)).to.be.equal(aStableBalance);
   });
