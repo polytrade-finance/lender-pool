@@ -5,13 +5,13 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interface/IAaveLendingPool.sol";
 import "../Token/interface/IToken.sol";
-import "./interface/IStakingPool.sol";
+import "./interface/IStakingStrategy.sol";
 
 /**
  * @author Polytrade
- * @title StakingPool
+ * @title StakingStrategy
  */
-contract StakingPool is IStakingPool, AccessControl {
+contract StakingStrategy is IStakingStrategy, AccessControl {
     using SafeERC20 for IToken;
 
     IToken public stable;
@@ -37,7 +37,7 @@ contract StakingPool is IStakingPool, AccessControl {
     function deposit(uint amount) external {
         require(
             stable.transferFrom(msg.sender, address(this), amount),
-            "stable Transfer failed!"
+            "Stable Transfer failed!"
         );
         stable.approve(address(aave), amount);
         aave.deposit(address(stable), amount, address(this), 0);
@@ -50,7 +50,6 @@ contract StakingPool is IStakingPool, AccessControl {
      * @param amount, total amount accepted from user and transferred to aave
      */
     function withdraw(uint amount) external onlyRole(LENDING_POOL) {
-        //aStable.approve(address(aave), amount);
         aave.withdraw(address(stable), amount, msg.sender);
         emit Withdraw(amount);
     }

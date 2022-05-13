@@ -4,7 +4,7 @@ pragma solidity ^0.8.12;
 import "./interface/ILenderPool.sol";
 import "../Token/interface/IToken.sol";
 import "../RedeemPool/interface/IRedeemPool.sol";
-import "../StakingPool/StakingPool.sol";
+import "../StakingStrategy/StakingStrategy.sol";
 import "../Verification/interface/IVerification.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -22,7 +22,7 @@ contract LenderPool is ILenderPool, Ownable {
     IToken public immutable stable;
     IToken public immutable tStable;
     IRedeemPool public immutable redeemPool;
-    IStakingPool public stakingPool;
+    IStakingStrategy public stakingStrategy;
     IVerification public verification;
 
     uint16 public currentRound = 0;
@@ -38,13 +38,13 @@ contract LenderPool is ILenderPool, Ownable {
         redeemPool = IRedeemPool(_redeemPool);
     }
 
-    function updateStakingPool(address newStakingPool, uint amount)
+    function updateStakingStrategy(address newStakingStrategy, uint amount)
         external
         onlyOwner
     {
-        withdrawFromStakingPool(amount);
-        setStakingPool(newStakingPool);
-        depositInStakingPool(amount);
+        withdrawFromStakingStrategy(amount);
+        setStakingStrategy(newStakingStrategy);
+        depositInStakingStrategy(amount);
     }
 
     /**
@@ -194,8 +194,8 @@ contract LenderPool is ILenderPool, Ownable {
     /**
      * @notice returns staking pool smart contract address
      */
-    function getStakingPool() external view returns (address) {
-        return address(stakingPool);
+    function getStakingStrategy() external view returns (address) {
+        return address(stakingStrategy);
     }
 
     /**
@@ -236,8 +236,8 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev only owner can call this function
      * @param _address, address of the staking pool
      */
-    function setStakingPool(address _address) public onlyOwner {
-        stakingPool = StakingPool(_address);
+    function setStakingStrategy(address _address) public onlyOwner {
+        stakingStrategy = StakingStrategy(_address);
     }
 
     /**
@@ -245,9 +245,9 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev only owner can call this function
      * @param amount, total amount to deposit
      */
-    function depositInStakingPool(uint amount) public onlyOwner {
-        stable.approve(address(stakingPool), amount);
-        stakingPool.deposit(amount);
+    function depositInStakingStrategy(uint amount) public onlyOwner {
+        stable.approve(address(stakingStrategy), amount);
+        stakingStrategy.deposit(amount);
     }
 
     /**
@@ -255,8 +255,8 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev only owner can call this function
      * @param amount, total amount to withdraw
      */
-    function withdrawFromStakingPool(uint amount) public onlyOwner {
-        stakingPool.withdraw(amount);
+    function withdrawFromStakingStrategy(uint amount) public onlyOwner {
+        stakingStrategy.withdraw(amount);
     }
 
     /**

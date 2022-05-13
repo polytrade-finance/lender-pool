@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { StakingPool, Token, LenderPool, RedeemPool } from "../typechain";
+import { StakingStrategy, Token, LenderPool, RedeemPool } from "../typechain";
 import { n6 } from "./helpers";
 import {
   USDTAddress,
@@ -11,10 +11,10 @@ import {
   // eslint-disable-next-line node/no-missing-import
 } from "./constants/constants.helpers";
 
-describe("StakingPool", async function () {
+describe("StakingStrategy", async function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
-  let stakingPool: StakingPool;
+  let stakingStrategy: StakingStrategy;
   let stable: any;
   let aStable: any;
   let tStable: Token;
@@ -34,11 +34,11 @@ describe("StakingPool", async function () {
   });
 
   it("should deploy staking pool contract successfully", async function () {
-    const StakingPool = await ethers.getContractFactory("StakingPool");
-    stakingPool = await StakingPool.deploy(stable.address, aStable.address);
-    await stakingPool.deployed();
+    const StakingStrategy = await ethers.getContractFactory("StakingStrategy");
+    stakingStrategy = await StakingStrategy.deploy(stable.address, aStable.address);
+    await stakingStrategy.deployed();
     expect(
-      await ethers.provider.getCode(stakingPool.address)
+      await ethers.provider.getCode(stakingStrategy.address)
     ).to.be.length.above(10);
   });
 
@@ -80,8 +80,8 @@ describe("StakingPool", async function () {
   });
 
   it("should set staking pool", async function () {
-    lenderPool.setStakingPool(stakingPool.address);
-    expect(await lenderPool.getStakingPool()).to.be.equal(stakingPool.address);
+    lenderPool.setStakingStrategy(stakingStrategy.address);
+    expect(await lenderPool.getStakingStrategy()).to.be.equal(stakingStrategy.address);
   });
 
   it("should deposit 100 stable tokens successfully from account 1", async function () {
@@ -99,7 +99,7 @@ describe("StakingPool", async function () {
     const balanceBefore1 = await stable.balanceOf(lenderPool.address);
     const balanceBefore2 = await stable.balanceOf(aaveAddress);
     const balanceBefore3 = await aStable.balanceOf(lenderPool.address);
-    await lenderPool.depositInStakingPool(n6("100"));
+    await lenderPool.depositInStakingStrategy(n6("100"));
     const balanceAfter1 = await stable.balanceOf(lenderPool.address);
     const balanceAfter2 = await stable.balanceOf(aaveAddress);
     const balanceAfter3 = await aStable.balanceOf(lenderPool.address);
@@ -110,12 +110,12 @@ describe("StakingPool", async function () {
   });
 
   it("should set LENDER_POOL role in redeem", async function () {
-    await stakingPool.grantRole(
+    await stakingStrategy.grantRole(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDING_POOL")),
       lenderPool.address
     );
     expect(
-      await stakingPool.hasRole(
+      await stakingStrategy.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDING_POOL")),
         lenderPool.address
       )
@@ -125,7 +125,7 @@ describe("StakingPool", async function () {
   it("should withdraw from staking pool", async function () {
     const balanceBefore1 = await stable.balanceOf(lenderPool.address);
     const balanceBefore2 = await aStable.balanceOf(lenderPool.address);
-    await lenderPool.withdrawFromStakingPool(n6("100"));
+    await lenderPool.withdrawFromStakingStrategy(n6("100"));
     const balanceAfter2 = await aStable.balanceOf(lenderPool.address);
     const balanceAfter1 = await stable.balanceOf(lenderPool.address);
     console.log(balanceAfter1.sub(balanceBefore1));
