@@ -425,6 +425,9 @@ contract LenderPool is ILenderPool, Ownable {
         uint40 end,
         uint16 apy
     ) private pure returns (uint) {
+        if(amount==0){
+            return 0;
+        }
         uint oneYear = (10000 * 365 days);
         return (((end - start) * apy * amount) / oneYear);
     }
