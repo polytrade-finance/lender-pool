@@ -97,10 +97,10 @@ describe("LenderPool", function () {
   });
 
   it("should approve stable token", async function () {
-    await stable.connect(accounts[0]).approve(lenderPool.address, 100);
+    await stable.connect(accounts[0]).approve(lenderPool.address, n6("100"));
     expect(
       await stable.allowance(addresses[0], lenderPool.address)
-    ).to.be.equal(ethers.BigNumber.from("100"));
+    ).to.be.equal(ethers.BigNumber.from(n6("100")));
   });
 
   it("should transfer tStable to lender pool", async function () {
@@ -116,7 +116,7 @@ describe("LenderPool", function () {
 
   it("should fail deposits stable token without KYC", async function () {
     await expect(
-      lenderPool.connect(accounts[0]).deposit(100)
+      lenderPool.connect(accounts[0]).deposit(n6("100"))
     ).to.be.revertedWith("Need to have valid KYC");
   });
 
@@ -125,37 +125,25 @@ describe("LenderPool", function () {
   });
 
   it("should deposit stable token successfully", async function () {
-    await lenderPool.connect(accounts[0]).deposit(100);
+    await lenderPool.connect(accounts[0]).deposit(n6("100"));
     expect(await stable.balanceOf(lenderPool.address)).to.be.equal(
-      ethers.BigNumber.from("100")
+      ethers.BigNumber.from(n6("100"))
     );
   });
 
   it("should check balance of user after deposit", async function () {
-    expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(100);
+    expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(n6("100"));
   });
 
-  it("should revert if tStable claimed is more than stable deposited", async function () {
-    expect(
-      lenderPool.connect(accounts[0]).withdrawTStable(1000)
-    ).to.be.revertedWith("Amount requested more than deposit made");
-  });
 
-  it("should claim tStable successfully", async function () {
-    const balanceBefore = await tStable.balanceOf(addresses[0]);
-    await lenderPool.connect(accounts[0]).withdrawTStable(1);
-    const balanceAfter = await tStable.balanceOf(addresses[0]);
-    expect(balanceAfter.sub(balanceBefore)).to.be.equal(
-      ethers.BigNumber.from("1")
-    );
-  });
+
 
   it("should claim all tStable successfully", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[0]);
     await lenderPool.connect(accounts[0]).withdrawAllTStable();
     const balanceAfter = await tStable.balanceOf(addresses[0]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(
-      ethers.BigNumber.from("99")
+      ethers.BigNumber.from(n6("100"))
     );
   });
 
@@ -165,21 +153,4 @@ describe("LenderPool", function () {
     ).to.be.revertedWith("tStable already claimed");
   });
 
-  it("should revert if allowance is less than lending amount", async function () {
-    expect(lenderPool.connect(accounts[0]).deposit(100)).to.be.revertedWith(
-      "Amount not approved"
-    );
-  });
-
-  it("should revert if amount is zero", async function () {
-    expect(lenderPool.connect(accounts[0]).deposit(0)).to.be.revertedWith(
-      "Lending amount invalid"
-    );
-  });
-
-  it("should revert if no amount is deposited", async function () {
-    expect(
-      lenderPool.connect(accounts[1]).withdrawAllTStable()
-    ).to.be.revertedWith("No deposit made");
-  });
 });
