@@ -229,10 +229,41 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
 
     await lenderPool.updateVerificationContract(verification.address);
     await lenderPool.updateKYCLimit(n6("5000"));
+
     trade = await Token.deploy("Trade", "Trade", 6);
     await trade.deployed();
     const TradeReward = await ethers.getContractFactory("TradeReward");
     tradeReward = await TradeReward.deploy();
+  });
+
+  it("should transfer stable to others EOA's", async function () {
+    await stable.connect(accounts[0]).transfer(addresses[1], n6("10000"));
+    expect(await stable.balanceOf(addresses[1])).to.be.equal(n6("10000"));
+  });
+
+  it("should set minter", async function () {
+    tStable.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
+
+    expect(
+      await tStable.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+        lenderPool.address
+      )
+    );
+  });
+
+  it("should set APY to 10%", async function () {
+    await lenderPool.setAPY(1000);
+    expect(await lenderPool.getAPY()).to.be.equal(1000);
+  });
+
+  it("should not be able to increase APY", async function () {
+    expect(lenderPool.connect(accounts[1]).setAPY(20)).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );
   });
 
   it("should set LENDER_POOL and OWNER in TradeReward", async function () {
@@ -267,37 +298,7 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
     await lenderPool.setTradeReward(tradeReward.address);
     expect(await lenderPool.tradeReward()).to.be.equal(tradeReward.address);
   });
-
-  it("should transfer stable to others EOA's", async function () {
-    await stable.connect(accounts[0]).transfer(addresses[1], n6("10000"));
-    expect(await stable.balanceOf(addresses[1])).to.be.equal(n6("10000"));
-  });
-
-  it("should set minter", async function () {
-    tStable.grantRole(
-      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
-      lenderPool.address
-    );
-
-    expect(
-      await tStable.hasRole(
-        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
-        lenderPool.address
-      )
-    );
-  });
-
-  it("should set APY to 10%", async function () {
-    await lenderPool.setAPY(1000);
-    expect(await lenderPool.getAPY()).to.be.equal(1000);
-  });
-
-  it("should not be able to increase APY", async function () {
-    expect(lenderPool.connect(accounts[1]).setAPY(20)).to.be.revertedWith(
-      "Ownable: caller is not the owner"
-    );
-  });
-
+  
   it("should deposit 100 stable tokens successfully from account 1 at t = 0 year", async function () {
     await stable.connect(accounts[1]).approve(lenderPool.address, n6("100"));
     expect(n6("100")).to.be.equal(
