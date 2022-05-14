@@ -1,8 +1,9 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Token, LenderPool, Verification, TradeReward } from "../typechain";
+import { Token, LenderPool, Verification, TradeReward, IToken } from "../typechain";
 import { n6, ONE_DAY, now, setNextBlockTimestamp } from "./helpers";
+
 describe("LenderPool", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
@@ -97,7 +98,7 @@ describe("LenderPool", function () {
     expect(await lenderPool.tradeReward()).to.be.equal(tradeReward.address);
   });
 
-  it("should set trade rate", async function () {
+  it("should set trade rate at 1 trade token per year per stable", async function () {
     await tradeReward.setTradeRate(100);
   });
 
@@ -116,10 +117,10 @@ describe("LenderPool", function () {
   });
 
   it("should approve stable token", async function () {
-    await stable.connect(accounts[1]).approve(lenderPool.address, n6("100"));
+    await stable.connect(accounts[1]).approve(lenderPool.address, n6("200"));
     expect(
       await stable.allowance(addresses[1], lenderPool.address)
-    ).to.be.equal(ethers.BigNumber.from(n6("100")));
+    ).to.be.equal(ethers.BigNumber.from(n6("200")));
   });
 
   it("should fail deposits stable token without KYC", async function () {
@@ -142,7 +143,7 @@ describe("LenderPool", function () {
     );
   });
 
-  it("should deposit stable token successfully", async function () {
+  it("should deposit 100 stable token at t = 0 year", async function () {
     await lenderPool.connect(accounts[1]).deposit(n6("100"));
     currentTime = await now();
     expect(await stable.balanceOf(lenderPool.address)).to.be.equal(
@@ -150,7 +151,7 @@ describe("LenderPool", function () {
     );
   });
 
-  it("should withdraw trade reward after one year", async function () {
+  it("should withdraw 50 trade reward at t = 1 year", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
     const balanceBefore = await trade.balanceOf(addresses[1]);
     await lenderPool.connect(accounts[1]).claimTrade(n6("50"));
@@ -158,7 +159,7 @@ describe("LenderPool", function () {
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("50"));
   });
 
-  it("should check reward after two years (close to 150)", async function () {
+  it("should check reward at t = 2 year (close to 150)", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 2);
     const balanceBefore = await trade.balanceOf(addresses[1]);
     await lenderPool.connect(accounts[1]).claimAllTrade();
@@ -166,7 +167,7 @@ describe("LenderPool", function () {
     console.log(balanceAfter.sub(balanceBefore));
   });
 
-  it("should claim all tStable successfully after three years", async function () {
+  it("should claim all tStable successfully at t = 3 year", async function () {
     const balanceBefore = await tStable.balanceOf(addresses[1]);
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 3);
     await lenderPool.connect(accounts[1]).withdrawAllTStable();
@@ -176,11 +177,23 @@ describe("LenderPool", function () {
     );
   });
 
-  it("should check reward after four years (close to 150)", async function () {
+  it("should check reward at t = 4 year is 100 stable", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 4);
-    const balanceBefore = await trade.balanceOf(addresses[1]);
-    await lenderPool.connect(accounts[1]).claimAllTrade();
-    const balanceAfter = await trade.balanceOf(addresses[1]);
-    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("100"));
+    expect(await lenderPool.connect(accounts[1]).rewardTradeOf()).to.be.equal(n6("100"));
+  });
+
+  it("should set trade rate to 2 trade per year per token", async function () {
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 5);
+    await tradeReward.setTradeRate(200);
+  });
+
+  it("should deposit 50 stable token at t = 6 year", async function () {
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 6);
+    await lenderPool.connect(accounts[1]).deposit(n6("50"));
+  });
+
+  it("should check reward at t = 7 year (close to 200)", async function(){
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 7);
+    console.log(await lenderPool.connect(accounts[1]).rewardTradeOf());
   });
 });
