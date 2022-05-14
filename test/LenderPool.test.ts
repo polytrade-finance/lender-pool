@@ -299,7 +299,7 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
     expect(await lenderPool.tradeReward()).to.be.equal(tradeReward.address);
   });
 
-  it("should set trade rate", async function(){
+  it("should set trade rate", async function () {
     await tradeReward.setTradeRate(100);
   });
 
