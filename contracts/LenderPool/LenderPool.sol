@@ -104,7 +104,7 @@ contract LenderPool is ILenderPool, Ownable {
         stable.safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    function rewardTradeOf() external returns (uint) {
+    function rewardTradeOf() external view returns (uint) {
         return tradeReward.rewardOf(msg.sender);
     }
 
