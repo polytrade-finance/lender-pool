@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { Token, LenderPool, Verification, TradeReward } from "../typechain";
-import { n6 } from "./helpers";
+import { n6, ONE_DAY, now, setNextBlockTimestamp } from "./helpers";
 describe("LenderPool", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
@@ -12,6 +12,7 @@ describe("LenderPool", function () {
   let trade: Token;
   let verification: Verification;
   let tradeReward: TradeReward;
+  let currentTime: number = 0;
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
@@ -96,61 +97,90 @@ describe("LenderPool", function () {
     expect(await lenderPool.tradeReward()).to.be.equal(tradeReward.address);
   });
 
-  it("should approve stable token", async function () {
-    await stable.connect(accounts[0]).approve(lenderPool.address, n6("100"));
+  it("should set trade rate", async function () {
+    await tradeReward.setTradeRate(100);
+  });
+
+  it("should set minter", async function () {
+    await trade.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
+
     expect(
-      await stable.allowance(addresses[0], lenderPool.address)
+      await trade.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+        lenderPool.address
+      )
+    );
+  });
+
+  it("should approve stable token", async function () {
+    await stable.connect(accounts[1]).approve(lenderPool.address, n6("100"));
+    expect(
+      await stable.allowance(addresses[1], lenderPool.address)
     ).to.be.equal(ethers.BigNumber.from(n6("100")));
-  });
-
-  it("should transfer tStable to lender pool", async function () {
-    await tStable
-      .connect(accounts[0])
-      .transfer(lenderPool.address, 100 * 10 ** 6);
-    expect(await tStable.balanceOf(lenderPool.address)).to.be.equal(n6("100"));
-  });
-
-  it("should check balance of user is zero", async function () {
-    expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(0);
   });
 
   it("should fail deposits stable token without KYC", async function () {
     await expect(
-      lenderPool.connect(accounts[0]).deposit(n6("100"))
+      lenderPool.connect(accounts[1]).deposit(n6("100"))
     ).to.be.revertedWith("Need to have valid KYC");
+  });
+
+  it("should transfer amount to account 1", async function () {
+    await stable.transfer(addresses[1], n6("200"));
   });
 
   it("should increase the minimum deposit before KYC", async () => {
     await lenderPool.updateKYCLimit(n6("5000"));
   });
 
+  it("should revert if no reward", async function () {
+    expect(lenderPool.connect(accounts[1]).claimAllTrade()).to.be.revertedWith(
+      "Reward is zero"
+    );
+  });
+
   it("should deposit stable token successfully", async function () {
-    await lenderPool.connect(accounts[0]).deposit(n6("100"));
+    await lenderPool.connect(accounts[1]).deposit(n6("100"));
+    currentTime = await now();
     expect(await stable.balanceOf(lenderPool.address)).to.be.equal(
       ethers.BigNumber.from(n6("100"))
     );
   });
 
-  it("should check balance of user after deposit", async function () {
-    expect(await lenderPool.getDeposit(addresses[0])).to.be.equal(n6("100"));
+  it("should withdraw trade reward after one year", async function () {
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
+    const balanceBefore = await trade.balanceOf(addresses[1]);
+    await lenderPool.connect(accounts[1]).claimTrade(n6("50"));
+    const balanceAfter = await trade.balanceOf(addresses[1]);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("50"));
   });
 
+  it("should check reward after two years (close to 150)", async function () {
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 2);
+    const balanceBefore = await trade.balanceOf(addresses[1]);
+    await lenderPool.connect(accounts[1]).claimAllTrade();
+    const balanceAfter = await trade.balanceOf(addresses[1]);
+    console.log(balanceAfter.sub(balanceBefore));
+  });
 
-
-
-  it("should claim all tStable successfully", async function () {
-    const balanceBefore = await tStable.balanceOf(addresses[0]);
-    await lenderPool.connect(accounts[0]).withdrawAllTStable();
-    const balanceAfter = await tStable.balanceOf(addresses[0]);
+  it("should claim all tStable successfully after three years", async function () {
+    const balanceBefore = await tStable.balanceOf(addresses[1]);
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 3);
+    await lenderPool.connect(accounts[1]).withdrawAllTStable();
+    const balanceAfter = await tStable.balanceOf(addresses[1]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(
       ethers.BigNumber.from(n6("100"))
     );
   });
 
-  it("should revert if all tStable is claimed", function async() {
-    expect(
-      lenderPool.connect(accounts[0]).withdrawAllTStable()
-    ).to.be.revertedWith("tStable already claimed");
+  it("should check reward after four years (close to 150)", async function () {
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 4);
+    const balanceBefore = await trade.balanceOf(addresses[1]);
+    await lenderPool.connect(accounts[1]).claimAllTrade();
+    const balanceAfter = await trade.balanceOf(addresses[1]);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("100"));
   });
-
 });
