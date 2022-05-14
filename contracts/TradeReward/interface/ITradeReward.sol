@@ -19,9 +19,9 @@ interface ITradeReward {
 
     function withdraw(address lender, uint amount) external;
 
-    function rewardOf(address lender) external view returns (uint);
-
     function claimReward(address lender, uint amount) external;
 
     function setTradeRate(uint16 tradeRate) external;
+
+    function rewardOf(address lender) external view returns (uint);
 }

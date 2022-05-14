@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Token, LenderPool, Verification, TradeReward, IToken } from "../typechain";
+import { Token, LenderPool, Verification, TradeReward } from "../typechain";
 import { n6, ONE_DAY, now, setNextBlockTimestamp } from "./helpers";
 
 describe("LenderPool", function () {
@@ -179,7 +179,9 @@ describe("LenderPool", function () {
 
   it("should check reward at t = 4 year is 100 stable", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 4);
-    expect(await lenderPool.connect(accounts[1]).rewardTradeOf()).to.be.equal(n6("100"));
+    expect(await lenderPool.connect(accounts[1]).rewardTradeOf()).to.be.equal(
+      n6("100")
+    );
   });
 
   it("should set trade rate to 2 trade per year per token", async function () {
@@ -192,7 +194,7 @@ describe("LenderPool", function () {
     await lenderPool.connect(accounts[1]).deposit(n6("50"));
   });
 
-  it("should check reward at t = 7 year (close to 200)", async function(){
+  it("should check reward at t = 7 year (close to 200)", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 7);
     console.log(await lenderPool.connect(accounts[1]).rewardTradeOf());
   });

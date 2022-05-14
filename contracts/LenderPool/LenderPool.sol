@@ -104,10 +104,6 @@ contract LenderPool is ILenderPool, Ownable {
         stable.safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    function rewardTradeOf() external view returns (uint) {
-        return tradeReward.rewardOf(msg.sender);
-    }
-
     function claimTrade(uint amount) external {
         require(
             tradeReward.rewardOf(msg.sender) >= amount,
@@ -230,6 +226,10 @@ contract LenderPool is ILenderPool, Ownable {
         tStable.mint(address(this), amount);
         tStable.approve(address(redeemPool), amount);
         redeemPool.redeemStableTo(amount, msg.sender);
+    }
+
+    function rewardTradeOf() external view returns (uint) {
+        return tradeReward.rewardOf(msg.sender);
     }
 
     /**
@@ -425,7 +425,7 @@ contract LenderPool is ILenderPool, Ownable {
         uint40 end,
         uint16 apy
     ) private pure returns (uint) {
-        if(amount==0){
+        if (amount == 0) {
             return 0;
         }
         uint oneYear = (10000 * 365 days);

@@ -60,7 +60,6 @@ contract TradeReward is ITradeReward, AccessControl {
         external
         onlyRole(LENDER_POOL)
     {
-
         _updatePendingReward(lender);
         _lender[lender].pendingRewards -= amount;
     }
@@ -140,7 +139,7 @@ contract TradeReward is ITradeReward, AccessControl {
         uint40 end,
         uint16 tradeRate
     ) private pure returns (uint) {
-        if(amount==0){
+        if (amount == 0) {
             return 0;
         }
         uint oneYear = (100 * 365 days);
