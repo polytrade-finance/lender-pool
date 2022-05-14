@@ -56,6 +56,14 @@ contract TradeReward is ITradeReward, AccessControl {
         _lender[lender].deposit -= amount;
     }
 
+    function claimReward(address lender, uint amount)
+        external
+        onlyRole(LENDER_POOL)
+    {
+        _updatePendingReward(lender);
+        _lender[lender].pendingRewards -= amount;
+    }
+
     function rewardOf(address lender) external view returns (uint) {
         if (_lender[lender].round < currentRound) {
             return
@@ -65,14 +73,6 @@ contract TradeReward is ITradeReward, AccessControl {
             return
                 _lender[lender].pendingRewards + _calculateCurrentRound(lender);
         }
-    }
-
-    function claimReward(address lender, uint amount)
-        external
-        onlyRole(LENDER_POOL)
-    {
-        _updatePendingReward(lender);
-        _lender[lender].pendingRewards -= amount;
     }
 
     function _updatePendingReward(address lender) private {
