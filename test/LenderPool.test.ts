@@ -298,7 +298,11 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
     await lenderPool.setTradeReward(tradeReward.address);
     expect(await lenderPool.tradeReward()).to.be.equal(tradeReward.address);
   });
-  
+
+  it("should set trade rate", async function(){
+    await tradeReward.setTradeRate(100);
+  });
+
   it("should deposit 100 stable tokens successfully from account 1 at t = 0 year", async function () {
     await stable.connect(accounts[1]).approve(lenderPool.address, n6("100"));
     expect(n6("100")).to.be.equal(
