@@ -98,13 +98,12 @@ describe("LenderPool", function () {
     expect(await lenderPool.tradeReward()).to.be.equal(reward.address);
   });
 
-  it("should transfer trade tokens to lender pool", async function(){
+  it("should transfer trade tokens to lender pool", async function () {
     await trade
       .connect(accounts[0])
       .transfer(lenderPool.address, 10000 * 10 ** 6);
     expect(await trade.balanceOf(lenderPool.address)).to.be.equal(n6("10000"));
- 
-  })
+  });
 
   it("should set trade rate at 1 trade token per year per stable", async function () {
     await reward.setReward(100);
