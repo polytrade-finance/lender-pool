@@ -98,6 +98,14 @@ describe("LenderPool", function () {
     expect(await lenderPool.tradeReward()).to.be.equal(reward.address);
   });
 
+  it("should transfer trade tokens to lender pool", async function(){
+    await trade
+      .connect(accounts[0])
+      .transfer(lenderPool.address, 10000 * 10 ** 6);
+    expect(await trade.balanceOf(lenderPool.address)).to.be.equal(n6("10000"));
+ 
+  })
+
   it("should set trade rate at 1 trade token per year per stable", async function () {
     await reward.setReward(100);
   });
@@ -151,15 +159,7 @@ describe("LenderPool", function () {
     );
   });
 
-  it("should withdraw 50 trade reward at t = 1 year", async function () {
-    await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
-    const balanceBefore = await trade.balanceOf(addresses[1]);
-    await lenderPool.connect(accounts[1]).claimTrade(n6("50"));
-    const balanceAfter = await trade.balanceOf(addresses[1]);
-    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("50"));
-  });
-
-  it("should check reward at t = 2 year (close to 150)", async function () {
+  it("should claim reward at t = 2 year (close to 200)", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 2);
     const balanceBefore = await trade.balanceOf(addresses[1]);
     await lenderPool.connect(accounts[1]).claimAllTrade();

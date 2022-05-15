@@ -104,15 +104,6 @@ contract LenderPool is ILenderPool, Ownable {
         stable.safeTransferFrom(msg.sender, address(this), amount);
     }
 
-    function claimTrade(uint amount) external {
-        require(
-            tradeReward.rewardOf(msg.sender) >= amount,
-            "Reward claimed more than earned"
-        );
-        tradeReward.claimReward(msg.sender, amount);
-        trade.safeTransfer(msg.sender, amount);
-    }
-
     function claimAllTrade() external {
         uint amount = tradeReward.rewardOf(msg.sender);
         require(amount > 0, "Reward is zero");
