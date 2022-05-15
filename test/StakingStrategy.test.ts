@@ -6,7 +6,7 @@ import {
   Token,
   LenderPool,
   RedeemPool,
-  TradeReward,
+  Reward,
 } from "../typechain";
 import { n6, increaseTime, ONE_DAY } from "./helpers";
 import {
@@ -27,7 +27,7 @@ describe("StakingStrategy", async function () {
   let redeem: RedeemPool;
   let lenderPool: LenderPool;
   let trade: Token;
-  let tradeReward: TradeReward;
+  let reward: Reward;
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
@@ -79,30 +79,30 @@ describe("StakingStrategy", async function () {
     );
     await lenderPool.deployed();
 
-    const TradeReward = await ethers.getContractFactory("TradeReward");
-    tradeReward = await TradeReward.deploy();
+    const Reward = await ethers.getContractFactory("Reward");
+    reward = await Reward.deploy();
   });
 
   it("should set LENDER_POOL and OWNER in TradeReward", async function () {
-    await tradeReward.grantRole(
+    await reward.grantRole(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
       lenderPool.address
     );
 
-    await tradeReward.grantRole(
+    await reward.grantRole(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
       addresses[0]
     );
 
     expect(
-      await tradeReward.hasRole(
+      await reward.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
         lenderPool.address
       )
     );
 
     expect(
-      await tradeReward.hasRole(
+      await reward.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
         addresses[0]
       )
@@ -112,8 +112,8 @@ describe("StakingStrategy", async function () {
   it("should set trade and tradeReward in LenderPool", async function () {
     await lenderPool.setTrade(trade.address);
     expect(await lenderPool.trade()).to.be.equal(trade.address);
-    await lenderPool.setTradeReward(tradeReward.address);
-    expect(await lenderPool.tradeReward()).to.be.equal(tradeReward.address);
+    await lenderPool.setTradeReward(reward.address);
+    expect(await lenderPool.tradeReward()).to.be.equal(reward.address);
   });
 
   it("should impersonate account", async function () {

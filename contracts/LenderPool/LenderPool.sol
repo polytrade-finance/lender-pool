@@ -8,7 +8,7 @@ import "./interface/ILenderPool.sol";
 import "../Token/interface/IToken.sol";
 import "../RedeemPool/interface/IRedeemPool.sol";
 import "../Verification/interface/IVerification.sol";
-import "../TradeReward/interface/ITradeReward.sol";
+import "../Reward/interface/IReward.sol";
 
 /**
  * @author Polytrade
@@ -26,7 +26,7 @@ contract LenderPool is ILenderPool, Ownable {
     IRedeemPool public immutable redeemPool;
     IStakingStrategy public stakingStrategy;
     IVerification public verification;
-    ITradeReward public tradeReward;
+    IReward public tradeReward;
 
     uint16 public currentRound = 0;
     uint public kycLimit;
@@ -42,7 +42,7 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     function setTradeReward(address _address) external onlyOwner {
-        tradeReward = ITradeReward(_address);
+        tradeReward = IReward(_address);
     }
 
     function setTrade(address _address) external onlyOwner {
@@ -110,14 +110,14 @@ contract LenderPool is ILenderPool, Ownable {
             "Reward claimed more than earned"
         );
         tradeReward.claimReward(msg.sender, amount);
-        trade.mint(msg.sender, amount);
+        trade.safeTransfer(msg.sender, amount);
     }
 
     function claimAllTrade() external {
         uint amount = tradeReward.rewardOf(msg.sender);
         require(amount > 0, "Reward is zero");
         tradeReward.claimReward(msg.sender, amount);
-        trade.mint(msg.sender, amount);
+        trade.safeTransfer(msg.sender, amount);
     }
 
     /**
@@ -425,7 +425,7 @@ contract LenderPool is ILenderPool, Ownable {
         uint40 end,
         uint16 apy
     ) private pure returns (uint) {
-        if (amount == 0) {
+        if (amount == 0 || apy == 0) {
             return 0;
         }
         uint oneYear = (10000 * 365 days);

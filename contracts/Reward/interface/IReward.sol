@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
-interface ITradeReward {
+interface IReward {
     struct Lender {
         uint16 round;
         uint40 startPeriod;
@@ -10,7 +10,7 @@ interface ITradeReward {
     }
 
     struct RoundInfo {
-        uint16 tradeRate;
+        uint16 apy;
         uint40 startTime;
         uint40 endTime;
     }
@@ -21,7 +21,7 @@ interface ITradeReward {
 
     function claimReward(address lender, uint amount) external;
 
-    function setTradeRate(uint16 tradeRate) external;
+    function setReward(uint16 tradeRate) external;
 
     function rewardOf(address lender) external view returns (uint);
 }

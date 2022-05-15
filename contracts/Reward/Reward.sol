@@ -2,9 +2,9 @@
 pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "./interface/ITradeReward.sol";
+import "./interface/IReward.sol";
 
-contract TradeReward is ITradeReward, AccessControl {
+contract Reward is IReward, AccessControl {
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
     bytes32 public constant OWNER = keccak256("OWNER");
 
@@ -17,13 +17,13 @@ contract TradeReward is ITradeReward, AccessControl {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    function setTradeRate(uint16 tradeRate) external onlyRole(OWNER) {
+    function setReward(uint16 reward) external onlyRole(OWNER) {
         if (currentRound > 0) {
             round[currentRound].endTime = uint40(block.timestamp);
         }
         currentRound += 1;
         round[currentRound] = RoundInfo(
-            tradeRate,
+            reward,
             uint40(block.timestamp),
             type(uint40).max
         );
@@ -98,7 +98,7 @@ contract TradeReward is ITradeReward, AccessControl {
             _lender[lender].deposit,
             _max(_lender[lender].startPeriod, round[currentRound].startTime),
             _min(uint40(block.timestamp), round[currentRound].endTime),
-            round[currentRound].tradeRate
+            round[currentRound].apy
         );
         return reward;
     }
@@ -118,7 +118,7 @@ contract TradeReward is ITradeReward, AccessControl {
                 _lender[lender].deposit,
                 _max(_lender[lender].startPeriod, round[i].startTime),
                 _min(uint40(block.timestamp), round[i].endTime),
-                round[i].tradeRate
+                round[i].apy
             );
         }
         return reward;
@@ -139,7 +139,7 @@ contract TradeReward is ITradeReward, AccessControl {
         uint40 end,
         uint16 tradeRate
     ) private pure returns (uint) {
-        if (amount == 0) {
+        if (amount == 0 || tradeRate == 0) {
             return 0;
         }
         uint oneYear = (100 * 365 days);

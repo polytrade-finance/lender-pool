@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Token, LenderPool, Verification, TradeReward } from "../typechain";
+import { Token, LenderPool, Verification, Reward } from "../typechain";
 import { n6, ONE_DAY, now, setNextBlockTimestamp } from "./helpers";
 
 describe("LenderPool", function () {
@@ -12,7 +12,7 @@ describe("LenderPool", function () {
   let tStable: Token;
   let trade: Token;
   let verification: Verification;
-  let tradeReward: TradeReward;
+  let reward: Reward;
   let currentTime: number = 0;
   before(async () => {
     accounts = await ethers.getSigners();
@@ -34,8 +34,8 @@ describe("LenderPool", function () {
     const Verification = await ethers.getContractFactory("Verification");
     verification = await Verification.deploy();
     await verification.deployed();
-    const TradeReward = await ethers.getContractFactory("TradeReward");
-    tradeReward = await TradeReward.deploy();
+    const Reward = await ethers.getContractFactory("Reward");
+    reward = await Reward.deploy();
   });
 
   it("Should set verification contract to LenderPool", async () => {
@@ -66,25 +66,25 @@ describe("LenderPool", function () {
   });
 
   it("should set LENDER_POOL and OWNER in TradeReward", async function () {
-    await tradeReward.grantRole(
+    await reward.grantRole(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
       lenderPool.address
     );
 
-    await tradeReward.grantRole(
+    await reward.grantRole(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
       addresses[0]
     );
 
     expect(
-      await tradeReward.hasRole(
+      await reward.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
         lenderPool.address
       )
     );
 
     expect(
-      await tradeReward.hasRole(
+      await reward.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
         addresses[0]
       )
@@ -94,12 +94,12 @@ describe("LenderPool", function () {
   it("should set trade and tradeReward in LenderPool", async function () {
     await lenderPool.setTrade(trade.address);
     expect(await lenderPool.trade()).to.be.equal(trade.address);
-    await lenderPool.setTradeReward(tradeReward.address);
-    expect(await lenderPool.tradeReward()).to.be.equal(tradeReward.address);
+    await lenderPool.setTradeReward(reward.address);
+    expect(await lenderPool.tradeReward()).to.be.equal(reward.address);
   });
 
   it("should set trade rate at 1 trade token per year per stable", async function () {
-    await tradeReward.setTradeRate(100);
+    await reward.setReward(100);
   });
 
   it("should set minter", async function () {
@@ -186,7 +186,7 @@ describe("LenderPool", function () {
 
   it("should set trade rate to 2 trade per year per token", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 5);
-    await tradeReward.setTradeRate(200);
+    await reward.setReward(200);
   });
 
   it("should deposit 50 stable token at t = 6 year", async function () {
