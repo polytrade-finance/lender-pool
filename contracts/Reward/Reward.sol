@@ -4,6 +4,10 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interface/IReward.sol";
 
+/**
+ * @author Polytrade
+ * @title Reward V2
+ */
 contract Reward is IReward, AccessControl {
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
     bytes32 public constant OWNER = keccak256("OWNER");
@@ -17,6 +21,11 @@ contract Reward is IReward, AccessControl {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    /**
+     * @notice sets the reward (APY in case of tStable, trade per year per stable in case of trade reward)
+     * @dev only OWNER can call setReward
+     * @param reward, current reward offered by the contract
+     */
     function setReward(uint16 reward) external onlyRole(OWNER) {
         if (currentRound > 0) {
             round[currentRound].endTime = uint40(block.timestamp);
@@ -29,6 +38,12 @@ contract Reward is IReward, AccessControl {
         );
     }
 
+    /**
+     * @notice increases the `lender` deposit by `amount`
+     * @dev can be called by LENDER_POOL only
+     * @param lender, address of the lender
+     * @param amount, amount deposited by lender
+     */
     function deposit(address lender, uint amount)
         external
         onlyRole(LENDER_POOL)
@@ -44,6 +59,12 @@ contract Reward is IReward, AccessControl {
         _lender[lender].round = currentRound;
     }
 
+    /**
+     * @notice withdraws the `amount` from `lender`
+     * @dev can be called by LENDER_POOL only
+     * @param lender, address of the lender
+     * @param amount, amount deposited by lender
+     */
     function withdraw(address lender, uint amount)
         external
         onlyRole(LENDER_POOL)
@@ -56,6 +77,12 @@ contract Reward is IReward, AccessControl {
         _lender[lender].deposit -= amount;
     }
 
+    /**
+     * @notice send lender reward and update the pendingReward
+     * @dev can be called by LENDER_POOL only
+     * @param lender, address of the lender
+     * @param amount, amount deposited by lender
+     */
     function claimReward(address lender, uint amount)
         external
         onlyRole(LENDER_POOL)
@@ -64,6 +91,12 @@ contract Reward is IReward, AccessControl {
         _lender[lender].pendingRewards -= amount;
     }
 
+    /**
+     * @notice returns the total pending reward
+     * @dev returns the total pending reward of msg.sender
+     * @param lender, address of the lender
+     * @return returns the total pending reward
+     */
     function rewardOf(address lender) external view returns (uint) {
         if (_lender[lender].round < currentRound) {
             return
@@ -75,6 +108,11 @@ contract Reward is IReward, AccessControl {
         }
     }
 
+    /**
+     * @notice updates round, pendingRewards and startTime of the lender
+     * @dev compares the lender round with currentRound and updates _lender accordingly
+     * @param lender, address of the lender
+     */
     function _updatePendingReward(address lender) private {
         if (_lender[lender].round == currentRound) {
             _lender[lender].pendingRewards += _calculateCurrentRound(lender);
@@ -89,6 +127,11 @@ contract Reward is IReward, AccessControl {
         _lender[lender].startPeriod = uint40(block.timestamp);
     }
 
+    /**
+     * @notice return the total reward when lender round is equal to currentRound
+     * @param lender, address of the lender
+     * @return returns total pending reward
+     */
     function _calculateCurrentRound(address lender)
         private
         view
@@ -103,6 +146,11 @@ contract Reward is IReward, AccessControl {
         return reward;
     }
 
+    /**
+     * @notice return the total reward when lender round is less than currentRound
+     * @param lender, address of the lender
+     * @return returns total pending reward
+     */
     function _calculateFromPreviousRounds(address lender)
         private
         view
