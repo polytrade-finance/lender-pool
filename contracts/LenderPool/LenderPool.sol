@@ -8,7 +8,7 @@ import "./interface/ILenderPool.sol";
 import "../Token/interface/IToken.sol";
 import "../RedeemPool/interface/IRedeemPool.sol";
 import "../Verification/interface/IVerification.sol";
-import "../Reward/interface/IReward.sol";
+import "../RewardManager/interface/IRewardManager.sol";
 
 /**
  * @author Polytrade
@@ -26,9 +26,8 @@ contract LenderPool is ILenderPool, Ownable {
     IRedeemPool public immutable redeemPool;
     IStakingStrategy public stakingStrategy;
     IVerification public verification;
-    IReward public tradeReward;
+    IRewardManager public rewardManager;
 
-    uint16 public currentRound = 0;
     uint public kycLimit;
 
     constructor(
@@ -41,13 +40,6 @@ contract LenderPool is ILenderPool, Ownable {
         redeemPool = IRedeemPool(_redeemPool);
     }
 
-    function setTradeReward(address _address) external onlyOwner {
-        tradeReward = IReward(_address);
-    }
-
-    function setTrade(address _address) external onlyOwner {
-        trade = IToken(_address);
-    }
 
     /**
      * @notice move all the funds from the old strategy to the new strategy
@@ -102,13 +94,6 @@ contract LenderPool is ILenderPool, Ownable {
         emit Deposit(msg.sender, amount);
         tradeReward.deposit(msg.sender, amount);
         stable.safeTransferFrom(msg.sender, address(this), amount);
-    }
-
-    function claimAllTrade() external {
-        uint amount = tradeReward.rewardOf(msg.sender);
-        require(amount > 0, "Reward is zero");
-        tradeReward.claimReward(msg.sender, amount);
-        trade.safeTransfer(msg.sender, amount);
     }
 
     /**
@@ -173,25 +158,6 @@ contract LenderPool is ILenderPool, Ownable {
         emit NewKYCLimit(_kycLimit);
     }
 
-    /**
-     * @notice adds a new round
-     * @dev increment currentRound and adds a new round, only owner can call
-     * @param _rewardAPY, new value of new round.apy
-     *
-     * Emits {NewRewardAPY} event
-     */
-    function setAPY(uint16 _rewardAPY) external onlyOwner {
-        if (currentRound > 0) {
-            round[currentRound].endTime = uint40(block.timestamp);
-        }
-        currentRound += 1;
-        round[currentRound] = RoundInfo(
-            _rewardAPY,
-            uint40(block.timestamp),
-            type(uint40).max
-        );
-        emit NewRewardAPY(round[currentRound].apy);
-    }
 
     /**
      * @notice transfers user all the reward in stable token
@@ -219,17 +185,6 @@ contract LenderPool is ILenderPool, Ownable {
         redeemPool.redeemStableTo(amount, msg.sender);
     }
 
-    function rewardTradeOf() external view returns (uint) {
-        return tradeReward.rewardOf(msg.sender);
-    }
-
-    /**
-     * @notice returns value of APY of current round
-     * @return returns value of APY of current round
-     */
-    function getAPY() external view returns (uint16) {
-        return round[currentRound].apy;
-    }
 
     /**
      * @notice returns amount of stable token deposited by the lender
@@ -333,115 +288,9 @@ contract LenderPool is ILenderPool, Ownable {
         tStable.mint(msg.sender, amount);
     }
 
-    /**
-     * @notice updates round, pendingRewards and startTime of the lender
-     * @dev compares the lender round with currentRound and updates _lender accordingly
-     * @param lender, address of the lender
-     */
-    function _updatePendingReward(address lender) private {
-        if (_lender[lender].round == currentRound) {
-            _lender[lender].pendingRewards += _calculateCurrentRound(lender);
-        }
-
-        if (_lender[lender].round < currentRound) {
-            _lender[lender].pendingRewards += _calculateFromPreviousRounds(
-                lender
-            );
-            _lender[lender].round = currentRound;
-        }
-        _lender[lender].startPeriod = uint40(block.timestamp);
-    }
 
     function _getStakingStrategyBalance() private view returns (uint) {
         return stakingStrategy.getBalance();
     }
 
-    /**
-     * @notice return the total reward when lender round is equal to currentRound
-     * @param lender, address of the lender
-     * @return returns total pending reward
-     */
-    function _calculateCurrentRound(address lender)
-        private
-        view
-        returns (uint)
-    {
-        uint reward = _calculateReward(
-            _lender[lender].deposit,
-            _max(_lender[lender].startPeriod, round[currentRound].startTime),
-            _min(uint40(block.timestamp), round[currentRound].endTime),
-            round[currentRound].apy
-        );
-        return reward;
-    }
-
-    /**
-     * @notice return the total reward when lender round is less than currentRound
-     * @param lender, address of the lender
-     * @return returns total pending reward
-     */
-    function _calculateFromPreviousRounds(address lender)
-        private
-        view
-        returns (uint)
-    {
-        uint reward = 0;
-        for (uint16 i = _lender[lender].round; i <= currentRound; i++) {
-            if (i == 0) {
-                continue;
-            }
-
-            reward += _calculateReward(
-                _lender[lender].deposit,
-                _max(_lender[lender].startPeriod, round[i].startTime),
-                _min(uint40(block.timestamp), round[i].endTime),
-                round[i].apy
-            );
-        }
-        return reward;
-    }
-
-    /**
-     * @notice calculates the reward
-     * @dev calculates the reward using simple interest formula
-     * @param amount, principal amount
-     * @param start, start of the tenure for reward
-     * @param end, end of the tenure for reward
-     * @param apy, Annual percentage yield received during the tenure
-     * @return returns reward
-     */
-    function _calculateReward(
-        uint amount,
-        uint40 start,
-        uint40 end,
-        uint16 apy
-    ) private pure returns (uint) {
-        if (amount == 0 || apy == 0) {
-            return 0;
-        }
-        uint oneYear = (10000 * 365 days);
-        return (((end - start) * apy * amount) / oneYear);
-    }
-
-    /**
-     * @notice returns maximum among two uint40 variables
-     * @dev compares two uint40 variables a and b and return maximum between them
-     * @param a, value of uint40 variable
-     * @param b, value of uint40 variable
-     * @return returns maximum between a and b
-     */
-    function _max(uint40 a, uint40 b) private pure returns (uint40) {
-        return a > b ? a : b;
-    }
-
-    /**
-     * @notice returns minimum among two uint40 variables
-     * @dev compares two uint40 variables a and b and return minimum between them
-     * @param a, value of uint40 variable
-     * @param b, value of uint40 variable
-     * @return returns minimum between a and b
-     */
-    function _min(uint40 a, uint40 b) private pure returns (uint40) {
-        return a > b ? b : a;
-    }
 }
