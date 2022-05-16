@@ -6,26 +6,36 @@ import "../Reward/interface/IReward.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract RewardManager is IRewardManager, AccessControl {
-    IReward public stableReward;
-    IReward public tradeReward;
+    IReward public stable;
+    IReward public trade;
 
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
 
-    constructor(address _stableReward, address _tradeReward) {
-        stableReward = IReward(_stableReward);
-        tradeReward = IReward(_tradeReward);
+    constructor(address _stable, address _trade) {
+        stable = IReward(_stable);
+        trade = IReward(_trade);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    function updatePendingReward(address lender) external {
+        trade.updatePendingReward(lender);
+        stable.updatePendingReward(lender);
+    }
+
+    function updateRound(address lender) external {
+        trade.updateRound(lender);
+        stable.updateRound(lender);
+    }
+
     function claimRewards(address lender) external onlyRole(LENDER_POOL){
-        stableReward.claimReward(lender, stableReward.rewardOf(lender), true);
-        tradeReward.claimReward(lender, tradeReward.rewardOf(lender), false);
+        stable.claimReward(lender, stable.rewardOf(lender), true);
+        trade.claimReward(lender, trade.rewardOf(lender), false);
     }
 
     function rewardOf(address lender) external view returns (uint[] memory) {
         uint[] memory rewards = new uint[](2);
-        rewards[0] = stableReward.rewardOf(lender);
-        rewards[1] = tradeReward.rewardOf(lender);
+        rewards[0] = stable.rewardOf(lender);
+        rewards[1] = trade.rewardOf(lender);
         return rewards;
     }
 }
