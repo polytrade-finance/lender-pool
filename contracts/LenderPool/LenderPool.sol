@@ -16,13 +16,14 @@ import "../RewardManager/interface/IRewardManager.sol";
  */
 contract LenderPool is ILenderPool, Ownable {
     using SafeERC20 for IToken;
-
+    //mapping(lender address => struct Lender)
     mapping(address => Lender) private _lender;
-    mapping(uint16 => RoundInfo) public round;
+    //mapping(token address => mapping(lender address => round))
+    mapping(address => mapping(address=>uint16)) public round;
+    //mapping(token address => mapping(lender address => pending reward))
+    mapping(address => mapping(address=>uint)) public pendingRewards;
 
     IToken public immutable stable;
-    IToken public immutable tStable;
-    IToken public trade;
     IRedeemPool public immutable redeemPool;
     IStakingStrategy public stakingStrategy;
     IVerification public verification;
@@ -32,14 +33,17 @@ contract LenderPool is ILenderPool, Ownable {
 
     constructor(
         address _stableAddress,
-        address _tStableAddress,
         address _redeemPool
     ) {
         stable = IToken(_stableAddress);
-        tStable = IToken(_tStableAddress);
         redeemPool = IRedeemPool(_redeemPool);
     }
 
+    function switchRewardManager(address newRewardManager) external onlyOwner {
+        address oldrewardManager = address(rewardManager);
+        rewardManager = IRewardManager(newRewardManager);
+        emit switchRewardManager(oldrewardManager,newRewardManager);
+    }
 
     /**
      * @notice move all the funds from the old strategy to the new strategy
@@ -83,14 +87,14 @@ contract LenderPool is ILenderPool, Ownable {
         );
 
         if (_lender[msg.sender].startPeriod > 0) {
-            _updatePendingReward(msg.sender);
+            rewardManager.updatePendingReward(msg.sender);
         } else {
             _lender[msg.sender].startPeriod = uint40(block.timestamp);
         }
 
         _lender[msg.sender].deposit += amount;
-        _lender[msg.sender].round = currentRound;
-
+        //_lender[msg.sender].round = currentRound;
+        rewardManager.updateRound(msg.sender);
         emit Deposit(msg.sender, amount);
         tradeReward.deposit(msg.sender, amount);
         stable.safeTransferFrom(msg.sender, address(this), amount);
@@ -120,11 +124,8 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {Withdraw} event
      */
     function claimRewards() external {
-        _updatePendingReward(msg.sender);
-        uint totalReward = _lender[msg.sender].pendingRewards;
-        _lender[msg.sender].pendingRewards = 0;
-        emit Withdraw(msg.sender, totalReward);
-        tStable.mint(msg.sender, totalReward);
+        rewardManager.updatePendingReward(msg.sender);
+        rewardManager.claimRewards(msg.sender);
     }
 
     /**
@@ -170,7 +171,7 @@ contract LenderPool is ILenderPool, Ownable {
      *
      */
     function redeemAll() external {
-        _updatePendingReward(msg.sender);
+        rewardManager.updatePendingReward(msg.sender);
         uint amount = _lender[msg.sender].pendingRewards +
             _lender[msg.sender].deposit;
         require(
@@ -201,14 +202,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @return returns the total pending reward
      */
     function rewardOf(address lender) external view returns (uint) {
-        if (_lender[lender].round < currentRound) {
-            return
-                _lender[lender].pendingRewards +
-                _calculateFromPreviousRounds(lender);
-        } else {
-            return
-                _lender[lender].pendingRewards + _calculateCurrentRound(lender);
-        }
+        rewardManager.rewardOf(lender);
     }
 
     function getStakingStrategyBalance()
@@ -280,14 +274,13 @@ contract LenderPool is ILenderPool, Ownable {
             "Invalid amount requested"
         );
         if (currentRound > 0) {
-            _updatePendingReward(msg.sender);
+            rewardManager.updatePendingReward(msg.sender);
         }
         tradeReward.withdraw(msg.sender, amount);
         _lender[msg.sender].deposit -= amount;
         emit Withdraw(msg.sender, amount);
         tStable.mint(msg.sender, amount);
     }
-
 
     function _getStakingStrategyBalance() private view returns (uint) {
         return stakingStrategy.getBalance();
