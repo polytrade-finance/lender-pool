@@ -64,7 +64,7 @@ interface ILenderPool {
     event switchRewardManager(
         address oldRewardManager,
         address newRewardManager
-    )
+    );
 
     /**
      * @notice move all the funds from the old strategy to the new strategy
