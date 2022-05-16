@@ -2,7 +2,9 @@
 pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
+
 import "./interface/IReward.sol";
+import "../Token/interface/IToken.sol";
 
 /**
  * @author Polytrade
@@ -17,7 +19,10 @@ contract Reward is IReward, AccessControl {
 
     uint16 public currentRound = 0;
 
-    constructor() {
+    IToken public rewardToken;
+
+    constructor(address _address) {
+        rewardToken = IToken(_address);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -83,12 +88,18 @@ contract Reward is IReward, AccessControl {
      * @param lender, address of the lender
      * @param amount, amount deposited by lender
      */
-    function claimReward(address lender, uint amount)
+    function claimReward(address lender, uint amount, bool isMint)
         external
         onlyRole(LENDER_POOL)
     {
         _updatePendingReward(lender);
         _lender[lender].pendingRewards -= amount;
+        if(isMint==true){
+        rewardToken.mint(msg.sender, amount);
+        }
+        else{
+            rewardToken.transfer(msg.sender, amount);    
+        }
     }
 
     /**
