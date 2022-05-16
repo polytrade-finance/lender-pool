@@ -3,16 +3,10 @@ pragma solidity ^0.8.12;
 
 interface ILenderPool {
     struct Lender {
-        uint16 round;
-        uint40 startPeriod;
-        uint pendingRewards;
+        mapping(address=>uint16) round;
+        mapping(address=>uint40) startPeriod;
+        mapping(address=>uint)  pendingRewards;
         uint deposit;
-    }
-
-    struct RoundInfo {
-        uint16 apy;
-        uint40 startTime;
-        uint40 endTime;
     }
 
     /**
@@ -66,6 +60,11 @@ interface ILenderPool {
         address oldStakingStrategy,
         address newStakingStrategy
     );
+
+    event switchRewardManager(
+        address oldRewardManager,
+        address newRewardManager
+    )
 
     /**
      * @notice move all the funds from the old strategy to the new strategy
