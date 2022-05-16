@@ -1,7 +1,13 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { StakingStrategy, Token, LenderPool, RedeemPool } from "../typechain";
+import {
+  StakingStrategy,
+  Token,
+  LenderPool,
+  RedeemPool,
+  Reward,
+} from "../typechain";
 import { n6, increaseTime, ONE_DAY } from "./helpers";
 import {
   USDTAddress,
@@ -20,17 +26,22 @@ describe("StakingStrategy", async function () {
   let tStable: Token;
   let redeem: RedeemPool;
   let lenderPool: LenderPool;
+  let trade: Token;
+  let reward: Reward;
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
   });
 
-  it("Should return the stable and aStable Token", async function () {
+  it("Should return the stable and aStable Token and deploy trade", async function () {
     stable = await ethers.getContractAt("IERC20", USDTAddress, accounts[0]);
     expect(await ethers.provider.getCode(stable.address)).to.be.length.above(
       100
     );
     aStable = await ethers.getContractAt("IERC20", aUSDTAddress, accounts[0]);
+    const Token = await ethers.getContractFactory("Token");
+    trade = await Token.deploy("Trade", "Trade", 6);
+    await trade.deployed();
   });
 
   it("should deploy staking pool contract successfully", async function () {
@@ -53,7 +64,7 @@ describe("StakingStrategy", async function () {
     ).to.be.length.above(10);
   });
 
-  it("should deploy lender pool", async function () {
+  it("should deploy lender pool and TradeReward", async function () {
     const TStable = await ethers.getContractFactory("Token");
     tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
     await tStable.deployed();
@@ -67,6 +78,42 @@ describe("StakingStrategy", async function () {
       redeem.address
     );
     await lenderPool.deployed();
+
+    const Reward = await ethers.getContractFactory("Reward");
+    reward = await Reward.deploy();
+  });
+
+  it("should set LENDER_POOL and OWNER in TradeReward", async function () {
+    await reward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
+
+    await reward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+      addresses[0]
+    );
+
+    expect(
+      await reward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
+      )
+    );
+
+    expect(
+      await reward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+        addresses[0]
+      )
+    );
+  });
+
+  it("should set trade and tradeReward in LenderPool", async function () {
+    await lenderPool.setTrade(trade.address);
+    expect(await lenderPool.trade()).to.be.equal(trade.address);
+    await lenderPool.setTradeReward(reward.address);
+    expect(await lenderPool.tradeReward()).to.be.equal(reward.address);
   });
 
   it("should impersonate account", async function () {

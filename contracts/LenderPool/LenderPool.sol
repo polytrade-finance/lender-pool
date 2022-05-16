@@ -8,6 +8,7 @@ import "./interface/ILenderPool.sol";
 import "../Token/interface/IToken.sol";
 import "../RedeemPool/interface/IRedeemPool.sol";
 import "../Verification/interface/IVerification.sol";
+import "../Reward/interface/IReward.sol";
 
 /**
  * @author Polytrade
@@ -21,9 +22,11 @@ contract LenderPool is ILenderPool, Ownable {
 
     IToken public immutable stable;
     IToken public immutable tStable;
+    IToken public trade;
     IRedeemPool public immutable redeemPool;
     IStakingStrategy public stakingStrategy;
     IVerification public verification;
+    IReward public tradeReward;
 
     uint16 public currentRound = 0;
     uint public kycLimit;
@@ -36,6 +39,14 @@ contract LenderPool is ILenderPool, Ownable {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
         redeemPool = IRedeemPool(_redeemPool);
+    }
+
+    function setTradeReward(address _address) external onlyOwner {
+        tradeReward = IReward(_address);
+    }
+
+    function setTrade(address _address) external onlyOwner {
+        trade = IToken(_address);
     }
 
     /**
@@ -89,8 +100,15 @@ contract LenderPool is ILenderPool, Ownable {
         _lender[msg.sender].round = currentRound;
 
         emit Deposit(msg.sender, amount);
-
+        tradeReward.deposit(msg.sender, amount);
         stable.safeTransferFrom(msg.sender, address(this), amount);
+    }
+
+    function claimAllTrade() external {
+        uint amount = tradeReward.rewardOf(msg.sender);
+        require(amount > 0, "Reward is zero");
+        tradeReward.claimReward(msg.sender, amount);
+        trade.safeTransfer(msg.sender, amount);
     }
 
     /**
@@ -194,10 +212,15 @@ contract LenderPool is ILenderPool, Ownable {
             "Insufficient balance in pool"
         );
         _lender[msg.sender].pendingRewards = 0;
+        tradeReward.withdraw(msg.sender, _lender[msg.sender].deposit);
         _lender[msg.sender].deposit = 0;
         tStable.mint(address(this), amount);
         tStable.approve(address(redeemPool), amount);
         redeemPool.redeemStableTo(amount, msg.sender);
+    }
+
+    function rewardTradeOf() external view returns (uint) {
+        return tradeReward.rewardOf(msg.sender);
     }
 
     /**
@@ -304,6 +327,7 @@ contract LenderPool is ILenderPool, Ownable {
         if (currentRound > 0) {
             _updatePendingReward(msg.sender);
         }
+        tradeReward.withdraw(msg.sender, amount);
         _lender[msg.sender].deposit -= amount;
         emit Withdraw(msg.sender, amount);
         tStable.mint(msg.sender, amount);
@@ -392,6 +416,9 @@ contract LenderPool is ILenderPool, Ownable {
         uint40 end,
         uint16 apy
     ) private pure returns (uint) {
+        if (amount == 0 || apy == 0) {
+            return 0;
+        }
         uint oneYear = (10000 * 365 days);
         return (((end - start) * apy * amount) / oneYear);
     }

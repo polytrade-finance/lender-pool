@@ -1,7 +1,13 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Token, LenderPool, RedeemPool, Verification } from "../typechain";
+import {
+  Token,
+  LenderPool,
+  RedeemPool,
+  Verification,
+  Reward,
+} from "../typechain";
 import {
   increaseTime,
   n6,
@@ -17,6 +23,8 @@ describe("LenderPool", function () {
   let stable: Token;
   let tStable: Token;
   let verification: Verification;
+  let trade: Token;
+  let reward: Reward;
 
   before(async () => {
     accounts = await ethers.getSigners();
@@ -33,10 +41,13 @@ describe("LenderPool", function () {
       ethers.constants.AddressZero
     );
     await lenderPool.deployed();
-
     const Verification = await ethers.getContractFactory("Verification");
     verification = await Verification.deploy();
     await verification.deployed();
+    trade = await Token.deploy("Trade", "Trade", 6);
+    await trade.deployed();
+    const Reward = await ethers.getContractFactory("Reward");
+    reward = await Reward.deploy();
   });
 
   it("Should set verification contract to LenderPool", async () => {
@@ -64,6 +75,39 @@ describe("LenderPool", function () {
         lenderPool.address
       )
     );
+  });
+
+  it("should set LENDER_POOL and OWNER in TradeReward", async function () {
+    await reward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
+
+    await reward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+      addresses[0]
+    );
+
+    expect(
+      await reward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
+      )
+    );
+
+    expect(
+      await reward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+        addresses[0]
+      )
+    );
+  });
+
+  it("should set trade and tradeReward in LenderPool", async function () {
+    await lenderPool.setTrade(trade.address);
+    expect(await lenderPool.trade()).to.be.equal(trade.address);
+    await lenderPool.setTradeReward(reward.address);
+    expect(await lenderPool.tradeReward()).to.be.equal(reward.address);
   });
 
   it("should approve stable token", async function () {
@@ -161,6 +205,8 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
   let tStable: Token;
   let verification: Verification;
   let currentTime: number = 0;
+  let trade: Token;
+  let reward: Reward;
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
@@ -183,6 +229,11 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
 
     await lenderPool.updateVerificationContract(verification.address);
     await lenderPool.updateKYCLimit(n6("5000"));
+
+    trade = await Token.deploy("Trade", "Trade", 6);
+    await trade.deployed();
+    const Reward = await ethers.getContractFactory("Reward");
+    reward = await Reward.deploy();
   });
 
   it("should transfer stable to others EOA's", async function () {
@@ -213,6 +264,43 @@ describe("Rewards with multiple withdrawals and deposits on a single round", fun
     expect(lenderPool.connect(accounts[1]).setAPY(20)).to.be.revertedWith(
       "Ownable: caller is not the owner"
     );
+  });
+
+  it("should set LENDER_POOL and OWNER in TradeReward", async function () {
+    await reward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
+
+    await reward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+      addresses[0]
+    );
+
+    expect(
+      await reward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
+      )
+    );
+
+    expect(
+      await reward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+        addresses[0]
+      )
+    );
+  });
+
+  it("should set trade and tradeReward in LenderPool", async function () {
+    await lenderPool.setTrade(trade.address);
+    expect(await lenderPool.trade()).to.be.equal(trade.address);
+    await lenderPool.setTradeReward(reward.address);
+    expect(await lenderPool.tradeReward()).to.be.equal(reward.address);
+  });
+
+  it("should set trade rate", async function () {
+    await reward.setReward(100);
   });
 
   it("should deposit 100 stable tokens successfully from account 1 at t = 0 year", async function () {
@@ -283,7 +371,8 @@ describe("Lender pool reward testing for changing APY", function () {
   let tStable: Token;
   let verification: Verification;
   let currentTime: number = 0;
-
+  let trade: Token;
+  let reward: Reward;
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
@@ -305,6 +394,10 @@ describe("Lender pool reward testing for changing APY", function () {
 
     await lenderPool.updateVerificationContract(verification.address);
     await lenderPool.updateKYCLimit(n6("5000"));
+    trade = await Token.deploy("Trade", "Trade", 6);
+    await trade.deployed();
+    const Reward = await ethers.getContractFactory("Reward");
+    reward = await Reward.deploy();
   });
 
   it("should set minter", async function () {
@@ -326,6 +419,39 @@ describe("Lender pool reward testing for changing APY", function () {
     expect(await stable.balanceOf(addresses[1])).to.be.equal(n6("10000"));
     await stable.connect(accounts[0]).transfer(addresses[2], n6("10000"));
     expect(await stable.balanceOf(addresses[2])).to.be.equal(n6("10000"));
+  });
+
+  it("should set LENDER_POOL and OWNER in TradeReward", async function () {
+    await reward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
+
+    await reward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+      addresses[0]
+    );
+
+    expect(
+      await reward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
+      )
+    );
+
+    expect(
+      await reward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+        addresses[0]
+      )
+    );
+  });
+
+  it("should set trade and tradeReward in LenderPool", async function () {
+    await lenderPool.setTrade(trade.address);
+    expect(await lenderPool.trade()).to.be.equal(trade.address);
+    await lenderPool.setTradeReward(reward.address);
+    expect(await lenderPool.tradeReward()).to.be.equal(reward.address);
   });
 
   it("should set APY to 10%", async function () {
@@ -405,7 +531,8 @@ describe("LenderPool convert to stable", function () {
   let redeem: RedeemPool;
   let verification: Verification;
   let currentTime: number = 0;
-
+  let trade: Token;
+  let reward: Reward;
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
@@ -431,6 +558,43 @@ describe("LenderPool convert to stable", function () {
 
     await lenderPool.updateVerificationContract(verification.address);
     await lenderPool.updateKYCLimit(n6("5000"));
+    trade = await Token.deploy("Trade", "Trade", 6);
+    await trade.deployed();
+    const Reward = await ethers.getContractFactory("Reward");
+    reward = await Reward.deploy();
+  });
+
+  it("should set LENDER_POOL and OWNER in TradeReward", async function () {
+    await reward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
+
+    await reward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+      addresses[0]
+    );
+
+    expect(
+      await reward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
+      )
+    );
+
+    expect(
+      await reward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+        addresses[0]
+      )
+    );
+  });
+
+  it("should set trade and tradeReward in LenderPool", async function () {
+    await lenderPool.setTrade(trade.address);
+    expect(await lenderPool.trade()).to.be.equal(trade.address);
+    await lenderPool.setTradeReward(reward.address);
+    expect(await lenderPool.tradeReward()).to.be.equal(reward.address);
   });
 
   it("should set APY to 10%", async function () {
