@@ -2,7 +2,6 @@
 pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-
 import "./interface/IReward.sol";
 import "../Token/interface/IToken.sol";
 
@@ -43,6 +42,10 @@ contract Reward is IReward, AccessControl {
         );
     }
 
+    function updateRound(address lender) external{
+        
+    }
+
     /**
      * @notice increases the `lender` deposit by `amount`
      * @dev can be called by LENDER_POOL only
@@ -55,7 +58,7 @@ contract Reward is IReward, AccessControl {
     {
         require(amount > 0, "Lending amount is 0");
         if (_lender[lender].startPeriod > 0) {
-            _updatePendingReward(lender);
+            updatePendingReward(lender);
         } else {
             _lender[lender].startPeriod = uint40(block.timestamp);
         }
@@ -77,7 +80,7 @@ contract Reward is IReward, AccessControl {
         require(amount > 0, "Cannot withdraw 0 amount");
         require(_lender[lender].deposit >= amount, "Invalid amount requested");
         if (currentRound > 0) {
-            _updatePendingReward(lender);
+            updatePendingReward(lender);
         }
         _lender[lender].deposit -= amount;
     }
@@ -92,7 +95,7 @@ contract Reward is IReward, AccessControl {
         external
         onlyRole(LENDER_POOL)
     {
-        _updatePendingReward(lender);
+        updatePendingReward(lender);
         _lender[lender].pendingRewards -= amount;
         if(isMint==true){
         rewardToken.mint(msg.sender, amount);
@@ -100,6 +103,25 @@ contract Reward is IReward, AccessControl {
         else{
             rewardToken.transfer(msg.sender, amount);    
         }
+    }
+
+    /**
+     * @notice updates round, pendingRewards and startTime of the lender
+     * @dev compares the lender round with currentRound and updates _lender accordingly
+     * @param lender, address of the lender
+     */
+    function updatePendingReward(address lender) public {
+        if (_lender[lender].round == currentRound) {
+            _lender[lender].pendingRewards += _calculateCurrentRound(lender);
+        }
+
+        if (_lender[lender].round < currentRound) {
+            _lender[lender].pendingRewards += _calculateFromPreviousRounds(
+                lender
+            );
+            _lender[lender].round = currentRound;
+        }
+        _lender[lender].startPeriod = uint40(block.timestamp);
     }
 
     /**
@@ -117,25 +139,6 @@ contract Reward is IReward, AccessControl {
             return
                 _lender[lender].pendingRewards + _calculateCurrentRound(lender);
         }
-    }
-
-    /**
-     * @notice updates round, pendingRewards and startTime of the lender
-     * @dev compares the lender round with currentRound and updates _lender accordingly
-     * @param lender, address of the lender
-     */
-    function _updatePendingReward(address lender) private {
-        if (_lender[lender].round == currentRound) {
-            _lender[lender].pendingRewards += _calculateCurrentRound(lender);
-        }
-
-        if (_lender[lender].round < currentRound) {
-            _lender[lender].pendingRewards += _calculateFromPreviousRounds(
-                lender
-            );
-            _lender[lender].round = currentRound;
-        }
-        _lender[lender].startPeriod = uint40(block.timestamp);
     }
 
     /**
