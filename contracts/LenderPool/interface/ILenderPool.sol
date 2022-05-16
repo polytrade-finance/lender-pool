@@ -3,11 +3,24 @@ pragma solidity ^0.8.12;
 
 interface ILenderPool {
     struct Lender {
-        mapping(address=>uint16) round;
-        mapping(address=>uint40) startPeriod;
-        mapping(address=>uint)  pendingRewards;
+//        mapping(address => uint16) round;
+//        mapping(address => uint40) startPeriod;
+//        mapping(address => uint) pendingRewards;
         uint deposit;
     }
+
+//    struct Lender {
+//        uint16 round;
+//        uint40 startPeriod;
+//        uint pendingRewards;
+//        uint deposit;
+//    }
+//
+//    struct RoundInfo {
+//        uint16 apy;
+//        uint40 startTime;
+//        uint40 endTime;
+//    }
 
     /**
      * @notice Emits when new fund is added to the Lender Pool
@@ -36,12 +49,7 @@ interface ILenderPool {
         address newVerificationAddress
     );
 
-    /**
-     * @notice Emits when new kyc Limit is set
-     * @dev Emitted when new kycLimit is set by the owner
-     * @param kycLimit, new value of kycLimit
-     */
-    event NewKYCLimit(uint kycLimit);
+
 
     /**
      * @notice Emits when new rewardAPY is set
@@ -61,7 +69,7 @@ interface ILenderPool {
         address newStakingStrategy
     );
 
-    event switchRewardManager(
+    event SwitchRewardManager(
         address oldRewardManager,
         address newRewardManager
     );
@@ -79,26 +87,14 @@ interface ILenderPool {
      * @dev only owner can call this function
      * @param amount, total amount to deposit
      */
-    function depositInStakingStrategy(uint amount) external;
-
-    /**
-     * @notice deposit all stable token to staking strategy
-     * @dev only owner can call this function
-     */
-    function depositAllInStakingStrategy() external;
-
-    /**
-     * @notice withdraw all stable token from staking strategy
-     * @dev only owner can call this function
-     */
-    function withdrawAllFromStakingStrategy() external;
+    function depositToStrategy(uint amount) external;
 
     /**
      * @notice withdraw stable token from staking pool
      * @dev only owner can call this function
      * @param amount, total amount to be withdrawn from staking strategy
      */
-    function withdrawFromStakingStrategy(uint amount) external;
+    function withdrawFromStrategy(uint amount) external;
 
     /**
      * @notice Deposit stable token to smart contract
@@ -135,14 +131,6 @@ interface ILenderPool {
      */
     function claimRewards() external;
 
-    /**
-     * @notice adds a new round
-     * @dev increment currentRound and adds a new round, only owner can call
-     * @param _rewardAPY, new value of new round.apy
-     *
-     * Emits {NewRewardAPY} event
-     */
-    function setAPY(uint16 _rewardAPY) external;
 
     /**
      * @notice transfers user all the reward in stable token
@@ -155,12 +143,6 @@ interface ILenderPool {
      *
      */
     function redeemAll() external;
-
-    /**
-     * @notice returns value of APY of current round
-     * @return returns value of APY of current round
-     */
-    function getAPY() external view returns (uint16);
 
     /**
      * @notice returns amount of stable token deposited by the lender

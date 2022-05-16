@@ -9,6 +9,7 @@ import "../Token/interface/IToken.sol";
 import "../RedeemPool/interface/IRedeemPool.sol";
 import "../Verification/interface/IVerification.sol";
 import "../RewardManager/interface/IRewardManager.sol";
+import "../Reward/interface/IReward.sol";
 
 /**
  * @author Polytrade
@@ -18,17 +19,16 @@ contract LenderPool is ILenderPool, Ownable {
     using SafeERC20 for IToken;
 
     mapping(address => Lender) private _lender;
-    mapping(uint16 => RoundInfo) public round;
+//    mapping(uint16 => RoundInfo) public round;
 
     IToken public immutable stable;
     IToken public immutable tStable;
     IToken public trade;
     IRedeemPool public immutable redeemPool;
-    IStakingStrategy public stakingStrategy;
+    IStakingStrategy public strategy;
     IVerification public verification;
     IRewardManager public rewardManager;
 
-    uint public kycLimit;
 
     constructor(
         address _stableAddress,
@@ -40,7 +40,6 @@ contract LenderPool is ILenderPool, Ownable {
         redeemPool = IRedeemPool(_redeemPool);
     }
 
-
     /**
      * @notice move all the funds from the old strategy to the new strategy
      * @dev can be called by only owner
@@ -48,15 +47,36 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {SwitchStrategy} event
      */
     function switchStrategy(address newStakingStrategy) external onlyOwner {
-        address oldStakingStrategy = address(stakingStrategy);
+        address oldStakingStrategy = address(strategy);
         if (oldStakingStrategy != address(0)) {
-            uint amount = _getStakingStrategyBalance();
-            withdrawAllFromStakingStrategy();
-            stakingStrategy = StakingStrategy(newStakingStrategy);
-            depositInStakingStrategy(amount);
+            uint amountToWithdraw = _getStrategyBalance();
+            withdrawFromStrategy(amountToWithdraw);
+
+            strategy = StakingStrategy(newStakingStrategy);
+
+            uint amountToDeposit = stable.balanceOf(address(this));
+            depositToStrategy(amountToDeposit);
         }
-        stakingStrategy = StakingStrategy(newStakingStrategy);
+        strategy = StakingStrategy(newStakingStrategy);
         emit SwitchStrategy(oldStakingStrategy, newStakingStrategy);
+    }
+
+    /**
+     * @notice Updates the Verification contract address
+     * @dev changes verification Contract must complies with `IVerification`
+     * @param _newVerification, address of the new Verification contract
+     *
+     * Emits {VerificationContractUpdated} event
+     */
+    function switchVerification(address _newVerification) external onlyOwner {
+        address oldVerification = address(verification);
+        verification = IVerification(_newVerification);
+        emit VerificationContractUpdated(oldVerification, _newVerification);
+    }
+
+    function switchRewardManager(address _newRewardManager) external onlyOwner {
+        address oldRewardManager = address(rewardManager);
+        rewardManager = IRewardManager(_newRewardManager);
     }
 
     /**
@@ -73,26 +93,29 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function deposit(uint amount) external {
         require(amount > 0, "Lending amount is 0");
+
         uint allowance = stable.allowance(msg.sender, address(this));
         require(allowance >= amount, "Not enough allowance");
 
         require(
-            (_lender[msg.sender].deposit + amount < kycLimit) ||
+            !(verification.isValidationRequired(_lender[msg.sender].deposit + amount)) ||
                 verification.isValid(msg.sender),
             "Need to have valid KYC"
         );
 
-        if (_lender[msg.sender].startPeriod > 0) {
-            _updatePendingReward(msg.sender);
-        } else {
-            _lender[msg.sender].startPeriod = uint40(block.timestamp);
-        }
+        rewardManager.increaseBalance(msg.sender, amount);
+//        stableReward.deposit(msg.sender, amount);
+//        if (_lender[msg.sender].startPeriod > 0) {
+//            _updatePendingReward(msg.sender);
+//        } else {
+//            _lender[msg.sender].startPeriod = uint40(block.timestamp);
+//        }
 
         _lender[msg.sender].deposit += amount;
-        _lender[msg.sender].round = currentRound;
+//        _lender[msg.sender].round = currentRound;
 
         emit Deposit(msg.sender, amount);
-        tradeReward.deposit(msg.sender, amount);
+//        tradeReward.deposit(msg.sender, amount);
         stable.safeTransferFrom(msg.sender, address(this), amount);
     }
 
@@ -120,43 +143,14 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {Withdraw} event
      */
     function claimRewards() external {
-        _updatePendingReward(msg.sender);
-        uint totalReward = _lender[msg.sender].pendingRewards;
-        _lender[msg.sender].pendingRewards = 0;
-        emit Withdraw(msg.sender, totalReward);
-        tStable.mint(msg.sender, totalReward);
+        rewardManager.claimRewards(msg.sender);
+//        _updatePendingReward(msg.sender);
+//        uint totalReward = _lender[msg.sender].pendingRewards;
+//        _lender[msg.sender].pendingRewards = 0;
+//        emit Withdraw(msg.sender, totalReward);
+//        tStable.mint(msg.sender, totalReward);
     }
 
-    /**
-     * @notice Updates the Verification contract address
-     * @dev changes verification Contract must complies with `IVerification`
-     * @param _verificationAddress, address of the new Verification contract
-     *
-     * Emits {VerificationContractUpdated} event
-     */
-    function updateVerificationContract(address _verificationAddress)
-        external
-        onlyOwner
-    {
-        address oldVerificationAddress = address(verification);
-        verification = IVerification(_verificationAddress);
-        emit VerificationContractUpdated(
-            oldVerificationAddress,
-            _verificationAddress
-        );
-    }
-
-    /**
-     * @notice Updates the limit for the KYC to be required
-     * @dev updates kycLimit variable
-     * @param _kycLimit, new value of depositLimit
-     *
-     * Emits {NewKYCLimit} event
-     */
-    function updateKYCLimit(uint _kycLimit) external onlyOwner {
-        kycLimit = _kycLimit;
-        emit NewKYCLimit(_kycLimit);
-    }
 
 
     /**
@@ -170,21 +164,20 @@ contract LenderPool is ILenderPool, Ownable {
      *
      */
     function redeemAll() external {
-        _updatePendingReward(msg.sender);
-        uint amount = _lender[msg.sender].pendingRewards +
-            _lender[msg.sender].deposit;
-        require(
-            stable.balanceOf(address(redeemPool)) >= amount,
-            "Insufficient balance in pool"
-        );
-        _lender[msg.sender].pendingRewards = 0;
-        tradeReward.withdraw(msg.sender, _lender[msg.sender].deposit);
-        _lender[msg.sender].deposit = 0;
-        tStable.mint(address(this), amount);
-        tStable.approve(address(redeemPool), amount);
-        redeemPool.redeemStableTo(amount, msg.sender);
+//        _updatePendingReward(msg.sender);
+//        uint amount = _lender[msg.sender].pendingRewards +
+//            _lender[msg.sender].deposit;
+//        require(
+//            stable.balanceOf(address(redeemPool)) >= amount,
+//            "Insufficient balance in pool"
+//        );
+//        _lender[msg.sender].pendingRewards = 0;
+//        tradeReward.withdraw(msg.sender, _lender[msg.sender].deposit);
+//        _lender[msg.sender].deposit = 0;
+//        tStable.mint(address(this), amount);
+//        tStable.approve(address(redeemPool), amount);
+//        redeemPool.redeemStableTo(amount, msg.sender);
     }
-
 
     /**
      * @notice returns amount of stable token deposited by the lender
@@ -195,51 +188,55 @@ contract LenderPool is ILenderPool, Ownable {
         return _lender[lender].deposit;
     }
 
-    /**
-     * @notice returns the total pending reward
-     * @dev returns the total pending reward of msg.sender
-     * @return returns the total pending reward
-     */
-    function rewardOf(address lender) external view returns (uint) {
-        if (_lender[lender].round < currentRound) {
-            return
-                _lender[lender].pendingRewards +
-                _calculateFromPreviousRounds(lender);
-        } else {
-            return
-                _lender[lender].pendingRewards + _calculateCurrentRound(lender);
-        }
+    function getRewards(address lender) external view returns(uint[] memory) {
+        return rewardManager.rewardOf(lender);
     }
 
-    function getStakingStrategyBalance()
+//    /**
+//     * @notice returns the total pending reward
+//     * @dev returns the total pending reward of msg.sender
+//     * @return returns the total pending reward
+//     */
+//    function rewardOf(address lender) external view returns (uint) {
+//        if (_lender[lender].round < currentRound) {
+//            return
+//                _lender[lender].pendingRewards +
+//                _calculateFromPreviousRounds(lender);
+//        } else {
+//            return
+//                _lender[lender].pendingRewards + _calculateCurrentRound(lender);
+//        }
+//    }
+
+    function getStrategyBalance()
         external
         view
         onlyOwner
         returns (uint)
     {
-        return _getStakingStrategyBalance();
+        return _getStrategyBalance();
     }
 
-    /**
-     * @notice withdraw all stable token from staking pool
-     * @dev only owner can call this function
-     */
-    function withdrawAllFromStakingStrategy() public onlyOwner {
-        uint amount = _getStakingStrategyBalance();
-        stakingStrategy.withdraw(amount);
-    }
+    //    /**
+    //     * @notice withdraw all stable token from staking pool
+    //     * @dev only owner can call this function
+    //     */
+    //    function withdrawAllFromStakingStrategy() public onlyOwner {
+    //        uint amount = _getStrategyBalance();
+    //        strategy.withdraw(amount);
+    //    }
 
     /**
      * @notice withdraw stable token from staking pool
      * @dev only owner can call this function
      * @param amount, total amount to be withdrawn from staking strategy
      */
-    function withdrawFromStakingStrategy(uint amount) public onlyOwner {
+    function withdrawFromStrategy(uint amount) public onlyOwner {
         require(
-            _getStakingStrategyBalance() >= amount,
+            _getStrategyBalance() >= amount,
             "Balance less than requested."
         );
-        stakingStrategy.withdraw(amount);
+        strategy.withdraw(amount);
     }
 
     /**
@@ -247,20 +244,20 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev only owner can call this function
      * @param amount, total amount to deposit
      */
-    function depositInStakingStrategy(uint amount) public onlyOwner {
-        stable.approve(address(stakingStrategy), amount);
-        stakingStrategy.deposit(amount);
+    function depositToStrategy(uint amount) public onlyOwner {
+        stable.approve(address(strategy), amount);
+        strategy.deposit(amount);
     }
 
-    /**
-     * @notice deposit all stable token to staking strategy
-     * @dev only owner can call this function
-     */
-    function depositAllInStakingStrategy() public onlyOwner {
-        uint amount = stable.balanceOf(address(this));
-        stable.approve(address(stakingStrategy), amount);
-        stakingStrategy.deposit(amount);
-    }
+    //    /**
+    //     * @notice deposit all stable token to staking strategy
+    //     * @dev only owner can call this function
+    //     */
+    //    function depositAllInStakingStrategy() public onlyOwner {
+    //        uint amount = stable.balanceOf(address(this));
+    //        stable.approve(address(strategy), amount);
+    //        strategy.deposit(amount);
+    //    }
 
     /**
      * @notice converts the deposited stable token of quantity `amount` into tStable token and send to the lender
@@ -274,23 +271,21 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {Withdraw} event
      */
     function _withdraw(uint amount) private {
-        require(amount > 0, "Cannot withdraw 0 amount");
-        require(
-            _lender[msg.sender].deposit >= amount,
-            "Invalid amount requested"
-        );
-        if (currentRound > 0) {
-            _updatePendingReward(msg.sender);
-        }
-        tradeReward.withdraw(msg.sender, amount);
-        _lender[msg.sender].deposit -= amount;
-        emit Withdraw(msg.sender, amount);
-        tStable.mint(msg.sender, amount);
+//        require(amount > 0, "Cannot withdraw 0 amount");
+//        require(
+//            _lender[msg.sender].deposit >= amount,
+//            "Invalid amount requested"
+//        );
+//        if (currentRound > 0) {
+//            _updatePendingReward(msg.sender);
+//        }
+//        tradeReward.withdraw(msg.sender, amount);
+//        _lender[msg.sender].deposit -= amount;
+//        emit Withdraw(msg.sender, amount);
+//        tStable.mint(msg.sender, amount);
     }
 
-
-    function _getStakingStrategyBalance() private view returns (uint) {
-        return stakingStrategy.getBalance();
+    function _getStrategyBalance() private view returns (uint) {
+        return strategy.getBalance();
     }
-
 }

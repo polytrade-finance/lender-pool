@@ -5,11 +5,12 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interface/IReward.sol";
 import "../Token/interface/IToken.sol";
 
+
 /**
  * @author Polytrade
  * @title Reward V2
  */
-contract Reward is IReward, AccessControl {
+contract StableReward is IReward, AccessControl {
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
     bytes32 public constant OWNER = keccak256("OWNER");
 
@@ -30,11 +31,15 @@ contract Reward is IReward, AccessControl {
      * @dev only OWNER can call setReward
      * @param reward, current reward offered by the contract
      */
-    function setReward(uint16 reward) external onlyRole(OWNER) {
+    function setReward(uint reward) external
+//    onlyRole(OWNER)
+    {
         if (currentRound > 0) {
             round[currentRound].endTime = uint40(block.timestamp);
         }
-        currentRound += 1;
+
+        currentRound++;
+
         round[currentRound] = RoundInfo(
             reward,
             uint40(block.timestamp),
@@ -42,9 +47,7 @@ contract Reward is IReward, AccessControl {
         );
     }
 
-    function updateRound(address lender) external{
-        
-    }
+//    function updateRound(address lender) external {}
 
     /**
      * @notice increases the `lender` deposit by `amount`
@@ -54,7 +57,7 @@ contract Reward is IReward, AccessControl {
      */
     function deposit(address lender, uint amount)
         external
-        onlyRole(LENDER_POOL)
+//        onlyRole(LENDER_POOL)
     {
         require(amount > 0, "Lending amount is 0");
         if (_lender[lender].startPeriod > 0) {
@@ -91,18 +94,14 @@ contract Reward is IReward, AccessControl {
      * @param lender, address of the lender
      * @param amount, amount deposited by lender
      */
-    function claimReward(address lender, uint amount, bool isMint)
+    function claimReward(address lender, uint amount)
         external
-        onlyRole(LENDER_POOL)
+//        onlyRole(LENDER_POOL)
     {
         updatePendingReward(lender);
         _lender[lender].pendingRewards -= amount;
-        if(isMint==true){
-        rewardToken.mint(msg.sender, amount);
-        }
-        else{
-            rewardToken.transfer(msg.sender, amount);    
-        }
+//        rewardToken.mint(lender, amount);
+        rewardToken.transfer(lender, amount);
     }
 
     /**
@@ -199,12 +198,12 @@ contract Reward is IReward, AccessControl {
         uint amount,
         uint40 start,
         uint40 end,
-        uint16 tradeRate
+        uint tradeRate
     ) private pure returns (uint) {
         if (amount == 0 || tradeRate == 0) {
             return 0;
         }
-        uint oneYear = (100 * 365 days);
+        uint oneYear = (10000 * 365 days);
         return (((end - start) * tradeRate * amount) / oneYear);
     }
 

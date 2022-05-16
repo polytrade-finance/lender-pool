@@ -10,7 +10,7 @@ interface IReward {
     }
 
     struct RoundInfo {
-        uint16 apy;
+        uint apy;
         uint40 startTime;
         uint40 endTime;
     }
@@ -31,20 +31,25 @@ interface IReward {
      */
     function withdraw(address lender, uint amount) external;
 
+    function updatePendingReward(address lender) external;
+
     /**
      * @notice send lender reward and update the pendingReward
      * @dev can be called by LENDER_POOL only
      * @param lender, address of the lender
      * @param amount, amount deposited by lender
      */
-    function claimReward(address lender, uint amount, bool isMint) external;
+    function claimReward(
+        address lender,
+        uint amount
+    ) external;
 
     /**
      * @notice sets the reward (APY in case of tStable, trade per year per stable in case of trade reward)
      * @dev only OWNER can call setReward
      * @param reward, current reward offered by the contract
      */
-    function setReward(uint16 reward) external;
+    function setReward(uint reward) external;
 
     /**
      * @notice returns the total pending reward

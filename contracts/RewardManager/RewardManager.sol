@@ -17,19 +17,26 @@ contract RewardManager is IRewardManager, AccessControl {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    function increaseBalance(address lender, uint amount) external {
+        trade.deposit(lender, amount);
+        stable.deposit(lender, amount);
+    }
+
     function updatePendingReward(address lender) external {
         trade.updatePendingReward(lender);
         stable.updatePendingReward(lender);
     }
 
     function updateRound(address lender) external {
-        trade.updateRound(lender);
-        stable.updateRound(lender);
+//        trade.updateRound(lender);
+//        stable.updateRound(lender);
     }
 
-    function claimRewards(address lender) external onlyRole(LENDER_POOL){
-        stable.claimReward(lender, stable.rewardOf(lender), true);
-        trade.claimReward(lender, trade.rewardOf(lender), false);
+    function claimRewards(address lender) external
+//    onlyRole(LENDER_POOL)
+    {
+        trade.claimReward(lender, trade.rewardOf(lender));
+        stable.claimReward(lender, stable.rewardOf(lender));
     }
 
     function rewardOf(address lender) external view returns (uint[] memory) {
