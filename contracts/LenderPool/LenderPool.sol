@@ -146,19 +146,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice Updates the limit for the KYC to be required
-     * @dev updates kycLimit variable
-     * @param _kycLimit, new value of depositLimit
-     *
-     * Emits {NewKYCLimit} event
-     */
-    function updateKYCLimit(uint _kycLimit) external onlyOwner {
-        kycLimit = _kycLimit;
-        emit NewKYCLimit(_kycLimit);
-    }
-
-
-    /**
      * @notice transfers user all the reward in stable token
      * @dev calculates and mint the reward
      * @dev calls redeemStableTo function from RedeemPool to convert tStable to stable
