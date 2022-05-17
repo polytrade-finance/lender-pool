@@ -3,7 +3,7 @@ pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "../StakingStrategy/StakingStrategy.sol";
+import "../Strategy/Strategy.sol";
 import "./interface/ILenderPool.sol";
 import "../Token/interface/IToken.sol";
 import "../RedeemPool/interface/IRedeemPool.sol";
@@ -25,7 +25,7 @@ contract LenderPool is ILenderPool, Ownable {
 
     IToken public immutable stable;
     IRedeemPool public immutable redeemPool;
-    IStakingStrategy public stakingStrategy;
+    IStrategy public strategy;
     IVerification public verification;
     IRewardManager public rewardManager;
 
@@ -48,19 +48,19 @@ contract LenderPool is ILenderPool, Ownable {
     /**
      * @notice move all the funds from the old strategy to the new strategy
      * @dev can be called by only owner
-     * @param newStakingStrategy, address of the new staking strategy
+     * @param newStrategy, address of the new staking strategy
      * Emits {SwitchStrategy} event
      */
-    function switchStrategy(address newStakingStrategy) external onlyOwner {
-        address oldStakingStrategy = address(stakingStrategy);
-        if (oldStakingStrategy != address(0)) {
-            uint amount = _getStakingStrategyBalance();
-            withdrawAllFromStakingStrategy();
-            stakingStrategy = StakingStrategy(newStakingStrategy);
-            depositInStakingStrategy(amount);
+    function switchStrategy(address newStrategy) external onlyOwner {
+        address oldStrategy = address(strategy);
+        if (oldStrategy != address(0)) {
+            uint amount = _getStrategyBalance();
+            withdrawAllFromStrategy();
+            strategy = Strategy(newStrategy);
+            depositInStrategy(amount);
         }
-        stakingStrategy = StakingStrategy(newStakingStrategy);
-        emit SwitchStrategy(oldStakingStrategy, newStakingStrategy);
+        strategy = Strategy(newStrategy);
+        emit SwitchStrategy(oldStrategy, newStrategy);
     }
 
     /**
@@ -205,22 +205,22 @@ contract LenderPool is ILenderPool, Ownable {
         return rewardManager.rewardOf(lender);
     }
 
-    function getStakingStrategyBalance()
+    function getStrategyBalance()
         external
         view
         onlyOwner
         returns (uint)
     {
-        return _getStakingStrategyBalance();
+        return _getStrategyBalance();
     }
 
     /**
      * @notice withdraw all stable token from staking pool
      * @dev only owner can call this function
      */
-    function withdrawAllFromStakingStrategy() public onlyOwner {
-        uint amount = _getStakingStrategyBalance();
-        stakingStrategy.withdraw(amount);
+    function withdrawAllFromStrategy() public onlyOwner {
+        uint amount = _getStrategyBalance();
+        strategy.withdraw(amount);
     }
 
     /**
@@ -228,12 +228,12 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev only owner can call this function
      * @param amount, total amount to be withdrawn from staking strategy
      */
-    function withdrawFromStakingStrategy(uint amount) public onlyOwner {
+    function withdrawFromStrategy(uint amount) public onlyOwner {
         require(
-            _getStakingStrategyBalance() >= amount,
+            _getStrategyBalance() >= amount,
             "Balance less than requested."
         );
-        stakingStrategy.withdraw(amount);
+        strategy.withdraw(amount);
     }
 
     /**
@@ -241,19 +241,19 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev only owner can call this function
      * @param amount, total amount to deposit
      */
-    function depositInStakingStrategy(uint amount) public onlyOwner {
-        stable.approve(address(stakingStrategy), amount);
-        stakingStrategy.deposit(amount);
+    function depositInStrategy(uint amount) public onlyOwner {
+        stable.approve(address(strategy), amount);
+        strategy.deposit(amount);
     }
 
     /**
      * @notice deposit all stable token to staking strategy
      * @dev only owner can call this function
      */
-    function depositAllInStakingStrategy() public onlyOwner {
+    function depositAllInStrategy() public onlyOwner {
         uint amount = stable.balanceOf(address(this));
-        stable.approve(address(stakingStrategy), amount);
-        stakingStrategy.deposit(amount);
+        stable.approve(address(strategy), amount);
+        strategy.deposit(amount);
     }
 
     /**
@@ -282,8 +282,8 @@ contract LenderPool is ILenderPool, Ownable {
         tStable.mint(msg.sender, amount);
     }
 
-    function _getStakingStrategyBalance() private view returns (uint) {
-        return stakingStrategy.getBalance();
+    function _getStrategyBalance() private view returns (uint) {
+        return strategy.getBalance();
     }
 
 }

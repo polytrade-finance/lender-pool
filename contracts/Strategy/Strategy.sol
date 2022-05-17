@@ -5,13 +5,13 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interface/IAaveLendingPool.sol";
 import "../Token/interface/IToken.sol";
-import "./interface/IStakingStrategy.sol";
+import "./interface/IStrategy.sol";
 
 /**
  * @author Polytrade
- * @title StakingStrategy
+ * @title Strategy
  */
-contract StakingStrategy is IStakingStrategy, AccessControl {
+contract Strategy is IStrategy, AccessControl {
     using SafeERC20 for IToken;
 
     IToken public stable;

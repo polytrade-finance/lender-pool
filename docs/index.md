@@ -260,7 +260,7 @@ function decimals() public view virtual returns (uint8)
 
 _Returns the number of decimals used to get its user representation._
 
-## StakingStrategy
+## Strategy
 
 ### constructor
 

@@ -53,12 +53,12 @@ interface ILenderPool {
     /**
      * @notice Emitted when staking strategy is switched
      * @dev Emitted when switchStrategy function is called by owner
-     * @param oldStakingStrategy, address of the old staking strategy
-     * @param newStakingStrategy, address of the new staking strategy
+     * @param oldStrategy, address of the old staking strategy
+     * @param newStrategy, address of the new staking strategy
      */
     event SwitchStrategy(
-        address oldStakingStrategy,
-        address newStakingStrategy
+        address oldStrategy,
+        address newStrategy
     );
 
     event SwitchRewardManager(
@@ -69,36 +69,36 @@ interface ILenderPool {
     /**
      * @notice move all the funds from the old strategy to the new strategy
      * @dev can be called by only owner
-     * @param newStakingStrategy, address of the new staking strategy
+     * @param newStrategy, address of the new staking strategy
      * Emits {SwitchStrategy} event
      */
-    function switchStrategy(address newStakingStrategy) external;
+    function switchStrategy(address newStrategy) external;
 
     /**
      * @notice deposit stable token to staking pool
      * @dev only owner can call this function
      * @param amount, total amount to deposit
      */
-    function depositInStakingStrategy(uint amount) external;
+    function depositInStrategy(uint amount) external;
 
     /**
      * @notice deposit all stable token to staking strategy
      * @dev only owner can call this function
      */
-    function depositAllInStakingStrategy() external;
+    function depositAllInStrategy() external;
 
     /**
      * @notice withdraw all stable token from staking strategy
      * @dev only owner can call this function
      */
-    function withdrawAllFromStakingStrategy() external;
+    function withdrawAllFromStrategy() external;
 
     /**
      * @notice withdraw stable token from staking pool
      * @dev only owner can call this function
      * @param amount, total amount to be withdrawn from staking strategy
      */
-    function withdrawFromStakingStrategy(uint amount) external;
+    function withdrawFromStrategy(uint amount) external;
 
     /**
      * @notice Deposit stable token to smart contract
