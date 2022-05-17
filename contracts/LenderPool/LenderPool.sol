@@ -172,7 +172,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev only owner can call this function
      * @param amount, total amount to be withdrawn from staking strategy
      */
-    function withdrawFromStrategy(uint amount) public onlyOwner {
+    function _withdrawFromStrategy(uint amount) private {
         require(
             _getStrategyBalance() >= amount,
             "Balance less than requested."
