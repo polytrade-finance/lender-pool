@@ -47,7 +47,7 @@ contract RedeemPool is IRedeemPool, AccessControl {
      * @param amount, the number of tokens to be exchanged
      */
     function redeemStable(uint amount) external {
-        _redeemStable(amount, msg.sender);
+        _redeemStable(msg.sender, amount);
     }
 
     /**
@@ -60,15 +60,15 @@ contract RedeemPool is IRedeemPool, AccessControl {
         external
         onlyRole(LENDER_POOL)
     {
-        _redeemStable(amount, account);
+        _redeemStable(account, amount);
     }
 
     /**
      * @notice exchange tStable token for the stable token
      * @dev Transfers the approved tStable token from account to redeem pool and burn it
      * @dev Transfers the  equivalent amount of stable token from redeem pool to account
-     * @param amount, the number of tokens to be exchanged
      * @param account, address of the account that will receive the stable token
+     * @param amount, the number of tokens to be exchanged
      *
      * Requirements:
      *
