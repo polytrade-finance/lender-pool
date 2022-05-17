@@ -55,4 +55,6 @@ interface IReward {
      * @return returns the total pending reward
      */
     function rewardOf(address lender) external view returns (uint);
+
+    function getReward() external view returns (uint16);
 }

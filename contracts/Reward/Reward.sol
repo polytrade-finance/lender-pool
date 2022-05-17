@@ -96,6 +96,10 @@ contract Reward is IReward, AccessControl {
         rewardToken.transfer(msg.sender, amount);
     }
 
+    function getReward() external view returns (uint16) {
+        return round[currentRound].apy;
+    }
+
     /**
      * @notice returns the total pending reward
      * @dev returns the total pending reward of msg.sender
