@@ -34,20 +34,6 @@ interface ILenderPool {
     );
 
     /**
-     * @notice Emits when new kyc Limit is set
-     * @dev Emitted when new kycLimit is set by the owner
-     * @param kycLimit, new value of kycLimit
-     */
-    event NewKYCLimit(uint kycLimit);
-
-    /**
-     * @notice Emits when new rewardAPY is set
-     * @dev Emitted when new rewardAPY is set by the owner
-     * @param rewardAPY, new value of rewardAPY
-     */
-    event NewRewardAPY(uint16 rewardAPY);
-
-    /**
      * @notice Emitted when staking strategy is switched
      * @dev Emitted when switchStrategy function is called by owner
      * @param oldStrategy, address of the old staking strategy
