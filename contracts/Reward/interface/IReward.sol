@@ -15,8 +15,6 @@ interface IReward {
         uint40 endTime;
     }
 
-    function updateRound(address lender) external;
-
     /**
      * @notice increases the `lender` deposit by `amount`
      * @dev can be called by LENDER_POOL only

@@ -6,8 +6,6 @@ interface IRewardManager {
 
     function claimRewards() external;
 
-    function updateRound(address lender) external;
-
     function increaseDeposit(address lender, uint amount) external;
 
     function withdrawDeposit(address lender, uint amount) external;

@@ -27,11 +27,6 @@ contract RewardManager is IRewardManager, AccessControl {
         stable.withdraw(lender, amount);
     }
 
-    function updateRound(address lender) external {
-        trade.updateRound(lender);
-        stable.updateRound(lender);
-    }
-
     function claimRewards(address lender) external onlyRole(LENDER_POOL) {
         stable.claimReward(lender, stable.rewardOf(lender));
         trade.claimReward(lender, trade.rewardOf(lender));
