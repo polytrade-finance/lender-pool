@@ -67,10 +67,12 @@ contract LenderPool is ILenderPool, Ownable {
     function switchStrategy(address newStrategy) external onlyOwner {
         address oldStrategy = address(strategy);
         if (oldStrategy != address(0)) {
-            uint amount = _getStrategyBalance();
-            withdrawAllFromStrategy();
+            uint amountToWithdraw = _getStrategyBalance();
+            _withdrawFromStrategy(amountToWithdraw);
+
+            uint amountToDeposit = stable.balanceOf(address(this));
             strategy = Strategy(newStrategy);
-            depositInStrategy(amount);
+            _depositToStrategy(amountToDeposit);
         }
         strategy = Strategy(newStrategy);
         emit SwitchStrategy(oldStrategy, newStrategy);
