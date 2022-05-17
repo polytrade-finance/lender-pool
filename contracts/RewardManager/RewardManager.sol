@@ -34,13 +34,13 @@ contract RewardManager is IRewardManager, AccessControl {
     }
 
     function claimRewards(address lender) external onlyRole(LENDER_POOL) {
-        stable.claimReward(lender, stable.rewardOf(lender));
-        trade.claimReward(lender, trade.rewardOf(lender));
+        stable.claimReward(lender);
+        trade.claimReward(lender);
     }
 
     function claimRewards() external {
-        stable.claimReward(msg.sender, stable.rewardOf(msg.sender));
-        trade.claimReward(msg.sender, trade.rewardOf(msg.sender));
+        stable.claimReward(msg.sender);
+        trade.claimReward(msg.sender);
     }
 
     function rewardOf(address lender) external view returns (uint[] memory) {

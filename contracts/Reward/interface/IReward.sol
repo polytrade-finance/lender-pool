@@ -35,9 +35,8 @@ interface IReward {
      * @notice send lender reward and update the pendingReward
      * @dev can be called by LENDER_POOL only
      * @param lender, address of the lender
-     * @param amount, amount deposited by lender
      */
-    function claimReward(address lender, uint amount) external;
+    function claimReward(address lender) external;
 
     /**
      * @notice sets the reward (APY in case of tStable, trade per year per stable in case of trade reward)
