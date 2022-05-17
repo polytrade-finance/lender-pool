@@ -19,17 +19,9 @@ contract RewardManager is IRewardManager, AccessControl {
 
     function increaseDeposit(address lender, uint amount) external {
         updatePendingReward(lender);
-
     }
 
-    function withdrawDeposit(address lender, uint amount) external {
-        
-    }
-
-    function updatePendingReward(address lender) public {
-        trade.updatePendingReward(lender);
-        stable.updatePendingReward(lender);
-    }
+    function withdrawDeposit(address lender, uint amount) external {}
 
     function updateRound(address lender) external {
         trade.updateRound(lender);
@@ -46,5 +38,10 @@ contract RewardManager is IRewardManager, AccessControl {
         rewards[0] = stable.rewardOf(lender);
         rewards[1] = trade.rewardOf(lender);
         return rewards;
+    }
+
+    function updatePendingReward(address lender) public {
+        trade.updatePendingReward(lender);
+        stable.updatePendingReward(lender);
     }
 }

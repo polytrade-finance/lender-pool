@@ -135,7 +135,6 @@ contract LenderPool is ILenderPool, Ownable {
         );
     }
 
-
     /**
      * @notice returns amount of stable token deposited by the lender
      * @param lender, address of lender

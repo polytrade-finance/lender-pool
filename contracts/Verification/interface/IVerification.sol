@@ -13,6 +13,8 @@ interface IVerification {
      */
     event ValidationLimitUpdated(uint kycLimit);
 
+    function updateValidationLimit(uint validationLimit) external;
+
     /**
      * @notice Returns whether a user's KYC is verified or not
      * @dev returns a boolean if the KYC is valid
@@ -20,8 +22,6 @@ interface IVerification {
      * @return returns true if user's KYC is valid or false if not
      */
     function isValid(address user) external view returns (bool);
-
-    function updateValidationLimit(uint validationLimit) external;
 
     function isValidationRequired(uint amount) external view returns (bool);
 }

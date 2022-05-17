@@ -22,10 +22,6 @@ contract Verification is IVerification {
         userValidation[user] = status;
     }
 
-    function isValidationRequired(uint amount) external view returns (bool) {
-        return amount >= validationLimit;
-    }
-
     /**
      * @notice Updates the limit for the Validation to be required
      * @dev updates validationLimit variable
@@ -46,5 +42,9 @@ contract Verification is IVerification {
      */
     function isValid(address user) external view returns (bool) {
         return userValidation[user];
+    }
+
+    function isValidationRequired(uint amount) external view returns (bool) {
+        return amount >= validationLimit;
     }
 }
