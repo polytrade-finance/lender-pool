@@ -146,25 +146,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice Updates the Verification contract address
-     * @dev changes verification Contract must complies with `IVerification`
-     * @param _verificationAddress, address of the new Verification contract
-     *
-     * Emits {VerificationContractUpdated} event
-     */
-    function updateVerificationContract(address _verificationAddress)
-        external
-        onlyOwner
-    {
-        address oldVerificationAddress = address(verification);
-        verification = IVerification(_verificationAddress);
-        emit VerificationContractUpdated(
-            oldVerificationAddress,
-            _verificationAddress
-        );
-    }
-
-    /**
      * @notice returns amount of stable token deposited by the lender
      * @param lender, address of lender
      * @return returns amount of stable token deposited by the lender
