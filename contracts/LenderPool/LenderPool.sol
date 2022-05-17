@@ -168,15 +168,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice withdraw all stable token from staking pool
-     * @dev only owner can call this function
-     */
-    function withdrawAllFromStrategy() public onlyOwner {
-        uint amount = _getStrategyBalance();
-        strategy.withdraw(amount);
-    }
-
-    /**
      * @notice withdraw stable token from staking pool
      * @dev only owner can call this function
      * @param amount, total amount to be withdrawn from staking strategy
@@ -195,16 +186,6 @@ contract LenderPool is ILenderPool, Ownable {
      * @param amount, total amount to deposit
      */
     function depositInStrategy(uint amount) public onlyOwner {
-        stable.approve(address(strategy), amount);
-        strategy.deposit(amount);
-    }
-
-    /**
-     * @notice deposit all stable token to staking strategy
-     * @dev only owner can call this function
-     */
-    function depositAllInStrategy() public onlyOwner {
-        uint amount = stable.balanceOf(address(this));
         stable.approve(address(strategy), amount);
         strategy.deposit(amount);
     }
