@@ -85,6 +85,7 @@ describe("Contract Deployment", function () {
     const LenderPool = await ethers.getContractFactory("LenderPool");
     lenderPool = await LenderPool.deploy(
       stableToken.address,
+      tStableToken.address,
       redeemPool.address
     );
     expect(

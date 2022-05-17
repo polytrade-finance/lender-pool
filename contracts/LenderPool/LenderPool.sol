@@ -20,13 +20,15 @@ contract LenderPool is ILenderPool, Ownable {
     mapping(address => Lender) private _lender;
 
     IToken public immutable stable;
+    IToken public immutable tStable;
     IRedeemPool public immutable redeemPool;
     IStrategy public strategy;
     IVerification public verification;
     IRewardManager public rewardManager;
 
-    constructor(address _stableAddress, address _redeemPool) {
+    constructor(address _stableAddress,address _tStableAddress, address _redeemPool) {
         stable = IToken(_stableAddress);
+        tStable = IToken(_tStableAddress);
         redeemPool = IRedeemPool(_redeemPool);
     }
 
@@ -90,7 +92,11 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev calculates the tStable token lender can claim and transfers it to the lender
      */
     function withdrawAllDeposit() external {
+        uint balance = _lender[msg.sender].deposit;
+        require(balance > 0, "No amount deposited");
         rewardManager.withdrawDeposit(msg.sender, _lender[msg.sender].deposit);
+        _lender[msg.sender].deposit = 0;
+        tStable.mint(msg.sender, balance);
     }
 
     /**
@@ -99,7 +105,12 @@ contract LenderPool is ILenderPool, Ownable {
      * @param amount, total amount of stable token to be converted to tStable token
      */
     function withdrawDeposit(uint amount) external {
+        require(amount > 0, "amount must be positive integer");
+        uint balance = _lender[msg.sender].deposit;
+        require(balance>=amount,"amount request more than deposit");
         rewardManager.withdrawDeposit(msg.sender, amount);
+        _lender[msg.sender].deposit -= amount;
+        tStable.mint(msg.sender, amount);
     }
 
     /**
