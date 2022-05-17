@@ -4,6 +4,8 @@ pragma solidity ^0.8.12;
 interface IRewardManager {
     function claimRewards(address lender) external;
 
+    function claimRewards() external;
+
     function updateRound(address lender) external;
 
     function increaseDeposit(address lender, uint amount) external;

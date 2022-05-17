@@ -41,8 +41,6 @@ interface IReward {
      */
     function claimReward(address lender, uint amount) external;
 
-    function claimRewards() external;
-
     /**
      * @notice sets the reward (APY in case of tStable, trade per year per stable in case of trade reward)
      * @dev only OWNER can call setReward
@@ -59,6 +57,4 @@ interface IReward {
      * @return returns the total pending reward
      */
     function rewardOf(address lender) external view returns (uint);
-
-    
 }
