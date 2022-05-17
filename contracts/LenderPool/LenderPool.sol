@@ -129,7 +129,7 @@ contract LenderPool is ILenderPool, Ownable {
     function withdrawDeposit(uint amount) external {
         require(amount > 0, "amount must be positive integer");
         uint balance = _lender[msg.sender].deposit;
-        require(balance>=amount,"amount request more than deposit");
+        require(balance >= amount, "amount request more than deposit");
         rewardManager.withdrawDeposit(msg.sender, amount);
         _lender[msg.sender].deposit -= amount;
         tStable.mint(msg.sender, amount);
