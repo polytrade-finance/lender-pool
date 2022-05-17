@@ -26,7 +26,11 @@ contract LenderPool is ILenderPool, Ownable {
     IVerification public verification;
     IRewardManager public rewardManager;
 
-    constructor(address _stableAddress,address _tStableAddress, address _redeemPool) {
+    constructor(
+        address _stableAddress,
+        address _tStableAddress,
+        address _redeemPool
+    ) {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
         redeemPool = IRedeemPool(_redeemPool);
