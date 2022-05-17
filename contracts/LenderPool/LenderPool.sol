@@ -29,8 +29,6 @@ contract LenderPool is ILenderPool, Ownable {
     IVerification public verification;
     IRewardManager public rewardManager;
 
-    uint public kycLimit;
-
     constructor(
         address _stableAddress,
         address _redeemPool
@@ -81,7 +79,7 @@ contract LenderPool is ILenderPool, Ownable {
         require(allowance >= amount, "Not enough allowance");
 
         require(
-            (_lender[msg.sender].deposit + amount < kycLimit) ||
+            !(verification.isValidationRequired(_lender[msg.sender].deposit + amount)) ||
                 verification.isValid(msg.sender),
             "Need to have valid KYC"
         );
