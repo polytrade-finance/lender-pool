@@ -17,12 +17,18 @@ contract RewardManager is IRewardManager, AccessControl {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    function increaseDeposit(address lender, uint amount) external onlyRole(LENDER_POOL){
+    function increaseDeposit(address lender, uint amount)
+        external
+        onlyRole(LENDER_POOL)
+    {
         trade.deposit(lender, amount);
         stable.deposit(lender, amount);
     }
 
-    function withdrawDeposit(address lender, uint amount) external onlyRole(LENDER_POOL){
+    function withdrawDeposit(address lender, uint amount)
+        external
+        onlyRole(LENDER_POOL)
+    {
         trade.withdraw(lender, amount);
         stable.withdraw(lender, amount);
     }
@@ -43,5 +49,4 @@ contract RewardManager is IRewardManager, AccessControl {
         rewards[1] = trade.rewardOf(lender);
         return rewards;
     }
-
 }
