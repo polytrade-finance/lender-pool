@@ -185,7 +185,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev only owner can call this function
      * @param amount, total amount to deposit
      */
-    function depositInStrategy(uint amount) public onlyOwner {
+    function _depositToStrategy(uint amount) private {
         stable.approve(address(strategy), amount);
         strategy.deposit(amount);
     }
