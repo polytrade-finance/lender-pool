@@ -17,9 +17,9 @@ import "../RewardManager/interface/IRewardManager.sol";
 contract LenderPool is ILenderPool, Ownable {
     using SafeERC20 for IToken;
     //mapping(lender address => struct Lender)
-    mapping(address => Lender) private _lender;
+    //mapping(address => Lender) private _lender;
     //mapping(token address => mapping(lender address => round))
-    mapping(address => mapping(address => uint16)) public round;
+    //mapping(address => mapping(address => uint16)) public round;
     //mapping(token address => mapping(lender address => pending reward))
     mapping(address => mapping(address => uint)) public pendingRewards;
 
@@ -84,26 +84,17 @@ contract LenderPool is ILenderPool, Ownable {
             "Need to have valid KYC"
         );
 
-        if (_lender[msg.sender].startPeriod > 0) {
-            rewardManager.updatePendingReward(msg.sender);
-        } else {
-            _lender[msg.sender].startPeriod = uint40(block.timestamp);
-        }
-
-        _lender[msg.sender].deposit += amount;
-        //_lender[msg.sender].round = currentRound;
-        rewardManager.updateRound(msg.sender);
-        emit Deposit(msg.sender, amount);
-        tradeReward.deposit(msg.sender, amount);
         stable.safeTransferFrom(msg.sender, address(this), amount);
+        rewardManager.increaseDeposit(msg.sender, amount);
     }
 
     /**
      * @notice converts all the deposited stable token into tStable token and transfers to the lender
      * @dev calculates the tStable token lender can claim and transfers it to the lender
      */
-    function withdrawAllTStable() external {
-        _withdraw(_lender[msg.sender].deposit);
+    function withdrawAllDeposit() external {
+        rewardManager.withdrawDeposit(msg.sender, _lender[msg.sender].deposit);
+        //_withdraw(_lender[msg.sender].deposit);
     }
 
     /**
@@ -111,8 +102,8 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev checks the required condition and converts stable token to tStable and transfers to lender
      * @param amount, total amount of stable token to be converted to tStable token
      */
-    function withdrawTStable(uint amount) external {
-        _withdraw(amount);
+    function withdrawDepsoit(uint amount) external {
+        rewardManager.withdrawDeposit(msg.sender, amount);
     }
 
     /**
@@ -122,7 +113,6 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {Withdraw} event
      */
     function claimRewards() external {
-        rewardManager.updatePendingReward(msg.sender);
         rewardManager.claimRewards(msg.sender);
     }
 
@@ -145,31 +135,6 @@ contract LenderPool is ILenderPool, Ownable {
         );
     }
 
-    /**
-     * @notice transfers user all the reward in stable token
-     * @dev calculates and mint the reward
-     * @dev calls redeemStableTo function from RedeemPool to convert tStable to stable
-     *
-     * Requirements:
-     *
-     * - total reward should be not more than stable tokens in RedeemPool
-     *
-     */
-    function redeemAll() external {
-        rewardManager.updatePendingReward(msg.sender);
-        uint amount = _lender[msg.sender].pendingRewards +
-            _lender[msg.sender].deposit;
-        require(
-            stable.balanceOf(address(redeemPool)) >= amount,
-            "Insufficient balance in pool"
-        );
-        _lender[msg.sender].pendingRewards = 0;
-        tradeReward.withdraw(msg.sender, _lender[msg.sender].deposit);
-        _lender[msg.sender].deposit = 0;
-        tStable.mint(address(this), amount);
-        tStable.approve(address(redeemPool), amount);
-        redeemPool.redeemStableTo(amount, msg.sender);
-    }
 
     /**
      * @notice returns amount of stable token deposited by the lender
@@ -233,32 +198,6 @@ contract LenderPool is ILenderPool, Ownable {
         uint amount = stable.balanceOf(address(this));
         stable.approve(address(strategy), amount);
         strategy.deposit(amount);
-    }
-
-    /**
-     * @notice converts the deposited stable token of quantity `amount` into tStable token and send to the lender
-     * @param amount, to be sent to the msg.sender
-     *
-     * Requirements:
-     *
-     * - deposited amount must be greater than amount requested
-     * - `amount` should be greater than zero
-     *
-     * Emits {Withdraw} event
-     */
-    function _withdraw(uint amount) private {
-        require(amount > 0, "Cannot withdraw 0 amount");
-        require(
-            _lender[msg.sender].deposit >= amount,
-            "Invalid amount requested"
-        );
-        if (currentRound > 0) {
-            rewardManager.updatePendingReward(msg.sender);
-        }
-        tradeReward.withdraw(msg.sender, amount);
-        _lender[msg.sender].deposit -= amount;
-        emit Withdraw(msg.sender, amount);
-        tStable.mint(msg.sender, amount);
     }
 
     function _getStrategyBalance() private view returns (uint) {
