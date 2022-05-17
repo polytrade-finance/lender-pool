@@ -25,12 +25,12 @@ interface ILenderPool {
     /**
      * @notice Emits when new DepositLimit is set
      * @dev Emitted when new DepositLimit is set by the owner
-     * @param oldVerificationAddress, old verification Address
-     * @param newVerificationAddress, new verification Address
+     * @param oldVerification, old verification Address
+     * @param newVerification, new verification Address
      */
-    event VerificationContractUpdated(
-        address oldVerificationAddress,
-        address newVerificationAddress
+    event VerificationSwitched(
+        address oldVerification,
+        address newVerification
     );
 
     /**
