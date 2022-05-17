@@ -201,8 +201,8 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev returns the total pending reward of msg.sender
      * @return returns the total pending reward
      */
-    function rewardOf(address lender) external view returns (uint) {
-        rewardManager.rewardOf(lender);
+    function rewardOf(address lender) external view returns  (uint[] memory) {
+        return rewardManager.rewardOf(lender);
     }
 
     function getStakingStrategyBalance()
