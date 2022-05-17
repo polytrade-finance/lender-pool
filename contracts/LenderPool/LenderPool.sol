@@ -19,9 +19,9 @@ contract LenderPool is ILenderPool, Ownable {
     //mapping(lender address => struct Lender)
     mapping(address => Lender) private _lender;
     //mapping(token address => mapping(lender address => round))
-    mapping(address => mapping(address=>uint16)) public round;
+    mapping(address => mapping(address => uint16)) public round;
     //mapping(token address => mapping(lender address => pending reward))
-    mapping(address => mapping(address=>uint)) public pendingRewards;
+    mapping(address => mapping(address => uint)) public pendingRewards;
 
     IToken public immutable stable;
     IRedeemPool public immutable redeemPool;
@@ -29,10 +29,7 @@ contract LenderPool is ILenderPool, Ownable {
     IVerification public verification;
     IRewardManager public rewardManager;
 
-    constructor(
-        address _stableAddress,
-        address _redeemPool
-    ) {
+    constructor(address _stableAddress, address _redeemPool) {
         stable = IToken(_stableAddress);
         redeemPool = IRedeemPool(_redeemPool);
     }
@@ -40,7 +37,7 @@ contract LenderPool is ILenderPool, Ownable {
     function switchRewardManager(address newRewardManager) external onlyOwner {
         address oldrewardManager = address(rewardManager);
         rewardManager = IRewardManager(newRewardManager);
-        emit SwitchRewardManager(oldrewardManager,newRewardManager);
+        emit SwitchRewardManager(oldrewardManager, newRewardManager);
     }
 
     /**
@@ -79,8 +76,11 @@ contract LenderPool is ILenderPool, Ownable {
         require(allowance >= amount, "Not enough allowance");
 
         require(
-            !(verification.isValidationRequired(_lender[msg.sender].deposit + amount)) ||
-                verification.isValid(msg.sender),
+            !(
+                verification.isValidationRequired(
+                    _lender[msg.sender].deposit + amount
+                )
+            ) || verification.isValid(msg.sender),
             "Need to have valid KYC"
         );
 
@@ -171,7 +171,6 @@ contract LenderPool is ILenderPool, Ownable {
         redeemPool.redeemStableTo(amount, msg.sender);
     }
 
-
     /**
      * @notice returns amount of stable token deposited by the lender
      * @param lender, address of lender
@@ -186,16 +185,11 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev returns the total pending reward of msg.sender
      * @return returns the total pending reward
      */
-    function rewardOf(address lender) external view returns  (uint[] memory) {
+    function rewardOf(address lender) external view returns (uint[] memory) {
         return rewardManager.rewardOf(lender);
     }
 
-    function getStrategyBalance()
-        external
-        view
-        onlyOwner
-        returns (uint)
-    {
+    function getStrategyBalance() external view onlyOwner returns (uint) {
         return _getStrategyBalance();
     }
 
@@ -270,5 +264,4 @@ contract LenderPool is ILenderPool, Ownable {
     function _getStrategyBalance() private view returns (uint) {
         return strategy.getBalance();
     }
-
 }

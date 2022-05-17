@@ -7,7 +7,7 @@ pragma solidity ^0.8.12;
  */
 interface IVerification {
     /**
- * @notice Emits when new kyc Limit is set
+     * @notice Emits when new kyc Limit is set
      * @dev Emitted when new kycLimit is set by the owner
      * @param kycLimit, new value of kycLimit
      */
@@ -23,6 +23,5 @@ interface IVerification {
 
     function updateValidationLimit(uint validationLimit) external;
 
-    function isValidationRequired(uint amount) external view returns(bool);
-
+    function isValidationRequired(uint amount) external view returns (bool);
 }

@@ -42,9 +42,7 @@ contract Reward is IReward, AccessControl {
         );
     }
 
-    function updateRound(address lender) external{
-        
-    }
+    function updateRound(address lender) external {}
 
     /**
      * @notice increases the `lender` deposit by `amount`
@@ -97,7 +95,7 @@ contract Reward is IReward, AccessControl {
     {
         updatePendingReward(lender);
         _lender[lender].pendingRewards -= amount;
-        rewardToken.transfer(msg.sender, amount);    
+        rewardToken.transfer(msg.sender, amount);
     }
 
     /**

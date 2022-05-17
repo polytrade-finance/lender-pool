@@ -1,13 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import {
-  Strategy,
-  Token,
-  LenderPool,
-  RedeemPool,
-  Reward,
-} from "../typechain";
+import { Strategy, Token, LenderPool, RedeemPool, Reward } from "../typechain";
 import { n6, increaseTime, ONE_DAY } from "./helpers";
 import {
   USDTAddress,
@@ -46,22 +40,16 @@ describe("Strategy", async function () {
 
   it("should deploy staking pool contract successfully", async function () {
     const Strategy = await ethers.getContractFactory("Strategy");
-    strategy = await Strategy.deploy(
-      stable.address,
-      aStable.address
-    );
-    strategy2 = await Strategy.deploy(
-      stable.address,
-      aStable.address
-    );
+    strategy = await Strategy.deploy(stable.address, aStable.address);
+    strategy2 = await Strategy.deploy(stable.address, aStable.address);
     await strategy.deployed();
     await strategy2.deployed();
-    expect(
-      await ethers.provider.getCode(strategy.address)
-    ).to.be.length.above(10);
-    expect(
-      await ethers.provider.getCode(strategy2.address)
-    ).to.be.length.above(10);
+    expect(await ethers.provider.getCode(strategy.address)).to.be.length.above(
+      10
+    );
+    expect(await ethers.provider.getCode(strategy2.address)).to.be.length.above(
+      10
+    );
   });
 
   it("should deploy lender pool and TradeReward", async function () {
@@ -221,15 +209,13 @@ describe("Strategy", async function () {
     await lenderPool.depositAllInStrategy();
     const stableAfter = await stable.balanceOf(lenderPool.address);
     expect(stableAfter).to.be.equal("0");
-    console.log(
-      (await lenderPool.getStrategyBalance()).sub(stableBefore)
-    );
+    console.log((await lenderPool.getStrategyBalance()).sub(stableBefore));
   });
 
   it("should not be able to withdraw", async function () {
-    expect(
-      lenderPool.withdrawFromStrategy(n6("10000"))
-    ).to.be.revertedWith("Balance less than requested.");
+    expect(lenderPool.withdrawFromStrategy(n6("10000"))).to.be.revertedWith(
+      "Balance less than requested."
+    );
   });
 
   it("should withdraw from staking pool", async function () {
