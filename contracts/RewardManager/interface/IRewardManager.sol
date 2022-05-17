@@ -6,5 +6,9 @@ interface IRewardManager {
 
     function updateRound(address lender) external;
 
+    function increaseDeposit(address lender, uint amount) external;
+
     function rewardOf(address lender) external view returns (uint[] memory);
+
+    function withdrawDeposit(address lender, uint amount) external;
 }

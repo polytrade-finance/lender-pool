@@ -17,7 +17,16 @@ contract RewardManager is IRewardManager, AccessControl {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    function updatePendingReward(address lender) external {
+    function increaseDeposit(address lender, uint amount) external {
+        updatePendingReward(lender);
+
+    }
+
+    function withdrawDeposit(address lender, uint amount) external {
+        
+    }
+
+    function updatePendingReward(address lender) public {
         trade.updatePendingReward(lender);
         stable.updatePendingReward(lender);
     }
