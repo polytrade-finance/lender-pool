@@ -106,7 +106,7 @@ contract LenderPool is ILenderPool, Ownable {
 
         stable.safeTransferFrom(msg.sender, address(this), amount);
         rewardManager.increaseDeposit(msg.sender, amount);
-        _lender[msg.sender].deposit+=amount;
+        _lender[msg.sender].deposit += amount;
     }
 
     /**
