@@ -55,7 +55,7 @@ interface ILenderPool {
      */
     event StrategySwitched(address oldStrategy, address newStrategy);
 
-    event SwitchRewardManager(
+    event RewardManagerSwitched(
         address oldRewardManager,
         address newRewardManager
     );
