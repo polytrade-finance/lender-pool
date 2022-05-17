@@ -75,7 +75,7 @@ contract LenderPool is ILenderPool, Ownable {
             _depositToStrategy(amountToDeposit);
         }
         strategy = Strategy(newStrategy);
-        emit SwitchStrategy(oldStrategy, newStrategy);
+        emit StrategySwitched(oldStrategy, newStrategy);
     }
 
     /**
