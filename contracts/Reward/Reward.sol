@@ -10,7 +10,7 @@ import "../Token/interface/IToken.sol";
  * @title Reward V2
  */
 contract Reward is IReward, AccessControl {
-    bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
+    bytes32 public constant REWARD_MANAGER = keccak256("REWARD_MANAGER");
     bytes32 public constant OWNER = keccak256("OWNER");
 
     mapping(address => Lender) private _lender;
@@ -50,7 +50,7 @@ contract Reward is IReward, AccessControl {
      */
     function deposit(address lender, uint amount)
         external
-        onlyRole(LENDER_POOL)
+        onlyRole(REWARD_MANAGER)
     {
         require(amount > 0, "Lending amount is 0");
         if (_lender[lender].startPeriod > 0) {
@@ -71,7 +71,7 @@ contract Reward is IReward, AccessControl {
      */
     function withdraw(address lender, uint amount)
         external
-        onlyRole(LENDER_POOL)
+        onlyRole(REWARD_MANAGER)
     {
         require(amount > 0, "Cannot withdraw 0 amount");
         require(_lender[lender].deposit >= amount, "Invalid amount requested");
@@ -89,7 +89,7 @@ contract Reward is IReward, AccessControl {
      */
     function claimReward(address lender, uint amount)
         external
-        onlyRole(LENDER_POOL)
+        onlyRole(REWARD_MANAGER)
     {
         updatePendingReward(lender);
         _lender[lender].pendingRewards -= amount;

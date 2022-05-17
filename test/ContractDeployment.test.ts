@@ -15,6 +15,7 @@ import { aUSDTAddress } from "./constants/constants.helpers";
 
 describe("Contract Deployment", function () {
   let accounts: SignerWithAddress[];
+  let addresses: string[];
   let stableToken: Token;
   let tStableToken: Token;
   let tradeToken: Token;
@@ -28,6 +29,7 @@ describe("Contract Deployment", function () {
   let strategy: Strategy;
   before(async () => {
     accounts = await ethers.getSigners();
+    addresses = accounts.map((account: SignerWithAddress) => account.address);
   });
   it("should deploy trade, stable and tStable Token", async () => {
     const Token = await ethers.getContractFactory("Token");
@@ -98,13 +100,93 @@ describe("Contract Deployment", function () {
     ).to.be.length.above(10);
   });
 
-  it("should deploy strategy", async () => {
+  it("should deploy Strategy", async () => {
     aStable = await ethers.getContractAt("IERC20", aUSDTAddress, accounts[0]);
     const Strategy = await ethers.getContractFactory("Strategy");
     strategy = await Strategy.deploy(stableToken.address, aStable.address);
     await strategy.deployed();
     expect(await ethers.provider.getCode(strategy.address)).to.be.length.above(
       10
+    );
+  });
+
+  it("should assign roles in stableReward and tradeReward", async () => {
+    await stableReward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
+      rewardManager.address
+    );
+
+    await stableReward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+      addresses[1]
+    );
+
+    expect(
+      await stableReward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
+        rewardManager.address
+      )
+    );
+
+    expect(
+      await stableReward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+        addresses[1]
+        )
+    );
+  });
+
+  it("should assign roles in RewardManager", async () => {
+    await stableReward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
+
+    expect(
+      await stableReward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
+      )
+    );
+  });
+
+  it("should assign roles in RewardManager", async () =>{
+    await strategy.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
+
+    expect(
+      await strategy.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
+      )
+    );
+  });
+
+  it("should assign roles in Redeem Pool", async () => {
+    await redeemPool.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
+      rewardManager.address
+    );
+
+    await redeemPool.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+      addresses[1]
+    );
+
+    expect(
+      await redeemPool.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
+        rewardManager.address
+      )
+    );
+
+    expect(
+      await redeemPool.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+        addresses[1]
+        )
     );
   });
 });
