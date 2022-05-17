@@ -119,7 +119,7 @@ interface ILenderPool {
      * @dev checks the required condition and converts stable token to tStable and transfers to lender
      * @param amount, total amount of stable token to be converted to tStable token
      */
-    function withdrawDepsoit(uint amount) external;
+    function withdrawDeposit(uint amount) external;
 
     /**
      * @notice send lender all the reward
