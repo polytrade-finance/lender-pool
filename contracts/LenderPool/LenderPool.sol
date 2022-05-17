@@ -37,9 +37,9 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     function switchRewardManager(address newRewardManager) external onlyOwner {
-        address oldrewardManager = address(rewardManager);
+        address oldRewardManager = address(rewardManager);
         rewardManager = IRewardManager(newRewardManager);
-        emit SwitchRewardManager(oldrewardManager, newRewardManager);
+        emit RewardManagerSwitched(oldRewardManager, newRewardManager);
     }
 
     /**
@@ -54,7 +54,7 @@ contract LenderPool is ILenderPool, Ownable {
             uint amount = _getStrategyBalance();
             withdrawAllFromStrategy();
             strategy = Strategy(newStrategy);
-            depositInStrategy(amount);
+            _depositInStrategy(amount);
         }
         strategy = Strategy(newStrategy);
         emit SwitchStrategy(oldStrategy, newStrategy);
@@ -127,6 +127,19 @@ contract LenderPool is ILenderPool, Ownable {
         rewardManager.claimRewards(msg.sender);
     }
 
+    function redeemAll() external {
+        uint balance = _lender[msg.sender].deposit;
+        if (balance > 0) {
+            rewardManager.withdrawDeposit(
+                msg.sender,
+                _lender[msg.sender].deposit
+            );
+        }
+        _lender[msg.sender].deposit = 0;
+        tStable.mint(msg.sender, balance);
+        rewardManager.claimRewards(msg.sender);
+    }
+
     /**
      * @notice Updates the Verification contract address
      * @dev changes verification Contract must complies with `IVerification`
@@ -190,15 +203,7 @@ contract LenderPool is ILenderPool, Ownable {
         strategy.withdraw(amount);
     }
 
-    /**
-     * @notice deposit stable token to staking strategy
-     * @dev only owner can call this function
-     * @param amount, total amount to deposit
-     */
-    function depositInStrategy(uint amount) public onlyOwner {
-        stable.approve(address(strategy), amount);
-        strategy.deposit(amount);
-    }
+
 
     /**
      * @notice deposit all stable token to staking strategy
@@ -210,7 +215,19 @@ contract LenderPool is ILenderPool, Ownable {
         strategy.deposit(amount);
     }
 
+    /**
+     * @notice deposit stable token to staking strategy
+     * @dev only owner can call this function
+     * @param amount, total amount to deposit
+     */
+    function _depositInStrategy(uint amount) private {
+        stable.approve(address(strategy), amount);
+        strategy.deposit(amount);
+    }
+
     function _getStrategyBalance() private view returns (uint) {
         return strategy.getBalance();
     }
+
+
 }
