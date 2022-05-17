@@ -244,6 +244,9 @@ describe("Lender Pool", function () {
 
     await stableToken.connect(accounts[0]).transfer(addresses[5], n6("1000"));
     expect(await stableToken.balanceOf(addresses[5])).to.be.equal(n6("1000"));
+
+    await stableToken.connect(accounts[0]).transfer(addresses[6], n6("5000"));
+    expect(await stableToken.balanceOf(addresses[6])).to.be.equal(n6("5000"));
   });
 
   it("Should set verification contract to LenderPool", async () => {
@@ -456,5 +459,87 @@ describe("Lender Pool", function () {
     expect(lenderPool.connect(accounts[4]).claimRewards()).to.be.revertedWith(
       "No pending reward"
     );
+  });
+
+  it("should set APY to 100%", async function () {
+    await stableReward.connect(accounts[1]).setReward(10000);
+    expect(await stableReward.getReward()).to.be.equal(10000);
+  });
+
+  it("should deposit 1000 tokens from account 5 at t = 0 year", async function () {
+    await stableToken
+      .connect(accounts[5])
+      .approve(lenderPool.address, n6("1000"));
+    expect(n6("1000")).to.be.equal(
+      await stableToken.allowance(addresses[5], lenderPool.address)
+    );
+    await lenderPool.connect(accounts[5]).deposit(n6("1000"));
+    currentTime = await now();
+    expect(await lenderPool.getDeposit(addresses[5])).to.be.equal(n6("1000"));
+  });
+
+  it("should check reward at t = 1 year total of 1000 tStable token", async function () {
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
+    expect((await lenderPool.rewardOf(addresses[5]))[0]).to.be.equal(
+      n6("1000")
+    );
+  });
+
+  it("should approve 5000 stable to the Lender Pool", async () => {
+    await stableToken
+      .connect(accounts[6])
+      .approve(lenderPool.address, n6("5000"));
+    expect(n6("5000")).to.be.equal(
+      await stableToken.allowance(addresses[6], lenderPool.address)
+    );
+  });
+
+  it("should fail deposit if no valid KYC", async () => {
+    await expect(
+      lenderPool.connect(accounts[6]).deposit(n6("5000"))
+    ).to.be.revertedWith("Need to have valid KYC");
+  });
+
+  it("should approve KYC for user3", async () => {
+    await verification.setValidation(addresses[6], true);
+    expect(await verification.isValid(addresses[6])).to.equal(true);
+  });
+
+  it("should deposit 5000 stable tokens successfully from account 3 at t = 0 year", async function () {
+    await lenderPool.connect(accounts[6]).deposit(n6("5000"));
+    currentTime = await now();
+    expect(await lenderPool.getDeposit(addresses[6])).to.be.equal(n6("5000"));
+  });
+
+  it("should withdraw reward at t = 1 year total of 1000  token", async function () {
+    const balanceBefore = await tStableToken.balanceOf(addresses[6]);
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
+    await lenderPool.connect(accounts[6]).withdrawDeposit(n6("1000"));
+    const balanceAfter = await tStableToken.balanceOf(addresses[6]);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("1000"));
+  });
+
+  it("should set APY to 10%", async function () {
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 2);
+    await stableReward.connect(accounts[1]).setReward(1000);
+    expect(await stableReward.getReward()).to.be.equal(1000);
+  });
+
+  it("should withdraw reward at t = 3 year total of 1000 tStable token", async function () {
+    const balanceBefore = await tStableToken.balanceOf(addresses[6]);
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 3);
+    await lenderPool.connect(accounts[6]).withdrawDeposit(n6("1000"));
+    const balanceAfter = await tStableToken.balanceOf(addresses[6]);
+    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("1000"));
+  });
+
+  it("should set APY to 100%", async function () {
+    await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 4);
+    await stableReward.connect(accounts[1]).setReward(10000);
+    expect(await stableReward.getReward()).to.be.equal(10000);
+  });
+
+  it("should check reward at t = 5 year total of 9700 tStable token", async function () {
+    console.log((await lenderPool.rewardOf(addresses[6]))[0]);
   });
 });
