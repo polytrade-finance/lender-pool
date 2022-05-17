@@ -61,7 +61,7 @@ interface ILenderPool {
         address newStakingStrategy
     );
 
-    event switchRewardManager(
+    event SwitchRewardManager(
         address oldRewardManager,
         address newRewardManager
     );
