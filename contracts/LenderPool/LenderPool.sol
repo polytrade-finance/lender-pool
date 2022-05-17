@@ -69,7 +69,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {Deposit} event
      */
     function deposit(uint amount) external {
-        require(amount > 0, "Lending amount is 0");
+        require(amount > 0, "Amount must be positive integer");
         uint allowance = stable.allowance(msg.sender, address(this));
         require(allowance >= amount, "Not enough allowance");
 
