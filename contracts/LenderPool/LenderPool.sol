@@ -36,6 +36,22 @@ contract LenderPool is ILenderPool, Ownable {
         redeemPool = IRedeemPool(_redeemPool);
     }
 
+    /**
+     * @notice Updates the Verification contract address
+     * @dev changes verification Contract must complies with `IVerification`
+     * @param _verificationAddress, address of the new Verification contract
+     *
+     * Emits {VerificationContractUpdated} event
+     */
+    function switchVerification(address _verificationAddress)
+        external
+        onlyOwner
+    {
+        address oldVerificationAddress = address(verification);
+        verification = IVerification(_verificationAddress);
+        emit VerificationSwitched(oldVerificationAddress, _verificationAddress);
+    }
+
     function switchRewardManager(address newRewardManager) external onlyOwner {
         address oldrewardManager = address(rewardManager);
         rewardManager = IRewardManager(newRewardManager);
