@@ -3,9 +3,6 @@ pragma solidity ^0.8.12;
 
 interface ILenderPool {
     struct Lender {
-        mapping(address => uint16) round;
-        mapping(address => uint40) startPeriod;
-        mapping(address => uint) pendingRewards;
         uint deposit;
     }
 

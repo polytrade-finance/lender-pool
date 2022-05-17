@@ -16,12 +16,8 @@ import "../RewardManager/interface/IRewardManager.sol";
  */
 contract LenderPool is ILenderPool, Ownable {
     using SafeERC20 for IToken;
-    //mapping(lender address => struct Lender)
-    //mapping(address => Lender) private _lender;
-    //mapping(token address => mapping(lender address => round))
-    //mapping(address => mapping(address => uint16)) public round;
-    //mapping(token address => mapping(lender address => pending reward))
-    mapping(address => mapping(address => uint)) public pendingRewards;
+
+    mapping(address => Lender) private _lender;
 
     IToken public immutable stable;
     IRedeemPool public immutable redeemPool;
@@ -94,7 +90,6 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function withdrawAllDeposit() external {
         rewardManager.withdrawDeposit(msg.sender, _lender[msg.sender].deposit);
-        //_withdraw(_lender[msg.sender].deposit);
     }
 
     /**
