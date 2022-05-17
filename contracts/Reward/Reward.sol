@@ -34,7 +34,9 @@ contract Reward is IReward, AccessControl {
         if (currentRound > 0) {
             round[currentRound].endTime = uint40(block.timestamp);
         }
-        currentRound += 1;
+
+        currentRound++;
+
         round[currentRound] = RoundInfo(
             reward,
             uint40(block.timestamp),
@@ -53,6 +55,7 @@ contract Reward is IReward, AccessControl {
         onlyRole(REWARD_MANAGER)
     {
         require(amount > 0, "Lending amount is 0");
+
         if (_lender[lender].startPeriod > 0) {
             _updatePendingReward(lender);
         } else {
