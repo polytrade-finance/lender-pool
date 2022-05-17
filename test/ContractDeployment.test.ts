@@ -121,6 +121,16 @@ describe("Contract Deployment", function () {
       addresses[1]
     );
 
+    await tradeReward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
+      rewardManager.address
+    );
+
+    await tradeReward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+      addresses[1]
+    );
+
     expect(
       await stableReward.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
@@ -134,16 +144,30 @@ describe("Contract Deployment", function () {
         addresses[1]
       )
     );
+
+    expect(
+      await tradeReward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
+        rewardManager.address
+      )
+    );
+
+    expect(
+      await tradeReward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+        addresses[1]
+      )
+    );
   });
 
   it("should assign roles in RewardManager", async () => {
-    await stableReward.grantRole(
+    await rewardManager.grantRole(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
       lenderPool.address
     );
 
     expect(
-      await stableReward.hasRole(
+      await rewardManager.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
         lenderPool.address
       )
