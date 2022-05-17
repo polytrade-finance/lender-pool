@@ -132,7 +132,7 @@ describe("Contract Deployment", function () {
       await stableReward.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
         addresses[1]
-        )
+      )
     );
   });
 
@@ -150,7 +150,7 @@ describe("Contract Deployment", function () {
     );
   });
 
-  it("should assign roles in RewardManager", async () =>{
+  it("should assign roles in RewardManager", async () => {
     await strategy.grantRole(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
       lenderPool.address
@@ -186,7 +186,21 @@ describe("Contract Deployment", function () {
       await redeemPool.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
         addresses[1]
-        )
+      )
+    );
+  });
+
+  it("should assign roles in tStableToken", async function () {
+    await tStableToken.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
+
+    expect(
+      await tStableToken.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+        lenderPool.address
+      )
     );
   });
 });
