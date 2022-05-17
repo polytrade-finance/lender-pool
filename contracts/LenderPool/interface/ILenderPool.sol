@@ -53,7 +53,7 @@ interface ILenderPool {
      * @param oldStrategy, address of the old staking strategy
      * @param newStrategy, address of the new staking strategy
      */
-    event SwitchStrategy(address oldStrategy, address newStrategy);
+    event StrategySwitched(address oldStrategy, address newStrategy);
 
     event SwitchRewardManager(
         address oldRewardManager,
