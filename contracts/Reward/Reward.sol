@@ -54,7 +54,7 @@ contract Reward is IReward, AccessControl {
     {
         require(amount > 0, "Lending amount is 0");
         if (_lender[lender].startPeriod > 0) {
-            updatePendingReward(lender);
+            _updatePendingReward(lender);
         } else {
             _lender[lender].startPeriod = uint40(block.timestamp);
         }
@@ -76,7 +76,7 @@ contract Reward is IReward, AccessControl {
         require(amount > 0, "Cannot withdraw 0 amount");
         require(_lender[lender].deposit >= amount, "Invalid amount requested");
         if (currentRound > 0) {
-            updatePendingReward(lender);
+            _updatePendingReward(lender);
         }
         _lender[lender].deposit -= amount;
     }
@@ -85,15 +85,15 @@ contract Reward is IReward, AccessControl {
      * @notice send lender reward and update the pendingReward
      * @dev can be called by LENDER_POOL only
      * @param lender, address of the lender
-     * @param amount, amount deposited by lender
      */
-    function claimReward(address lender, uint amount)
+    function claimReward(address lender)
         external
         onlyRole(REWARD_MANAGER)
     {
-        updatePendingReward(lender);
-        _lender[lender].pendingRewards -= amount;
-        rewardToken.transfer(msg.sender, amount);
+        _updatePendingReward(lender);
+        uint totalReward = _lender[lender].pendingRewards;
+         _lender[lender].pendingRewards = 0;
+        rewardToken.transfer(lender, totalReward);
     }
 
     function getReward() external view returns (uint16) {
@@ -123,7 +123,7 @@ contract Reward is IReward, AccessControl {
      * @dev compares the lender round with currentRound and updates _lender accordingly
      * @param lender, address of the lender
      */
-    function updatePendingReward(address lender) public {
+    function _updatePendingReward(address lender) internal {
         if (_lender[lender].round == currentRound) {
             _lender[lender].pendingRewards += _calculateCurrentRound(lender);
         }
@@ -200,7 +200,7 @@ contract Reward is IReward, AccessControl {
         if (amount == 0 || tradeRate == 0) {
             return 0;
         }
-        uint oneYear = (100 * 365 days);
+        uint oneYear = (10000 * 365 days);
         return (((end - start) * tradeRate * amount) / oneYear);
     }
 
