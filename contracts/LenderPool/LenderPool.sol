@@ -53,9 +53,9 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     function switchRewardManager(address newRewardManager) external onlyOwner {
-        address oldrewardManager = address(rewardManager);
+        address oldRewardManager = address(rewardManager);
         rewardManager = IRewardManager(newRewardManager);
-        emit SwitchRewardManager(oldrewardManager, newRewardManager);
+        emit RewardManagerSwitched(oldRewardManager, newRewardManager);
     }
 
     /**
