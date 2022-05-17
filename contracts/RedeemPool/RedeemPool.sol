@@ -56,7 +56,7 @@ contract RedeemPool is IRedeemPool, AccessControl {
      * @param amount, the number of tokens to be exchanged
      * @param account, address of the account that will receive the stable token
      */
-    function redeemStableTo(uint amount, address account)
+    function redeemStableFor(address account, uint amount)
         external
         onlyRole(LENDER_POOL)
     {
