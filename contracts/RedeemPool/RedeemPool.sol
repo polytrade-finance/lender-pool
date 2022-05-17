@@ -78,7 +78,8 @@ contract RedeemPool is IRedeemPool, AccessControl {
      *
      * Emits {StableWithdrawn} event
      */
-    function _redeemStable(uint amount, address account) private {
+    function _redeemStable(address account, uint amount) private {
+        require(amount > 0, "Amount is 0");
         require(
             tStable.balanceOf(msg.sender) >= amount,
             "Insufficient balance"
