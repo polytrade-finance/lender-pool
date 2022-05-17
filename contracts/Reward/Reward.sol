@@ -89,13 +89,10 @@ contract Reward is IReward, AccessControl {
      * @dev can be called by LENDER_POOL only
      * @param lender, address of the lender
      */
-    function claimReward(address lender)
-        external
-        onlyRole(REWARD_MANAGER)
-    {
+    function claimReward(address lender) external onlyRole(REWARD_MANAGER) {
         _updatePendingReward(lender);
         uint totalReward = _lender[lender].pendingRewards;
-         _lender[lender].pendingRewards = 0;
+        _lender[lender].pendingRewards = 0;
         rewardToken.transfer(lender, totalReward);
     }
 
