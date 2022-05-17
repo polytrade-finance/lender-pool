@@ -39,7 +39,7 @@ interface IReward {
      * @param lender, address of the lender
      * @param amount, amount deposited by lender
      */
-    function claimReward(address lender, uint amount, bool isMint) external;
+    function claimReward(address lender, uint amount) external;
 
     /**
      * @notice sets the reward (APY in case of tStable, trade per year per stable in case of trade reward)

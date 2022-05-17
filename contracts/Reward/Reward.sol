@@ -91,18 +91,13 @@ contract Reward is IReward, AccessControl {
      * @param lender, address of the lender
      * @param amount, amount deposited by lender
      */
-    function claimReward(address lender, uint amount, bool isMint)
+    function claimReward(address lender, uint amount)
         external
         onlyRole(LENDER_POOL)
     {
         updatePendingReward(lender);
         _lender[lender].pendingRewards -= amount;
-        if(isMint==true){
-        rewardToken.mint(msg.sender, amount);
-        }
-        else{
-            rewardToken.transfer(msg.sender, amount);    
-        }
+        rewardToken.transfer(msg.sender, amount);    
     }
 
     /**
