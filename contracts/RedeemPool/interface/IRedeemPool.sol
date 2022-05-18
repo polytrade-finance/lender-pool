@@ -27,7 +27,7 @@ interface IRedeemPool {
      * @param amount, the number of tokens to be exchanged
      * @param account, address of the account that will receive the stable token
      */
-    function redeemStableTo(uint amount, address account) external;
+    function redeemStableFor(address account, uint amount) external;
 
     /**
      * @notice withdraw any token sent to RedeemPool by mistake
