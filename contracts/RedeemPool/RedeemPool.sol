@@ -38,7 +38,7 @@ contract RedeemPool is IRedeemPool, AccessControl {
         onlyRole(OWNER)
     {
         IToken token = IToken(tokenAddress);
-        token.transfer(msg.sender, amount);
+        token.safeTransfer(msg.sender, amount);
     }
 
     /**
