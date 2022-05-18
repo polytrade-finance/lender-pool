@@ -1,7 +1,15 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Strategy, Token, LenderPool, RedeemPool, Reward } from "../typechain";
+import {
+  Token,
+  LenderPool,
+  Verification,
+  Reward,
+  RewardManager,
+  RedeemPool,
+  Strategy,
+} from "../typechain";
 import { n6, increaseTime, ONE_DAY } from "./helpers";
 import {
   USDTAddress,
@@ -13,96 +21,270 @@ import {
 describe("Strategy", async function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
+  let stableToken: Token;
+  let tStableToken: Token;
+  let tradeToken: Token;
+  let aStable: any;
+  let redeemPool: RedeemPool;
+  let stableReward: Reward;
+  let tradeReward: Reward;
+  let rewardManager: RewardManager;
+  let verification: Verification;
+  let lenderPool: LenderPool;
   let strategy: Strategy;
   let strategy2: Strategy;
-  let stable: any;
-  let aStable: any;
-  let tStable: Token;
-  let redeem: RedeemPool;
-  let lenderPool: LenderPool;
-  let trade: Token;
-  let reward: Reward;
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
-  });
 
-  it("Should return the stable and aStable Token and deploy trade", async function () {
-    stable = await ethers.getContractAt("IERC20", USDTAddress, accounts[0]);
-    expect(await ethers.provider.getCode(stable.address)).to.be.length.above(
-      100
-    );
-    aStable = await ethers.getContractAt("IERC20", aUSDTAddress, accounts[0]);
     const Token = await ethers.getContractFactory("Token");
-    trade = await Token.deploy("Trade", "Trade", 6);
-    await trade.deployed();
-  });
+    stableToken = await Token.deploy("Tether", "USDT", 6);
+    tStableToken = await Token.deploy("Tether derivative", "TUSDT", 6);
+    tradeToken = await Token.deploy("PolyTrade", "poly", 6);
+    expect(
+      await ethers.provider.getCode(stableToken.address)
+    ).to.be.length.above(10);
+    expect(
+      await ethers.provider.getCode(tStableToken.address)
+    ).to.be.length.above(10);
+    expect(
+      await ethers.provider.getCode(tradeToken.address)
+    ).to.be.length.above(10);
 
-  it("should deploy staking pool contract successfully", async function () {
+    const RedeemPool = await ethers.getContractFactory("RedeemPool");
+    redeemPool = await RedeemPool.deploy(
+      stableToken.address,
+      tStableToken.address
+    );
+    expect(
+      await ethers.provider.getCode(redeemPool.address)
+    ).to.be.length.above(10);
+
+    const Reward = await ethers.getContractFactory("Reward");
+    stableReward = await Reward.deploy(stableToken.address);
+    tradeReward = await Reward.deploy(tradeToken.address);
+    expect(
+      await ethers.provider.getCode(stableReward.address)
+    ).to.be.length.above(10);
+    expect(
+      await ethers.provider.getCode(tradeReward.address)
+    ).to.be.length.above(10);
+
+    const RewardManager = await ethers.getContractFactory("RewardManager");
+    rewardManager = await RewardManager.deploy(
+      stableReward.address,
+      tradeReward.address
+    );
+    expect(
+      await ethers.provider.getCode(rewardManager.address)
+    ).to.be.length.above(10);
+
+    const LenderPool = await ethers.getContractFactory("LenderPool");
+    lenderPool = await LenderPool.deploy(
+      stableToken.address,
+      tStableToken.address,
+      redeemPool.address
+    );
+    expect(
+      await ethers.provider.getCode(lenderPool.address)
+    ).to.be.length.above(10);
+
+    const Verification = await ethers.getContractFactory("Verification");
+    verification = await Verification.deploy();
+    expect(
+      await ethers.provider.getCode(verification.address)
+    ).to.be.length.above(10);
+
+    aStable = await ethers.getContractAt("IERC20", aUSDTAddress, accounts[0]);
     const Strategy = await ethers.getContractFactory("Strategy");
-    strategy = await Strategy.deploy(stable.address, aStable.address);
-    strategy2 = await Strategy.deploy(stable.address, aStable.address);
+    strategy = await Strategy.deploy(stableToken.address, aStable.address);
     await strategy.deployed();
-    await strategy2.deployed();
     expect(await ethers.provider.getCode(strategy.address)).to.be.length.above(
       10
     );
-    expect(await ethers.provider.getCode(strategy2.address)).to.be.length.above(
-      10
+
+    await stableReward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
+      rewardManager.address
     );
-  });
 
-  it("should deploy lender pool and TradeReward", async function () {
-    const TStable = await ethers.getContractFactory("Token");
-    tStable = await TStable.deploy("Tether derivative", "TUSDT", 6);
-    await tStable.deployed();
-    const Redeem = await ethers.getContractFactory("RedeemPool");
-    redeem = await Redeem.deploy(stable.address, tStable.address);
-    await redeem.deployed();
-    const LenderPool = await ethers.getContractFactory("LenderPool");
-    lenderPool = await LenderPool.deploy(
-      stable.address,
-      tStable.address,
-      redeem.address
+    await stableReward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+      addresses[1]
     );
-    await lenderPool.deployed();
 
-    const Reward = await ethers.getContractFactory("Reward");
-    reward = await Reward.deploy();
-  });
+    await tradeReward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
+      rewardManager.address
+    );
 
-  it("should set LENDER_POOL and OWNER in TradeReward", async function () {
-    await reward.grantRole(
+    await tradeReward.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+      addresses[1]
+    );
+
+    expect(
+      await stableReward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
+        rewardManager.address
+      )
+    );
+
+    expect(
+      await stableReward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+        addresses[1]
+      )
+    );
+
+    expect(
+      await tradeReward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
+        rewardManager.address
+      )
+    );
+
+    expect(
+      await tradeReward.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+        addresses[1]
+      )
+    );
+
+    await rewardManager.grantRole(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
       lenderPool.address
     );
 
-    await reward.grantRole(
-      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
-      addresses[0]
-    );
-
     expect(
-      await reward.hasRole(
+      await rewardManager.hasRole(
         ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
         lenderPool.address
       )
     );
 
+    await strategy.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
+
     expect(
-      await reward.hasRole(
-        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
-        addresses[0]
+      await strategy.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
       )
+    );
+
+    await redeemPool.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
+      rewardManager.address
+    );
+
+    await redeemPool.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+      addresses[1]
+    );
+
+    expect(
+      await redeemPool.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
+        rewardManager.address
+      )
+    );
+
+    expect(
+      await redeemPool.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
+        addresses[1]
+      )
+    );
+
+    await tStableToken.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+      lenderPool.address
+    );
+
+    expect(
+      await tStableToken.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE")),
+        lenderPool.address
+      )
+    );
+
+    await lenderPool.updateVerificationContract(verification.address);
+    expect(await lenderPool.verification()).to.be.equal(verification.address);
+
+    await lenderPool.switchRewardManager(rewardManager.address);
+    expect(await lenderPool.rewardManager()).to.be.equal(rewardManager.address);
+
+  });
+
+  it("should transfer tokens (INITIAL SET UP)", async () => {
+    await stableToken
+      .connect(accounts[0])
+      .transfer(stableReward.address, n6("10000"));
+    expect(await stableToken.balanceOf(stableReward.address)).to.be.equal(
+      n6("10000")
+    );
+
+    await tradeToken
+      .connect(accounts[0])
+      .transfer(tradeReward.address, n6("10000"));
+    expect(await tradeToken.balanceOf(tradeReward.address)).to.be.equal(
+      n6("10000")
+    );
+
+    await stableToken.connect(accounts[0]).transfer(addresses[1], n6("1000"));
+    expect(await stableToken.balanceOf(addresses[1])).to.be.equal(n6("1000"));
+
+    await stableToken.connect(accounts[0]).transfer(addresses[2], n6("1000"));
+    expect(await stableToken.balanceOf(addresses[2])).to.be.equal(n6("1000"));
+
+    await stableToken.connect(accounts[0]).transfer(addresses[3], n6("1000"));
+    expect(await stableToken.balanceOf(addresses[3])).to.be.equal(n6("1000"));
+
+    await stableToken.connect(accounts[0]).transfer(addresses[4], n6("1000"));
+    expect(await stableToken.balanceOf(addresses[4])).to.be.equal(n6("1000"));
+
+    await stableToken.connect(accounts[0]).transfer(addresses[5], n6("1000"));
+    expect(await stableToken.balanceOf(addresses[5])).to.be.equal(n6("1000"));
+
+    await stableToken.connect(accounts[0]).transfer(addresses[6], n6("5000"));
+    expect(await stableToken.balanceOf(addresses[6])).to.be.equal(n6("5000"));
+  });
+
+  it("should deploy second strategy contract successfully", async function () {
+    const Strategy = await ethers.getContractFactory("Strategy");
+    strategy2 = await Strategy.deploy(stableToken.address, aStable.address);
+    await strategy2.deployed();
+    expect(await ethers.provider.getCode(strategy2.address)).to.be.length.above(
+      10
     );
   });
 
-  it("should set trade and tradeReward in LenderPool", async function () {
-    await lenderPool.setTrade(trade.address);
-    expect(await lenderPool.trade()).to.be.equal(trade.address);
-    await lenderPool.setTradeReward(reward.address);
-    expect(await lenderPool.tradeReward()).to.be.equal(reward.address);
+  it("should deposit 100 stable tokens to LenderPool from account 3", async function () {
+    await verification.updateValidationLimit(n6("500000000"));
+
+    await stableToken.connect(accounts[3]).approve(lenderPool.address, n6("200"));
+    expect(n6("200")).to.be.equal(
+      await stableToken.allowance(addresses[3], lenderPool.address)
+    );
+    await lenderPool.connect(accounts[3]).deposit(n6("200"));
+    expect(await lenderPool.getDeposit(addresses[3])).to.be.equal(n6("200"));
   });
+
+  it("should set staking pool", async function () {
+    lenderPool.switchStrategy(strategy.address);
+  });
+/*
+  it("should deposit funds to staking pool through lender pool", async function () {
+    const balanceBefore1 = await stableToken.balanceOf(lenderPool.address);
+    await lenderPool.depositInStrategy(n6("100"));
+    const balanceAfter1 = await stableToken.balanceOf(lenderPool.address);
+    expect(balanceBefore1.sub(balanceAfter1)).to.be.equal(n6("100"));
+  });
+
+
 
   it("should impersonate account", async function () {
     const hre = require("hardhat");
@@ -118,57 +300,6 @@ describe("Strategy", async function () {
     ]);
   });
 
-  it("should transfer to account 1", async function () {
-    const balanceBefore = await stable.balanceOf(addresses[1]);
-    await stable.connect(accounts[0]).transfer(addresses[1], n6("200"));
-    const balanceAfter = await stable.balanceOf(addresses[1]);
-    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("200"));
-  });
-
-  it("should set staking pool", async function () {
-    lenderPool.switchStrategy(strategy.address);
-  });
-
-  it("should deposit 100 stable tokens successfully from account 1", async function () {
-    await lenderPool.updateKYCLimit(n6("500000000"));
-
-    await stable.connect(accounts[1]).approve(lenderPool.address, n6("200"));
-    expect(n6("200")).to.be.equal(
-      await stable.allowance(addresses[1], lenderPool.address)
-    );
-    await lenderPool.connect(accounts[1]).deposit(n6("200"));
-    expect(await lenderPool.getDeposit(addresses[1])).to.be.equal(n6("200"));
-  });
-
-  it("should deposit funds to staking pool through lender pool", async function () {
-    const balanceBefore1 = await stable.balanceOf(lenderPool.address);
-    await lenderPool.depositInStrategy(n6("100"));
-    const balanceAfter1 = await stable.balanceOf(lenderPool.address);
-    expect(balanceBefore1.sub(balanceAfter1)).to.be.equal(n6("100"));
-  });
-
-  it("should set LENDER_POOL role in redeem", async function () {
-    await strategy.grantRole(
-      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
-      lenderPool.address
-    );
-    await strategy2.grantRole(
-      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
-      lenderPool.address
-    );
-    expect(
-      await strategy.hasRole(
-        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
-        lenderPool.address
-      )
-    );
-    expect(
-      await strategy2.hasRole(
-        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
-        lenderPool.address
-      )
-    );
-  });
 
   it("should check and withdraw from staking pool", async function () {
     await increaseTime(ONE_DAY * 365);
@@ -223,5 +354,5 @@ describe("Strategy", async function () {
     await lenderPool.withdrawFromStrategy(n6("10"));
     const stableAfter = await stable.balanceOf(lenderPool.address);
     expect(stableAfter.sub(stableBefore)).to.be.equal(n6("10"));
-  });
+  });*/
 });
