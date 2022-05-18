@@ -127,7 +127,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {Withdraw} event
      */
     function claimRewards() external {
-        rewardManager.claimRewards(msg.sender);
+        rewardManager.claimRewardsFor(msg.sender);
     }
 
     function redeemAll() external {
@@ -146,7 +146,7 @@ contract LenderPool is ILenderPool, Ownable {
         tStable.mint(address(this), balance);
         tStable.approve(address(redeemPool), balance);
         redeemPool.redeemStableFor(msg.sender, balance);
-        rewardManager.claimRewards(msg.sender);
+        rewardManager.claimRewardsFor(msg.sender);
     }
 
     /**

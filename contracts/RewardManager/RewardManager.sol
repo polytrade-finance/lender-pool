@@ -33,7 +33,7 @@ contract RewardManager is IRewardManager, AccessControl {
         stable.withdraw(lender, amount);
     }
 
-    function claimRewards(address lender) external onlyRole(LENDER_POOL) {
+    function claimRewardsFor(address lender) external onlyRole(LENDER_POOL) {
         stable.claimReward(lender);
         trade.claimReward(lender);
     }
