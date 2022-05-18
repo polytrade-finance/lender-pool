@@ -231,6 +231,4 @@ contract LenderPool is ILenderPool, Ownable {
     function _getStrategyBalance() private view returns (uint) {
         return strategy.getBalance();
     }
-
-
 }
