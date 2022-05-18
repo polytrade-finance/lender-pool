@@ -43,6 +43,11 @@ contract RewardManager is IRewardManager, AccessControl {
         trade.claimReward(msg.sender);
     }
 
+    function pauseReward() external onlyRole(LENDER_POOL){
+        stable.pauseReward();
+        trade.pauseReward();
+    }
+
     function rewardOf(address lender) external view returns (uint[] memory) {
         uint[] memory rewards = new uint[](2);
         rewards[0] = stable.rewardOf(lender);

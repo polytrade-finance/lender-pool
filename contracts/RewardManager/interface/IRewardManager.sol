@@ -10,5 +10,7 @@ interface IRewardManager {
 
     function withdrawDeposit(address lender, uint amount) external;
 
+    function pauseReward() external;
+
     function rewardOf(address lender) external view returns (uint[] memory);
 }

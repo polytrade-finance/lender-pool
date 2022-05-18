@@ -42,6 +42,18 @@ contract Reward is IReward, AccessControl {
         );
     }
 
+    function pauseReward() external onlyRole(REWARD_MANAGER){
+        if (currentRound > 0) {
+            round[currentRound].endTime = uint40(block.timestamp);
+        }
+        currentRound += 1;
+        round[currentRound] = RoundInfo(
+            0,
+            uint40(block.timestamp),
+            type(uint40).max
+        );
+    }
+
     /**
      * @notice increases the `lender` deposit by `amount`
      * @dev can be called by LENDER_POOL only

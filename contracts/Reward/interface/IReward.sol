@@ -45,6 +45,8 @@ interface IReward {
      */
     function setReward(uint16 reward) external;
 
+    function pauseReward() external;
+
     /**
      * @notice returns the total pending reward
      * @dev returns the total pending reward of msg.sender
