@@ -55,32 +55,6 @@ interface ILenderPool {
     function switchStrategy(address newStrategy) external;
 
     /**
-     * @notice deposit stable token to staking pool
-     * @dev only owner can call this function
-     * @param amount, total amount to deposit
-     */
-    function depositInStrategy(uint amount) external;
-
-    /**
-     * @notice deposit all stable token to staking strategy
-     * @dev only owner can call this function
-     */
-    function depositAllInStrategy() external;
-
-    /**
-     * @notice withdraw all stable token from staking strategy
-     * @dev only owner can call this function
-     */
-    function withdrawAllFromStrategy() external;
-
-    /**
-     * @notice withdraw stable token from staking pool
-     * @dev only owner can call this function
-     * @param amount, total amount to be withdrawn from staking strategy
-     */
-    function withdrawFromStrategy(uint amount) external;
-
-    /**
      * @notice Deposit stable token to smart contract
      * @dev Transfers the approved stable token from msg.sender to lender pool
      * @param amount, the number of stable token to be deposited
