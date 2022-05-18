@@ -53,7 +53,7 @@ interface ILenderPool {
      * @param oldStrategy, address of the old staking strategy
      * @param newStrategy, address of the new staking strategy
      */
-    event SwitchStrategy(address oldStrategy, address newStrategy);
+    event StrategySwitched(address oldStrategy, address newStrategy);
 
     event RewardManagerSwitched(
         address oldRewardManager,
@@ -64,7 +64,7 @@ interface ILenderPool {
      * @notice move all the funds from the old strategy to the new strategy
      * @dev can be called by only owner
      * @param newStrategy, address of the new staking strategy
-     * Emits {SwitchStrategy} event
+     * Emits {StrategySwitched} event
      */
     function switchStrategy(address newStrategy) external;
 

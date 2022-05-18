@@ -46,7 +46,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @notice move all the funds from the old strategy to the new strategy
      * @dev can be called by only owner
      * @param newStrategy, address of the new staking strategy
-     * Emits {SwitchStrategy} event
+     * Emits {StrategySwitched} event
      */
     function switchStrategy(address newStrategy) external onlyOwner {
         address oldStrategy = address(strategy);
@@ -57,7 +57,7 @@ contract LenderPool is ILenderPool, Ownable {
             _depositInStrategy(amount);
         }
         strategy = Strategy(newStrategy);
-        emit SwitchStrategy(oldStrategy, newStrategy);
+        emit StrategySwitched(oldStrategy, newStrategy);
     }
 
     /**
@@ -203,7 +203,10 @@ contract LenderPool is ILenderPool, Ownable {
         strategy.withdraw(amount);
     }
 
-
+    function depositInStrategy(uint amount) public onlyOwner {
+        stable.approve(address(strategy), amount);
+        strategy.deposit(amount);
+    }
 
     /**
      * @notice deposit all stable token to staking strategy
