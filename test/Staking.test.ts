@@ -176,8 +176,8 @@ describe("Strategy", async function () {
     );
 
     await redeemPool.grantRole(
-      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
-      rewardManager.address
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
     );
 
     await redeemPool.grantRole(

@@ -191,8 +191,8 @@ describe("Contract Deployment", function () {
 
   it("should assign roles in Redeem Pool", async () => {
     await redeemPool.grantRole(
-      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
-      rewardManager.address
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
     );
 
     await redeemPool.grantRole(
@@ -202,8 +202,8 @@ describe("Contract Deployment", function () {
 
     expect(
       await redeemPool.hasRole(
-        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
-        rewardManager.address
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
       )
     );
 

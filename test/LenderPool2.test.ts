@@ -181,8 +181,8 @@ describe("Lender Pool - Switch Reward Manager", function () {
     );
 
     await redeemPool.grantRole(
-      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("REWARD_MANAGER")),
-      rewardManager1.address
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
     );
 
     await redeemPool.grantRole(
