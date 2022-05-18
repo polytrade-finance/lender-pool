@@ -132,6 +132,10 @@ contract LenderPool is ILenderPool, Ownable {
 
     function redeemAll() external {
         uint balance = _lender[msg.sender].deposit;
+        require(
+            stable.balanceOf(address(redeemPool)) >= balance,
+            "Insufficient balance in pool"
+        );
         if (balance > 0) {
             rewardManager.withdrawDeposit(
                 msg.sender,
@@ -139,7 +143,9 @@ contract LenderPool is ILenderPool, Ownable {
             );
         }
         _lender[msg.sender].deposit = 0;
-        tStable.mint(msg.sender, balance);
+        tStable.mint(address(this), balance);
+        tStable.approve(address(redeemPool), balance);
+        redeemPool.redeemStableFor(msg.sender, balance);
         rewardManager.claimRewards(msg.sender);
     }
 
