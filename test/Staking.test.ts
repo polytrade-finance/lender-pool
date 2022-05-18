@@ -216,7 +216,6 @@ describe("Strategy", async function () {
 
     await lenderPool.switchRewardManager(rewardManager.address);
     expect(await lenderPool.rewardManager()).to.be.equal(rewardManager.address);
-
   });
 
   it("should transfer tokens (INITIAL SET UP)", async () => {
@@ -265,7 +264,9 @@ describe("Strategy", async function () {
   it("should deposit 100 stable tokens to LenderPool from account 3", async function () {
     await verification.updateValidationLimit(n6("500000000"));
 
-    await stableToken.connect(accounts[3]).approve(lenderPool.address, n6("200"));
+    await stableToken
+      .connect(accounts[3])
+      .approve(lenderPool.address, n6("200"));
     expect(n6("200")).to.be.equal(
       await stableToken.allowance(addresses[3], lenderPool.address)
     );
@@ -276,7 +277,7 @@ describe("Strategy", async function () {
   it("should set staking pool", async function () {
     lenderPool.switchStrategy(strategy.address);
   });
-/*
+  /*
   it("should deposit funds to staking pool through lender pool", async function () {
     const balanceBefore1 = await stableToken.balanceOf(lenderPool.address);
     await lenderPool.depositInStrategy(n6("100"));
@@ -354,5 +355,5 @@ describe("Strategy", async function () {
     await lenderPool.withdrawFromStrategy(n6("10"));
     const stableAfter = await stable.balanceOf(lenderPool.address);
     expect(stableAfter.sub(stableBefore)).to.be.equal(n6("10"));
-  });*/
+  }); */
 });
