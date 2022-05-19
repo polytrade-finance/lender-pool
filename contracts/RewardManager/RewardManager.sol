@@ -25,7 +25,7 @@ contract RewardManager is IRewardManager, AccessControl {
      * @notice `increaseDeposit` increases the amount deposited by lender.
      * @dev It calls the `deposit` function of all the rewards in `RewardManager`.
      * @dev It can by only called by `LenderPool`.
-     * @param lender, address of the lender 
+     * @param lender, address of the lender
      * @param amount, amount deposited by the lender
      */
     function increaseDeposit(address lender, uint amount)
@@ -40,7 +40,7 @@ contract RewardManager is IRewardManager, AccessControl {
      * @notice `withdrawDeposit` decrease the amount deposited by the lender.
      * @dev It calls the `withdraw` function of all the rewards in `RewardManager`
      * @dev It can by only called by `LenderPool`.
-     * @param lender, address of the lender 
+     * @param lender, address of the lender
      * @param amount, amount withdrawn by the lender
      */
     function withdrawDeposit(address lender, uint amount)
@@ -73,7 +73,7 @@ contract RewardManager is IRewardManager, AccessControl {
     }
 
     /**
-     * @notice `pauseRewards` sets the reward for all the tokens to 0 
+     * @notice `pauseRewards` sets the reward for all the tokens to 0
      */
     function pauseReward() external onlyRole(LENDER_POOL) {
         stable.pauseReward();
@@ -81,7 +81,7 @@ contract RewardManager is IRewardManager, AccessControl {
     }
 
     /**
-     * @notice `rewardOf` returns array of reward for the lender 
+     * @notice `rewardOf` returns array of reward for the lender
      * @dev It returns array of number, where each element is a reward
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      */
