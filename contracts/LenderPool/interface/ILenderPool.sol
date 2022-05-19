@@ -46,75 +46,140 @@ interface ILenderPool {
         address newRewardManager
     );
 
-    function switchRewardManager(address newRewardManager) external;
-
     /**
-     * @notice move all the funds from the old strategy to the new strategy
-     * @dev can be called by only owner
-     * @param newStrategy, address of the new staking strategy
-     * Emits {StrategySwitched} event
-     */
-    function switchStrategy(address newStrategy) external;
-
-    /**
-     * @notice Deposit stable token to smart contract
-     * @dev Transfers the approved stable token from msg.sender to lender pool
-     * @param amount, the number of stable token to be deposited
+     * @notice `deposit` is used by lenders to depsoit stable token to smart contract.
+     * @dev It transfers the approved stable token from msg.sender to lender pool.
+     * @param amount, The number of stable token to be deposited.
      *
      * Requirements:
      *
-     * - `amount` should be greater than zero
-     * - `amount` must be approved from the stable token contract for the LenderPool contract
+     * - `amount` should be greater than zero.
+     * - `amount` must be approved from the stable token contract for the LenderPool.
+     * - `amount` should be less than validation limit or KYC needs to be completed.
      *
      * Emits {Deposit} event
      */
     function deposit(uint amount) external;
 
     /**
-     * @notice converts all the deposited stable token into tStable token and transfers to the lender
-     * @dev calculates the tStable token lender can claim and transfers it to the lender
+     * @notice `withdrawAllDeposit` send lender tStable equivalent to stable deposited.
+     * @dev It mints tStable and sends to lender.
+     * @dev It sets the amount deposited by lender to zero.
+     *
+     * Emits {Withdraw} event
      */
     function withdrawAllDeposit() external;
 
     /**
-     * @notice converts the given amount of stable token into tStable token and transfers to lender
-     * @dev checks the required condition and converts stable token to tStable and transfers to lender
-     * @param amount, total amount of stable token to be converted to tStable token
+     * @notice `withdrawDeposit` send lender tStable equivalent to stable requested.
+     * @dev It mints tStable and sends to lender.
+     * @dev It decreases the amount deposited by lender.
+     * @param amount, Total token requested by lender.
+     *
+     * Requirements:
+     * - `amount` should be greater than 0.
+     * - `amount` should be not greater than deposited.
+     *
+     * Emits {Withdraw} event
      */
     function withdrawDeposit(uint amount) external;
 
     /**
-     * @notice send lender all the reward
-     * @dev update the pendingReward and mint tStable token and send to lender
-     *
-     * Emits {Withdraw} event
+     * @notice `claimRewards` transfers lender all the reward.
+     * @dev It calls `claimRewardsFor` from `RewardManager`.
+     * @dev RewardManager may be changed by LenderPool's owner.
+     * @dev User can obtain reward from old `RewardManager` by calling `claimRewards` function.
      */
     function claimRewards() external;
 
+    /**
+     * @notice `redeemAll` call transfers all reward and deposited amount in stable token.
+     * @dev It converts the tStable to stable using `RedeemPool`.
+     * @dev It calls `claimRewardsFor` from `RewardManager`.
+     *
+     * Requirements :
+     * - `RedeemPool` should have stable tokens more than lender deposited.
+     *
+     */
     function redeemAll() external;
+
+    /**
+     * @notice `switchRewardManager` is used to switch reward manager.
+     * @dev It pauses reward for previous `RewardManager` and initializes new `RewardManager` .
+     * @dev It can be called by only owner of LenderPool.
+     * @dev Changed `RewardManager` contract must complies with `IRewardManager`.
+     * @param newRewardManager, Addess of the new `RewardManager`.
+     *
+     * Emits {RewardManagerSwitched} event
+     */
+    function switchRewardManager(address newRewardManager) external;
 
     function updateVerificationContract(address _verificationAddress) external;
 
+    /**
+     * @notice `switchStrategy` is used for switching the strategy.
+     * @dev It moves all the funds from the old strategy to the new strategy.
+     * @dev It can be called by only owner of LenderPool.
+     * @dev Changed strategy contract must complies with `IStrategy`.
+     * @param newStrategy, address of the new staking strategy.
+     *
+     * Emits {StrategySwitched} event
+     */
+    function switchStrategy(address newStrategy) external;
+
+    /**
+     * @notice `withdrawAllFromStrategy` withdraws all funds from external protocol.
+     * @dev It transfers all funds from external protocol to `LenderPool`.
+     * @dev It can be called by only owner of LenderPool.
+     */
     function withdrawAllFromStrategy() external;
 
+    /**
+     * @notice `depositInStrategy` deposits funds in strategy.
+     * @dev Funds will be deposited to external protocol like aave, compund
+     * @dev It transfers token from `LenderPool` to external protocol.
+     * @dev It can be called by only owner of LenderPool.
+     * @param amount, amount to be deposited in strategy.
+     */
     function depositInStrategy(uint amount) external;
 
-    function getStrategyBalance() external;
-
+    /**
+     * @notice `withdrawFromStrategy`  withdraws all funds from external protocol.
+     * @dev It transfers all funds from external protocol to `LenderPool`.
+     * @dev It can be called by only owner of LenderPool.
+     * @param amount, total amount to be withdrawn from staking strategy.
+     *
+     * Requirements:
+     * - Total amount in external protcol should be less than `amount` requested.
+     *
+     */
     function withdrawFromStrategy(uint amount) external;
 
+    /**
+     * @notice `depositAllInStrategy` deposits all token in `LenderPool` to external protocol.
+     * @dev Funds will be deposited to external protocol like aave, compund
+     * @dev It can be called by only owner of LenderPool.
+     */
     function depositAllInStrategy() external;
 
     /**
-     * @notice returns amount of stable token deposited by the lender
-     * @param lender, address of lender
+     * @notice `getStrategyBalance` Reurns total balance of lender in external protocol
+     * @return Reurns total balance of lender in external protocol
+     */
+    function getStrategyBalance() external view returns (uint);
+
+    /**
+     * @notice `getDeposit` returns total amount deposited by the lender
+     * @param lender, address of the lender
      * @return returns amount of stable token deposited by the lender
      */
     function getDeposit(address lender) external view returns (uint);
 
+    /**
+     * @notice `rewardOf` returns the total reward of the lender
+     * @dev It returns array of number, where each element is a reward
+     * @dev For example - [stable reward, trade reward 1, trade reward 2]
+     * @return Returns the total pending reward
+     */
     function rewardOf(address lender) external view returns (uint[] memory);
-
-
-
-
 }
