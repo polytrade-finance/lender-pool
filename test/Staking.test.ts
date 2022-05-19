@@ -21,7 +21,7 @@ import {
 describe("Strategy", async function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
-  let stableToken: Token;
+  let stableToken: any;
   let tStableToken: Token;
   let tradeToken: Token;
   let aStable: any;
@@ -38,7 +38,7 @@ describe("Strategy", async function () {
     addresses = accounts.map((account: SignerWithAddress) => account.address);
 
     const Token = await ethers.getContractFactory("Token");
-    stableToken = await Token.deploy("Tether", "USDT", 6);
+    stableToken = await ethers.getContractAt("IERC20", USDTAddress, accounts[0]);
     tStableToken = await Token.deploy("Tether derivative", "TUSDT", 6);
     tradeToken = await Token.deploy("PolyTrade", "poly", 6);
     expect(
@@ -218,26 +218,41 @@ describe("Strategy", async function () {
     expect(await lenderPool.rewardManager()).to.be.equal(rewardManager.address);
   });
 
+  it("should impersonate account", async function () {
+    const hre = require("hardhat");
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [AccountToImpersonateUSDT],
+    });
+    accounts[2] = await ethers.getSigner(AccountToImpersonateUSDT);
+    addresses[2] = accounts[2].address;
+    await hre.network.provider.send("hardhat_setBalance", [
+      addresses[2],
+      "0x100000000000000000000000",
+    ]);
+  });
+
   it("should transfer tokens (INITIAL SET UP)", async () => {
     await stableToken
+      .connect(accounts[2])
+      .transfer(addresses[0], n6("11000"));
+    expect(await stableToken.balanceOf(addresses[0])).to.be.equal(
+      n6("11000")
+    );
+
+    await stableToken
       .connect(accounts[0])
-      .transfer(stableReward.address, n6("10000"));
+      .transfer(stableReward.address, n6("1000"));
     expect(await stableToken.balanceOf(stableReward.address)).to.be.equal(
-      n6("10000")
+      n6("1000")
     );
 
     await tradeToken
       .connect(accounts[0])
-      .transfer(tradeReward.address, n6("10000"));
+      .transfer(tradeReward.address, n6("1000"));
     expect(await tradeToken.balanceOf(tradeReward.address)).to.be.equal(
-      n6("10000")
+      n6("1000")
     );
-
-    await stableToken.connect(accounts[0]).transfer(addresses[1], n6("1000"));
-    expect(await stableToken.balanceOf(addresses[1])).to.be.equal(n6("1000"));
-
-    await stableToken.connect(accounts[0]).transfer(addresses[2], n6("1000"));
-    expect(await stableToken.balanceOf(addresses[2])).to.be.equal(n6("1000"));
 
     await stableToken.connect(accounts[0]).transfer(addresses[3], n6("1000"));
     expect(await stableToken.balanceOf(addresses[3])).to.be.equal(n6("1000"));
@@ -245,11 +260,6 @@ describe("Strategy", async function () {
     await stableToken.connect(accounts[0]).transfer(addresses[4], n6("1000"));
     expect(await stableToken.balanceOf(addresses[4])).to.be.equal(n6("1000"));
 
-    await stableToken.connect(accounts[0]).transfer(addresses[5], n6("1000"));
-    expect(await stableToken.balanceOf(addresses[5])).to.be.equal(n6("1000"));
-
-    await stableToken.connect(accounts[0]).transfer(addresses[6], n6("5000"));
-    expect(await stableToken.balanceOf(addresses[6])).to.be.equal(n6("5000"));
   });
 
   it("should deploy second strategy contract successfully", async function () {
@@ -277,7 +287,7 @@ describe("Strategy", async function () {
   it("should set staking pool", async function () {
     lenderPool.switchStrategy(strategy.address);
   });
-  /*
+  
   it("should deposit funds to staking pool through lender pool", async function () {
     const balanceBefore1 = await stableToken.balanceOf(lenderPool.address);
     await lenderPool.depositInStrategy(n6("100"));
@@ -287,36 +297,15 @@ describe("Strategy", async function () {
 
 
 
-  it("should impersonate account", async function () {
-    const hre = require("hardhat");
-    await hre.network.provider.request({
-      method: "hardhat_impersonateAccount",
-      params: [AccountToImpersonateUSDT],
-    });
-    accounts[0] = await ethers.getSigner(AccountToImpersonateUSDT);
-    addresses[0] = accounts[0].address;
-    await hre.network.provider.send("hardhat_setBalance", [
-      addresses[0],
-      "0x100000000000000000000000",
-    ]);
-  });
-
 
   it("should check and withdraw from staking pool", async function () {
     await increaseTime(ONE_DAY * 365);
     console.log(await lenderPool.getStrategyBalance());
-    const balanceBefore1 = await stable.balanceOf(lenderPool.address);
+    const balanceBefore1 = await stableToken.balanceOf(lenderPool.address);
     await increaseTime(ONE_DAY * 365);
     await lenderPool.withdrawAllFromStrategy();
-    const balanceAfter1 = await stable.balanceOf(lenderPool.address);
+    const balanceAfter1 = await stableToken.balanceOf(lenderPool.address);
     console.log(balanceAfter1.sub(balanceBefore1));
-  });
-
-  it("should deposit funds to staking pool through lender pool", async function () {
-    const balanceBefore1 = await stable.balanceOf(lenderPool.address);
-    await lenderPool.depositInStrategy(n6("100"));
-    const balanceAfter1 = await stable.balanceOf(lenderPool.address);
-    expect(balanceBefore1.sub(balanceAfter1)).to.be.equal(n6("100"));
   });
 
   it("should update staking pool", async function () {
@@ -330,16 +319,16 @@ describe("Strategy", async function () {
 
   it("should withdraw from staking pool (very close to 0)", async function () {
     const aStableBalance = await strategy2.getBalance();
-    const stableBefore = await stable.balanceOf(lenderPool.address);
+    const stableBefore = await stableToken.balanceOf(lenderPool.address);
     await lenderPool.withdrawAllFromStrategy();
-    const stableAfter = await stable.balanceOf(lenderPool.address);
+    const stableAfter = await stableToken.balanceOf(lenderPool.address);
     console.log(stableAfter.sub(stableBefore).sub(aStableBalance));
   });
 
   it("should deposit all stable to staking strategy (very close to 0)", async function () {
-    const stableBefore = await stable.balanceOf(lenderPool.address);
+    const stableBefore = await stableToken.balanceOf(lenderPool.address);
     await lenderPool.depositAllInStrategy();
-    const stableAfter = await stable.balanceOf(lenderPool.address);
+    const stableAfter = await stableToken.balanceOf(lenderPool.address);
     expect(stableAfter).to.be.equal("0");
     console.log((await lenderPool.getStrategyBalance()).sub(stableBefore));
   });
@@ -351,9 +340,9 @@ describe("Strategy", async function () {
   });
 
   it("should withdraw from staking pool", async function () {
-    const stableBefore = await stable.balanceOf(lenderPool.address);
+    const stableBefore = await stableToken.balanceOf(lenderPool.address);
     await lenderPool.withdrawFromStrategy(n6("10"));
-    const stableAfter = await stable.balanceOf(lenderPool.address);
+    const stableAfter = await stableToken.balanceOf(lenderPool.address);
     expect(stableAfter.sub(stableBefore)).to.be.equal(n6("10"));
-  }); */
+  }); 
 });
