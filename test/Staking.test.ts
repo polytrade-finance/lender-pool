@@ -268,9 +268,20 @@ describe("Strategy", async function () {
     expect(await ethers.provider.getCode(strategy2.address)).to.be.length.above(
       10
     );
+    await strategy2.grantRole(
+      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+      lenderPool.address
+    );
+
+    expect(
+      await strategy2.hasRole(
+        ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
+        lenderPool.address
+      )
+    );
   });
 
-  it("should deposit 100 stable tokens to LenderPool from account 3", async function () {
+  it("should deposit 200 stable tokens to LenderPool from account 3", async function () {
     await verification.updateValidationLimit(n6("500000000"));
 
     await stableToken
@@ -304,6 +315,13 @@ describe("Strategy", async function () {
     console.log(balanceAfter1.sub(balanceBefore1));
   });
 
+  it("should deposit all in strategy", async () => {
+    const balanceBefore = await stableToken.balanceOf(lenderPool.address);
+    await lenderPool.depositAllInStrategy();
+    const balanceAfter = await stableToken.balanceOf(lenderPool.address);
+    console.log(balanceBefore.sub(balanceAfter));
+  });
+
   it("should update staking pool", async function () {
     await increaseTime(ONE_DAY * 365);
     const balanceOldStrategy = await strategy.getBalance();
@@ -313,7 +331,7 @@ describe("Strategy", async function () {
     expect(await strategy.getBalance()).to.be.equal("0");
   });
 
-  it("should withdraw from staking pool (very close to 0)", async function () {
+  it("should withdraw from staking pool( close to 0)", async function () {
     const aStableBalance = await strategy2.getBalance();
     const stableBefore = await stableToken.balanceOf(lenderPool.address);
     await lenderPool.withdrawAllFromStrategy();
@@ -321,12 +339,14 @@ describe("Strategy", async function () {
     console.log(stableAfter.sub(stableBefore).sub(aStableBalance));
   });
 
-  it("should deposit all stable to staking strategy (very close to 0)", async function () {
+  it("should deposit all stable to staking strategy", async function () {
     const stableBefore = await stableToken.balanceOf(lenderPool.address);
     await lenderPool.depositAllInStrategy();
     const stableAfter = await stableToken.balanceOf(lenderPool.address);
     expect(stableAfter).to.be.equal("0");
-    console.log((await lenderPool.getStrategyBalance()).sub(stableBefore));
+    expect(
+      (await lenderPool.getStrategyBalance()).sub(stableBefore)
+    ).to.be.equal(n6("0"));
   });
 
   it("should not be able to withdraw", async function () {
