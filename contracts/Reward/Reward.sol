@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interface/IReward.sol";
 import "../Token/interface/IToken.sol";
 import "hardhat/console.sol";
+
 /**
  * @author Polytrade
  * @title Reward V2
@@ -42,7 +43,7 @@ contract Reward is IReward, AccessControl {
         );
     }
 
-    function pauseReward() external onlyRole(REWARD_MANAGER){
+    function pauseReward() external onlyRole(REWARD_MANAGER) {
         if (currentRound > 0) {
             round[currentRound].endTime = uint40(block.timestamp);
         }
@@ -117,7 +118,12 @@ contract Reward is IReward, AccessControl {
      */
 
     function rewardOf(address lender) external view returns (uint) {
-        console.log(_lender[lender].pendingRewards,_lender[lender].round,_lender[lender].startPeriod,_lender[lender].deposit);
+        console.log(
+            _lender[lender].pendingRewards,
+            _lender[lender].round,
+            _lender[lender].startPeriod,
+            _lender[lender].deposit
+        );
         if (_lender[lender].round < currentRound) {
             return
                 _lender[lender].pendingRewards +

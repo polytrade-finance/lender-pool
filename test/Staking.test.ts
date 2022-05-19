@@ -38,7 +38,11 @@ describe("Strategy", async function () {
     addresses = accounts.map((account: SignerWithAddress) => account.address);
 
     const Token = await ethers.getContractFactory("Token");
-    stableToken = await ethers.getContractAt("IERC20", USDTAddress, accounts[0]);
+    stableToken = await ethers.getContractAt(
+      "IERC20",
+      USDTAddress,
+      accounts[0]
+    );
     tStableToken = await Token.deploy("Tether derivative", "TUSDT", 6);
     tradeToken = await Token.deploy("PolyTrade", "poly", 6);
     expect(
@@ -233,12 +237,8 @@ describe("Strategy", async function () {
   });
 
   it("should transfer tokens (INITIAL SET UP)", async () => {
-    await stableToken
-      .connect(accounts[2])
-      .transfer(addresses[0], n6("11000"));
-    expect(await stableToken.balanceOf(addresses[0])).to.be.equal(
-      n6("11000")
-    );
+    await stableToken.connect(accounts[2]).transfer(addresses[0], n6("11000"));
+    expect(await stableToken.balanceOf(addresses[0])).to.be.equal(n6("11000"));
 
     await stableToken
       .connect(accounts[0])
@@ -259,7 +259,6 @@ describe("Strategy", async function () {
 
     await stableToken.connect(accounts[0]).transfer(addresses[4], n6("1000"));
     expect(await stableToken.balanceOf(addresses[4])).to.be.equal(n6("1000"));
-
   });
 
   it("should deploy second strategy contract successfully", async function () {
@@ -287,16 +286,13 @@ describe("Strategy", async function () {
   it("should set staking pool", async function () {
     lenderPool.switchStrategy(strategy.address);
   });
-  
+
   it("should deposit funds to staking pool through lender pool", async function () {
     const balanceBefore1 = await stableToken.balanceOf(lenderPool.address);
     await lenderPool.depositInStrategy(n6("100"));
     const balanceAfter1 = await stableToken.balanceOf(lenderPool.address);
     expect(balanceBefore1.sub(balanceAfter1)).to.be.equal(n6("100"));
   });
-
-
-
 
   it("should check and withdraw from staking pool", async function () {
     await increaseTime(ONE_DAY * 365);
@@ -344,5 +340,5 @@ describe("Strategy", async function () {
     await lenderPool.withdrawFromStrategy(n6("10"));
     const stableAfter = await stableToken.balanceOf(lenderPool.address);
     expect(stableAfter.sub(stableBefore)).to.be.equal(n6("10"));
-  }); 
+  });
 });

@@ -230,12 +230,12 @@ describe("Lender Pool", function () {
       n6("10000")
     );
 
-    await stableToken.
-      connect(accounts[0])
-      .transfer(redeemPool.address,n6("10000"));
-      expect(await stableToken.balanceOf(redeemPool.address)).to.be.equal(
-        n6("10000")
-      );
+    await stableToken
+      .connect(accounts[0])
+      .transfer(redeemPool.address, n6("10000"));
+    expect(await stableToken.balanceOf(redeemPool.address)).to.be.equal(
+      n6("10000")
+    );
 
     await stableToken.connect(accounts[0]).transfer(addresses[1], n6("1000"));
     expect(await stableToken.balanceOf(addresses[1])).to.be.equal(n6("1000"));
@@ -547,7 +547,9 @@ describe("Lender Pool", function () {
   });
 
   it("should check reward at t = 4 year total of 9700 tStable token", async function () {
-    expect(((await lenderPool.rewardOf(addresses[6]))[0]).sub(n6("9700")).toNumber()).to.be.lessThan(200);
+    expect(
+      (await lenderPool.rewardOf(addresses[6]))[0].sub(n6("9700")).toNumber()
+    ).to.be.lessThan(200);
   });
 
   it("should redeem all", async () => {
@@ -556,6 +558,11 @@ describe("Lender Pool", function () {
     await lenderPool.connect(accounts[6]).redeemAll();
     const stableAfter = await stableToken.balanceOf(addresses[6]);
     const tradeAfter = await tradeToken.balanceOf(addresses[6]);
-    expect((stableAfter.sub(stableBefore)).sub(n6("12700")).toNumber()).to.be.lessThan(300);
-    expect((tradeAfter.sub(tradeBefore)).sub(n6("9700")).toNumber()).to.be.lessThan(10);  });
+    expect(
+      stableAfter.sub(stableBefore).sub(n6("12700")).toNumber()
+    ).to.be.lessThan(300);
+    expect(
+      tradeAfter.sub(tradeBefore).sub(n6("9700")).toNumber()
+    ).to.be.lessThan(10);
+  });
 });

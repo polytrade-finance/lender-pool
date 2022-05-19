@@ -13,12 +13,7 @@ import {
 
 import { aUSDTAddress } from "./constants/constants.helpers";
 
-import {
-  n6,
-  ONE_DAY,
-  now,
-  setNextBlockTimestamp,
-} from "./helpers";
+import { n6, ONE_DAY, now, setNextBlockTimestamp } from "./helpers";
 describe("Lender Pool - Switch Reward Manager", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
