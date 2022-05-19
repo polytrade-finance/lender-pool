@@ -16,44 +16,83 @@ interface IReward {
     }
 
     /**
-     * @notice increases the `lender` deposit by `amount`
-     * @dev can be called by LENDER_POOL only
+     * @notice Emitted after `reward` is updated by OWNER.
+     * @param oldReward, value of the old reward.
+     * @param newReward, value of the new reward.
+     */
+    event NewReward(uint16 oldReward, uint16 newReward);
+    
+    /**
+     * @notice Emitted after Reward is transfered to user. 
+     * @param lender, address of the lender.
+     * @param amount, amount transfered to lender.
+     */
+    event RewardClaimed(address lender, uint amount);
+
+    /**
+     * @notice `deposit` increases the `lender` deposit by `amount`
+     * @dev It can be called by only REWARD_MANAGER.
      * @param lender, address of the lender
      * @param amount, amount deposited by lender
+     *
+     * Requirements:
+     * - `amount` should be greater than 0
+     *
      */
     function deposit(address lender, uint amount) external;
 
     /**
-     * @notice withdraws the `amount` from `lender`
-     * @dev can be called by LENDER_POOL only
+     * @notice `withdraw` withdraws the `amount` from `lender`
+     * @dev It can be called by only REWARD_MANAGER.
      * @param lender, address of the lender
-     * @param amount, amount deposited by lender
+     * @param amount, amount requested by lender
+     * 
+     * - `amount` should be greater than 0
+     * - `amount` should be greater than deposited by the lender
+     *
      */
     function withdraw(address lender, uint amount) external;
 
     /**
-     * @notice send lender reward and update the pendingReward
-     * @dev can be called by LENDER_POOL only
-     * @param lender, address of the lender
+     * @notice `claimReward` send reward to lender.
+     * @dev It calls `_updatePendingReward` function and sets pending reward to 0.
+     * @dev It can be called by only REWARD_MANAGER.
+     * @param lender, address of the lender.
+     *
+     * Emits {RewardClaimed} event
      */
     function claimReward(address lender) external;
 
     /**
-     * @notice sets the reward (APY in case of tStable, trade per year per stable in case of trade reward)
-     * @dev only OWNER can call setReward
-     * @param reward, current reward offered by the contract
+     * @notice `setReward` updates the value of reward.
+     * @dev For example - APY in case of tStable, trade per year per stable in case of trade reward.
+     * @dev It can be called by only OWNER.
+     * @param newReward, current reward offered by the contract.
+     *
+     * Emits {NewReward} event
      */
-    function setReward(uint16 reward) external;
+    function setReward(uint16 newReward) external;
 
+    /**
+     * @notice `pauseReward` sets the apy to 0.
+     * @dev It is called after `RewardManager` is discontinued.
+     * @dev It can be called by only REWARD_MANAGER.
+     *
+     * Emits {NewReward} event
+     */
     function pauseReward() external;
 
     /**
-     * @notice returns the total pending reward
-     * @dev returns the total pending reward of msg.sender
+     * @notice `rewardOf` returns the total pending reward of the lender
+     * @dev It calculates reward of lender upto cuurent time.
      * @param lender, address of the lender
      * @return returns the total pending reward
      */
     function rewardOf(address lender) external view returns (uint);
 
+    /**
+     * @notice `getReward` returns the total reward.
+     * @return returns the total reward.
+     */
     function getReward() external view returns (uint16);
 }
