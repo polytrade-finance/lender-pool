@@ -13,6 +13,8 @@ interface IVerification {
      */
     event ValidationLimitUpdated(uint kycLimit);
 
+    function setValidation(address user, bool status) external;
+
     function updateValidationLimit(uint validationLimit) external;
 
     /**

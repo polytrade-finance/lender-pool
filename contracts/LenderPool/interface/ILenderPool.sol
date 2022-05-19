@@ -46,6 +46,8 @@ interface ILenderPool {
         address newRewardManager
     );
 
+    function switchRewardManager(address newRewardManager) external;
+
     /**
      * @notice move all the funds from the old strategy to the new strategy
      * @dev can be called by only owner
@@ -89,10 +91,30 @@ interface ILenderPool {
      */
     function claimRewards() external;
 
+    function redeemAll() external;
+
+    function updateVerificationContract(address _verificationAddress) external;
+
+    function withdrawAllFromStrategy() external;
+
+    function depositInStrategy(uint amount) external;
+
+    function getStrategyBalance() external;
+
+    function withdrawFromStrategy(uint amount) external;
+
+    function depositAllInStrategy() external;
+
     /**
      * @notice returns amount of stable token deposited by the lender
      * @param lender, address of lender
      * @return returns amount of stable token deposited by the lender
      */
     function getDeposit(address lender) external view returns (uint);
+
+    function rewardOf(address lender) external view returns (uint[] memory);
+
+
+
+
 }
