@@ -39,7 +39,7 @@ contract Reward is IReward, AccessControl {
             round[currentRound].endTime = uint40(block.timestamp);
         }
         currentRound += 1;
-        uint16  oldReward = round[currentRound].apy;
+        uint16 oldReward = round[currentRound].apy;
         round[currentRound] = RoundInfo(
             newReward,
             uint40(block.timestamp),
@@ -61,7 +61,7 @@ contract Reward is IReward, AccessControl {
             round[currentRound].endTime = uint40(block.timestamp);
         }
         currentRound += 1;
-        uint16  oldReward = round[currentRound].apy;
+        uint16 oldReward = round[currentRound].apy;
         round[currentRound] = RoundInfo(
             0,
             uint40(block.timestamp),
@@ -100,7 +100,7 @@ contract Reward is IReward, AccessControl {
      * @dev It can be called by only REWARD_MANAGER.
      * @param lender, address of the lender
      * @param amount, amount requested by lender
-     * 
+     *
      * - `amount` should be greater than 0
      * - `amount` should be greater than deposited by the lender
      *
@@ -229,7 +229,7 @@ contract Reward is IReward, AccessControl {
     }
 
     /**
-     * @notice calculates the reward 
+     * @notice calculates the reward
      * @dev calculates the reward using given below folmula
      * @param amount, principal amount
      * @param start, start of the tenure for reward

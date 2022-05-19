@@ -21,9 +21,9 @@ interface IReward {
      * @param newReward, value of the new reward.
      */
     event NewReward(uint16 oldReward, uint16 newReward);
-    
+
     /**
-     * @notice Emitted after Reward is transfered to user. 
+     * @notice Emitted after Reward is transfered to user.
      * @param lender, address of the lender.
      * @param amount, amount transfered to lender.
      */
@@ -46,7 +46,7 @@ interface IReward {
      * @dev It can be called by only REWARD_MANAGER.
      * @param lender, address of the lender
      * @param amount, amount requested by lender
-     * 
+     *
      * - `amount` should be greater than 0
      * - `amount` should be greater than deposited by the lender
      *
