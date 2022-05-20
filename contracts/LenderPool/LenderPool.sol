@@ -67,11 +67,7 @@ contract LenderPool is ILenderPool, Ownable {
         stable.safeTransferFrom(msg.sender, address(this), amount);
 
         if (_lender[msg.sender].deposit != 0) {
-            rewardManager.registerUser(
-                msg.sender,
-                _lender[msg.sender].deposit,
-                _lender[msg.sender].time
-            );
+            _registerUser(msg.sender);
         }
         rewardManager.increaseDeposit(msg.sender, amount);
         _lender[msg.sender].deposit += amount;
@@ -89,12 +85,9 @@ contract LenderPool is ILenderPool, Ownable {
     function withdrawAllDeposit() external {
         uint balance = _lender[msg.sender].deposit;
         require(balance > 0, "No amount deposited");
-        rewardManager.registerUser(
-            msg.sender,
-            _lender[msg.sender].deposit,
-            _lender[msg.sender].time
-        );
+        _registerUser(msg.sender);
         rewardManager.withdrawDeposit(msg.sender, _lender[msg.sender].deposit);
+        _lender[msg.sender].time = uint40(block.timestamp);
         _lender[msg.sender].deposit = 0;
         tStable.mint(msg.sender, balance);
         emit Withdraw(msg.sender, balance);
@@ -116,12 +109,9 @@ contract LenderPool is ILenderPool, Ownable {
         require(amount > 0, "amount must be positive integer");
         uint balance = _lender[msg.sender].deposit;
         require(balance >= amount, "amount request more than deposit");
-        rewardManager.registerUser(
-            msg.sender,
-            _lender[msg.sender].deposit,
-            _lender[msg.sender].time
-        );
+        _registerUser(msg.sender);
         rewardManager.withdrawDeposit(msg.sender, amount);
+        _lender[msg.sender].time = uint40(block.timestamp);
         _lender[msg.sender].deposit -= amount;
         tStable.mint(msg.sender, amount);
         emit Withdraw(msg.sender, amount);
@@ -134,21 +124,13 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev User can obtain reward from old `RewardManager` by calling `claimRewards` function.
      */
     function claimRewards() external {
-        rewardManager.registerUser(
-            msg.sender,
-            _lender[msg.sender].deposit,
-            _lender[msg.sender].time
-        );
+        _registerUser(msg.sender);
         rewardManager.claimRewardsFor(msg.sender);
     }
 
     function claimPreviousRewards(address _rewardManager) external {
         if (isRewardManager[_rewardManager]) {
-            rewardManager.registerUser(
-                msg.sender,
-                _lender[msg.sender].deposit,
-                _lender[msg.sender].time
-            );
+            _registerUser(msg.sender);
             rewardManager.claimRewardsFor(msg.sender);
         }
     }
@@ -178,11 +160,7 @@ contract LenderPool is ILenderPool, Ownable {
         tStable.mint(address(this), balance);
         tStable.approve(address(redeemPool), balance);
         redeemPool.redeemStableFor(msg.sender, balance);
-        rewardManager.registerUser(
-            msg.sender,
-            _lender[msg.sender].deposit,
-            _lender[msg.sender].time
-        );
+        _registerUser(msg.sender);
         rewardManager.claimRewardsFor(msg.sender);
     }
 
@@ -248,11 +226,7 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function rewardOf(address lender) external returns (uint[] memory) {
         if (_lender[lender].deposit != 0) {
-            rewardManager.registerUser(
-                lender,
-                _lender[lender].deposit,
-                _lender[lender].time
-            );
+            _registerUser(lender);
         }
         return rewardManager.rewardOf(lender);
     }
@@ -333,6 +307,14 @@ contract LenderPool is ILenderPool, Ownable {
     function _depositInStrategy(uint amount) private {
         stable.approve(address(strategy), amount);
         strategy.deposit(amount);
+    }
+
+    function _registerUser(address lender) private {
+        rewardManager.registerUser(
+            lender,
+            _lender[lender].deposit,
+            _lender[lender].time
+            );
     }
 
     /**
