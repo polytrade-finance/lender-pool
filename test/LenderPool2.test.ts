@@ -555,33 +555,39 @@ describe("Lender Pool - Switch Reward Manager", function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 7);
   });
 
-  it("should check reward of account 4 on manager 1 at t = 7 year", async () =>{
+  it("should check reward of account 4 on manager 1 at t = 7 year", async () => {
     const stable1Before = await stableToken1.balanceOf(addresses[4]);
     const trade1Before = await tradeToken1.balanceOf(addresses[4]);
-    await lenderPool.connect(accounts[4]).claimPreviousRewards(rewardManager1.address);
+    await lenderPool
+      .connect(accounts[4])
+      .claimPreviousRewards(rewardManager1.address);
     const stable1After = await stableToken1.balanceOf(addresses[4]);
     const trade1After = await tradeToken1.balanceOf(addresses[4]);
-    expect((stable1After.sub(stable1Before).toNumber())).to.be.equal(0);
-    expect((trade1After.sub(trade1Before).toNumber())).to.be.equal(0);
+    expect(stable1After.sub(stable1Before).toNumber()).to.be.equal(0);
+    expect(trade1After.sub(trade1Before).toNumber()).to.be.equal(0);
   });
 
-  it("should check reward of account 4 on manager 2 at t = 7 year", async ()=> {
+  it("should check reward of account 4 on manager 2 at t = 7 year", async () => {
     const stable1Before = await stableToken1.balanceOf(addresses[4]);
     const trade1Before = await tradeToken1.balanceOf(addresses[4]);
-    await lenderPool.connect(accounts[4]).claimPreviousRewards(rewardManager2.address);
+    await lenderPool
+      .connect(accounts[4])
+      .claimPreviousRewards(rewardManager2.address);
     const stable1After = await stableToken1.balanceOf(addresses[4]);
     const trade1After = await tradeToken1.balanceOf(addresses[4]);
-    console.log((stable1After.sub(stable1Before).toNumber()));
-    console.log((trade1After.sub(trade1Before).toNumber()));
+    console.log(stable1After.sub(stable1Before).toNumber());
+    console.log(trade1After.sub(trade1Before).toNumber());
   });
 
-  it("should check reward of account 4 on manager 3 at t = 7 year", async ()=> {
+  it("should check reward of account 4 on manager 3 at t = 7 year", async () => {
     const stable1Before = await stableToken1.balanceOf(addresses[4]);
     const trade1Before = await tradeToken1.balanceOf(addresses[4]);
-    await lenderPool.connect(accounts[4]).claimPreviousRewards(rewardManager3.address);
+    await lenderPool
+      .connect(accounts[4])
+      .claimPreviousRewards(rewardManager3.address);
     const stable1After = await stableToken1.balanceOf(addresses[4]);
     const trade1After = await tradeToken1.balanceOf(addresses[4]);
-    console.log((stable1After.sub(stable1Before).toNumber()));
-    console.log((trade1After.sub(trade1Before).toNumber()));
+    console.log(stable1After.sub(stable1Before).toNumber());
+    console.log(trade1After.sub(trade1Before).toNumber());
   });
 });
