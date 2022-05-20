@@ -129,13 +129,6 @@ interface ILenderPool {
     function switchStrategy(address newStrategy) external;
 
     /**
-     * @notice `withdrawAllFromStrategy` withdraws all funds from external protocol.
-     * @dev It transfers all funds from external protocol to `LenderPool`.
-     * @dev It can be called by only owner of LenderPool.
-     */
-    function withdrawAllFromStrategy() external;
-
-    /**
      * @notice `depositInStrategy` deposits funds in strategy.
      * @dev Funds will be deposited to external protocol like aave, compund
      * @dev It transfers token from `LenderPool` to external protocol.
@@ -155,13 +148,6 @@ interface ILenderPool {
      *
      */
     function withdrawFromStrategy(uint amount) external;
-
-    /**
-     * @notice `depositAllInStrategy` deposits all token in `LenderPool` to external protocol.
-     * @dev Funds will be deposited to external protocol like aave, compund
-     * @dev It can be called by only owner of LenderPool.
-     */
-    function depositAllInStrategy() external;
 
     /**
      * @notice `rewardOf` returns the total reward of the lender

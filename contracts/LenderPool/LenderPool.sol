@@ -65,6 +65,7 @@ contract LenderPool is ILenderPool, Ownable {
         );
 
         stable.safeTransferFrom(msg.sender, address(this), amount);
+        _depositInStrategy(amount);
 
         if (_lender[msg.sender].deposit != 0) {
             _registerUser(msg.sender);
@@ -197,7 +198,7 @@ contract LenderPool is ILenderPool, Ownable {
         address oldStrategy = address(strategy);
         if (oldStrategy != address(0)) {
             uint amount = _getStrategyBalance();
-            withdrawAllFromStrategy();
+            _withdrawAllFromStrategy();
             strategy = Strategy(newStrategy);
             _depositInStrategy(amount);
         }
@@ -249,16 +250,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `withdrawAllFromStrategy` withdraws all funds from external protocol.
-     * @dev It transfers all funds from external protocol to `LenderPool`.
-     * @dev It can be called by only owner of LenderPool.
-     */
-    function withdrawAllFromStrategy() public onlyOwner {
-        uint amount = _getStrategyBalance();
-        strategy.withdraw(amount);
-    }
-
-    /**
      * @notice `withdrawFromStrategy`  withdraws all funds from external protocol.
      * @dev It transfers all funds from external protocol to `LenderPool`.
      * @dev It can be called by only owner of LenderPool.
@@ -289,17 +280,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `depositAllInStrategy` deposits all token in `LenderPool` to external protocol.
-     * @dev Funds will be deposited to external protocol like aave, compund
-     * @dev It can be called by only owner of LenderPool.
-     */
-    function depositAllInStrategy() public onlyOwner {
-        uint amount = stable.balanceOf(address(this));
-        stable.approve(address(strategy), amount);
-        strategy.deposit(amount);
-    }
-
-    /**
      * @notice `_depositInStrategydeposit` deposits stable token to external protocol.
      * @dev Funds will be deposited to external protocol like aave, compund
      * @param amount, total amount to be deposited.
@@ -314,7 +294,17 @@ contract LenderPool is ILenderPool, Ownable {
             lender,
             _lender[lender].deposit,
             _lender[lender].time
-            );
+        );
+    }
+
+    /**
+     * @notice `_withdrawAllFromStrategy` withdraws all funds from external protocol.
+     * @dev It transfers all funds from external protocol to `LenderPool`.
+     * @dev It can be called by only owner of LenderPool.
+     */
+    function _withdrawAllFromStrategy() private onlyOwner {
+        uint amount = _getStrategyBalance();
+        strategy.withdraw(amount);
     }
 
     /**
