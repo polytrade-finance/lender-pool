@@ -281,6 +281,10 @@ describe("Strategy", async function () {
     );
   });
 
+  it("should set staking pool", async function () {
+    lenderPool.switchStrategy(strategy.address);
+  });
+
   it("should deposit 200 stable tokens to LenderPool from account 3", async function () {
     await verification.updateValidationLimit(n6("500000000"));
 
@@ -294,30 +298,21 @@ describe("Strategy", async function () {
     expect(await lenderPool.getDeposit(addresses[3])).to.be.equal(n6("200"));
   });
 
-  it("should set staking pool", async function () {
-    lenderPool.switchStrategy(strategy.address);
-  });
-
-  it("should deposit funds to staking pool through lender pool", async function () {
-    const balanceBefore1 = await stableToken.balanceOf(lenderPool.address);
-    await lenderPool.depositInStrategy(n6("100"));
-    const balanceAfter1 = await stableToken.balanceOf(lenderPool.address);
-    expect(balanceBefore1.sub(balanceAfter1)).to.be.equal(n6("100"));
-  });
-
-  it("should check and withdraw from staking pool", async function () {
+  it("should check staking pool balance", async function () {
     await increaseTime(ONE_DAY * 365);
     console.log(await lenderPool.getStrategyBalance());
-    const balanceBefore1 = await stableToken.balanceOf(lenderPool.address);
-    await increaseTime(ONE_DAY * 365);
-    await lenderPool.withdrawAllFromStrategy();
-    const balanceAfter1 = await stableToken.balanceOf(lenderPool.address);
-    console.log(balanceAfter1.sub(balanceBefore1));
   });
 
-  it("should deposit all in strategy", async () => {
+  it("should withdraw from staking pool", async function () {
+    const stableBefore = await stableToken.balanceOf(lenderPool.address);
+    await lenderPool.withdrawFromStrategy(n6("200"));
+    const stableAfter = await stableToken.balanceOf(lenderPool.address);
+    expect(stableAfter.sub(stableBefore)).to.be.equal(n6("200"));
+  });
+
+  it("should deposit 100 token in strategy", async () => {
     const balanceBefore = await stableToken.balanceOf(lenderPool.address);
-    await lenderPool.depositAllInStrategy();
+    await lenderPool.depositInStrategy(n6("100"));
     const balanceAfter = await stableToken.balanceOf(lenderPool.address);
     console.log(balanceBefore.sub(balanceAfter));
   });
@@ -327,26 +322,13 @@ describe("Strategy", async function () {
     const balanceOldStrategy = await strategy.getBalance();
     await lenderPool.switchStrategy(strategy2.address);
     const balanceNewStrategy = await strategy2.getBalance();
-    expect(balanceOldStrategy.sub(balanceNewStrategy)).to.be.equal("0");
+    expect((balanceOldStrategy.sub(balanceNewStrategy)).toNumber()).to.be.lessThan(2);
     expect(await strategy.getBalance()).to.be.equal("0");
   });
 
   it("should withdraw from staking pool( close to 0)", async function () {
     const aStableBalance = await strategy2.getBalance();
-    const stableBefore = await stableToken.balanceOf(lenderPool.address);
-    await lenderPool.withdrawAllFromStrategy();
-    const stableAfter = await stableToken.balanceOf(lenderPool.address);
-    console.log(stableAfter.sub(stableBefore).sub(aStableBalance));
-  });
-
-  it("should deposit all stable to staking strategy", async function () {
-    const stableBefore = await stableToken.balanceOf(lenderPool.address);
-    await lenderPool.depositAllInStrategy();
-    const stableAfter = await stableToken.balanceOf(lenderPool.address);
-    expect(stableAfter).to.be.equal("0");
-    expect(
-      (await lenderPool.getStrategyBalance()).sub(stableBefore)
-    ).to.be.equal(n6("0"));
+    console.log(aStableBalance);
   });
 
   it("should not be able to withdraw", async function () {
