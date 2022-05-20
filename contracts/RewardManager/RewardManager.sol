@@ -15,10 +15,25 @@ contract RewardManager is IRewardManager, AccessControl {
 
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
 
+    uint40 public startTime;
+
     constructor(address _stable, address _trade) {
         stable = IReward(_stable);
         trade = IReward(_trade);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
+
+    function registerUser(
+        address lender,
+        uint deposit,
+        uint40 startPeriod
+    ) external {
+        stable.registerUser(lender, deposit, _max(startPeriod, startTime));
+        trade.registerUser(lender, deposit, _max(startPeriod, startTime));
+    }
+
+    function registerRewardManager() external onlyRole(LENDER_POOL) {
+        startTime = uint40(block.timestamp);
     }
 
     /**
@@ -90,5 +105,9 @@ contract RewardManager is IRewardManager, AccessControl {
         rewards[0] = stable.rewardOf(lender);
         rewards[1] = trade.rewardOf(lender);
         return rewards;
+    }
+
+    function _max(uint40 a, uint40 b) private pure returns (uint40) {
+        return a > b ? a : b;
     }
 }

@@ -4,7 +4,6 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interface/IReward.sol";
 import "../Token/interface/IToken.sol";
-import "hardhat/console.sol";
 
 /**
  * @author Polytrade
@@ -24,6 +23,18 @@ contract Reward is IReward, AccessControl {
     constructor(address _address) {
         rewardToken = IToken(_address);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
+
+    function registerUser(
+        address lender,
+        uint deposited,
+        uint40 startPeriod
+    ) external onlyRole(REWARD_MANAGER) {
+        if (!_lender[lender].registered) {
+            _lender[lender].deposit = deposited;
+            _lender[lender].registered = true;
+            _lender[lender].startPeriod = startPeriod;
+        }
     }
 
     /**
@@ -148,12 +159,6 @@ contract Reward is IReward, AccessControl {
      * @return returns the total pending reward
      */
     function rewardOf(address lender) external view returns (uint) {
-        console.log(
-            _lender[lender].pendingRewards,
-            _lender[lender].round,
-            _lender[lender].startPeriod,
-            _lender[lender].deposit
-        );
         if (_lender[lender].round < currentRound) {
             return
                 _lender[lender].pendingRewards +
@@ -243,7 +248,7 @@ contract Reward is IReward, AccessControl {
         uint40 end,
         uint16 reward
     ) private pure returns (uint) {
-        if (amount == 0 || reward == 0) {
+        if (amount == 0 || reward == 0 || start >= end) {
             return 0;
         }
         uint oneYear = (10000 * 365 days);

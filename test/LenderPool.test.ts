@@ -487,7 +487,7 @@ describe("Lender Pool", function () {
 
   it("should check reward at t = 1 year total of 1000 tStable token", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
-    expect((await lenderPool.rewardOf(addresses[5]))[0]).to.be.equal(
+    expect((await lenderPool.callStatic.rewardOf(addresses[5]))[0]).to.be.equal(
       n6("1000")
     );
   });
@@ -548,7 +548,9 @@ describe("Lender Pool", function () {
 
   it("should check reward at t = 4 year total of 9700 tStable token", async function () {
     expect(
-      (await lenderPool.rewardOf(addresses[6]))[0].sub(n6("9700")).toNumber()
+      (await lenderPool.callStatic.rewardOf(addresses[6]))[0]
+        .sub(n6("9700"))
+        .toNumber()
     ).to.be.lessThan(200);
   });
 

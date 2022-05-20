@@ -2,6 +2,14 @@
 pragma solidity ^0.8.12;
 
 interface IRewardManager {
+    function registerRewardManager() external;
+
+    function registerUser(
+        address lender,
+        uint deposit,
+        uint40 startPeriod
+    ) external;
+
     /**
      * @notice `claimRewardsFor` claims reward for the lender.
      * @dev All the reward are transfered to the lender.

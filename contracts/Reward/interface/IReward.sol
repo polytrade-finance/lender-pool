@@ -7,6 +7,7 @@ interface IReward {
         uint40 startPeriod;
         uint pendingRewards;
         uint deposit;
+        bool registered;
     }
 
     struct RoundInfo {
@@ -28,6 +29,12 @@ interface IReward {
      * @param amount, amount transfered to lender.
      */
     event RewardClaimed(address lender, uint amount);
+
+    function registerUser(
+        address lender,
+        uint deposited,
+        uint40 startPeriod
+    ) external;
 
     /**
      * @notice `deposit` increases the `lender` deposit by `amount`

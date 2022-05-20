@@ -18,6 +18,7 @@ contract LenderPool is ILenderPool, Ownable {
     using SafeERC20 for IToken;
 
     mapping(address => Lender) private _lender;
+    mapping(address => bool) public isRewardManager;
 
     IToken public immutable stable;
     IToken public immutable tStable;
@@ -64,8 +65,17 @@ contract LenderPool is ILenderPool, Ownable {
         );
 
         stable.safeTransferFrom(msg.sender, address(this), amount);
+
+        if (_lender[msg.sender].deposit != 0) {
+            rewardManager.registerUser(
+                msg.sender,
+                _lender[msg.sender].deposit,
+                _lender[msg.sender].time
+            );
+        }
         rewardManager.increaseDeposit(msg.sender, amount);
         _lender[msg.sender].deposit += amount;
+        _lender[msg.sender].time = uint40(block.timestamp);
         emit Deposit(msg.sender, amount);
     }
 
@@ -79,6 +89,11 @@ contract LenderPool is ILenderPool, Ownable {
     function withdrawAllDeposit() external {
         uint balance = _lender[msg.sender].deposit;
         require(balance > 0, "No amount deposited");
+        rewardManager.registerUser(
+            msg.sender,
+            _lender[msg.sender].deposit,
+            _lender[msg.sender].time
+        );
         rewardManager.withdrawDeposit(msg.sender, _lender[msg.sender].deposit);
         _lender[msg.sender].deposit = 0;
         tStable.mint(msg.sender, balance);
@@ -101,6 +116,11 @@ contract LenderPool is ILenderPool, Ownable {
         require(amount > 0, "amount must be positive integer");
         uint balance = _lender[msg.sender].deposit;
         require(balance >= amount, "amount request more than deposit");
+        rewardManager.registerUser(
+            msg.sender,
+            _lender[msg.sender].deposit,
+            _lender[msg.sender].time
+        );
         rewardManager.withdrawDeposit(msg.sender, amount);
         _lender[msg.sender].deposit -= amount;
         tStable.mint(msg.sender, amount);
@@ -114,7 +134,23 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev User can obtain reward from old `RewardManager` by calling `claimRewards` function.
      */
     function claimRewards() external {
+        rewardManager.registerUser(
+            msg.sender,
+            _lender[msg.sender].deposit,
+            _lender[msg.sender].time
+        );
         rewardManager.claimRewardsFor(msg.sender);
+    }
+
+    function claimPreviousRewards(address _rewardManager) external {
+        if (isRewardManager[_rewardManager]) {
+            rewardManager.registerUser(
+                msg.sender,
+                _lender[msg.sender].deposit,
+                _lender[msg.sender].time
+            );
+            rewardManager.claimRewardsFor(msg.sender);
+        }
     }
 
     /**
@@ -142,6 +178,11 @@ contract LenderPool is ILenderPool, Ownable {
         tStable.mint(address(this), balance);
         tStable.approve(address(redeemPool), balance);
         redeemPool.redeemStableFor(msg.sender, balance);
+        rewardManager.registerUser(
+            msg.sender,
+            _lender[msg.sender].deposit,
+            _lender[msg.sender].time
+        );
         rewardManager.claimRewardsFor(msg.sender);
     }
 
@@ -160,6 +201,8 @@ contract LenderPool is ILenderPool, Ownable {
             rewardManager.pauseReward();
         }
         rewardManager = IRewardManager(newRewardManager);
+        rewardManager.registerRewardManager();
+        isRewardManager[newRewardManager] = true;
         emit RewardManagerSwitched(oldRewardManager, newRewardManager);
     }
 
@@ -204,22 +247,29 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
+     * @notice `rewardOf` returns the total reward of the lender
+     * @dev It returns array of number, where each element is a reward
+     * @dev For example - [stable reward, trade reward 1, trade reward 2]
+     * @return Returns the total pending reward
+     */
+    function rewardOf(address lender) external returns (uint[] memory) {
+        if (_lender[lender].deposit != 0) {
+            rewardManager.registerUser(
+                lender,
+                _lender[lender].deposit,
+                _lender[lender].time
+            );
+        }
+        return rewardManager.rewardOf(lender);
+    }
+
+    /**
      * @notice `getDeposit` returns total amount deposited by the lender
      * @param lender, address of the lender
      * @return returns amount of stable token deposited by the lender
      */
     function getDeposit(address lender) external view returns (uint) {
         return _lender[lender].deposit;
-    }
-
-    /**
-     * @notice `rewardOf` returns the total reward of the lender
-     * @dev It returns array of number, where each element is a reward
-     * @dev For example - [stable reward, trade reward 1, trade reward 2]
-     * @return Returns the total pending reward
-     */
-    function rewardOf(address lender) external view returns (uint[] memory) {
-        return rewardManager.rewardOf(lender);
     }
 
     /**

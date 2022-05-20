@@ -4,6 +4,7 @@ pragma solidity ^0.8.12;
 interface ILenderPool {
     struct Lender {
         uint deposit;
+        uint40 time;
     }
 
     /**
@@ -163,6 +164,14 @@ interface ILenderPool {
     function depositAllInStrategy() external;
 
     /**
+     * @notice `rewardOf` returns the total reward of the lender
+     * @dev It returns array of number, where each element is a reward
+     * @dev For example - [stable reward, trade reward 1, trade reward 2]
+     * @return Returns the total pending reward
+     */
+    function rewardOf(address lender) external returns (uint[] memory);
+
+    /**
      * @notice `getStrategyBalance` Reurns total balance of lender in external protocol
      * @return Reurns total balance of lender in external protocol
      */
@@ -174,12 +183,4 @@ interface ILenderPool {
      * @return returns amount of stable token deposited by the lender
      */
     function getDeposit(address lender) external view returns (uint);
-
-    /**
-     * @notice `rewardOf` returns the total reward of the lender
-     * @dev It returns array of number, where each element is a reward
-     * @dev For example - [stable reward, trade reward 1, trade reward 2]
-     * @return Returns the total pending reward
-     */
-    function rewardOf(address lender) external view returns (uint[] memory);
 }
