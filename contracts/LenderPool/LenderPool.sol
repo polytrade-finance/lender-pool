@@ -228,22 +228,16 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `updateVerificationContract` updates the Verification contract address.
+     * @notice `switchVerification` updates the Verification contract address.
      * @dev Changed verification Contract must complies with `IVerification`
-     * @param _verificationAddress, address of the new Verification contract
+     * @param newVerification, address of the new Verification contract
      *
      * Emits {VerificationContractUpdated} event
      */
-    function updateVerificationContract(address _verificationAddress)
-        external
-        onlyOwner
-    {
-        address oldVerificationAddress = address(verification);
-        verification = IVerification(_verificationAddress);
-        emit VerificationContractUpdated(
-            oldVerificationAddress,
-            _verificationAddress
-        );
+    function switchVerification(address newVerification) external onlyOwner {
+        address oldVerification = address(verification);
+        verification = IVerification(newVerification);
+        emit VerificationSwitched(oldVerification, newVerification);
     }
 
     /**

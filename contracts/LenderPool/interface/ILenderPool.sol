@@ -29,7 +29,7 @@ interface ILenderPool {
      * @param oldVerification, old verification Address
      * @param newVerification, new verification Address
      */
-    event VerificationContractUpdated(
+    event VerificationSwitched(
         address oldVerification,
         address newVerification
     );
@@ -115,7 +115,7 @@ interface ILenderPool {
      */
     function switchRewardManager(address newRewardManager) external;
 
-    function updateVerificationContract(address _verificationAddress) external;
+    function switchVerification(address newVerification) external;
 
     /**
      * @notice `switchStrategy` is used for switching the strategy.

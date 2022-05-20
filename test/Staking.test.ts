@@ -215,7 +215,7 @@ describe("Strategy", async function () {
       )
     );
 
-    await lenderPool.updateVerificationContract(verification.address);
+    await lenderPool.switchVerification(verification.address);
     expect(await lenderPool.verification()).to.be.equal(verification.address);
 
     await lenderPool.switchRewardManager(rewardManager.address);

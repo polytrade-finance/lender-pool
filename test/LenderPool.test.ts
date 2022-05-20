@@ -257,7 +257,7 @@ describe("Lender Pool", function () {
   });
 
   it("Should set verification contract to LenderPool", async () => {
-    await lenderPool.updateVerificationContract(verification.address);
+    await lenderPool.switchVerification(verification.address);
     expect(await lenderPool.verification()).to.be.equal(verification.address);
   });
 

@@ -211,7 +211,7 @@ describe("Lender Pool - Switch Reward Manager", function () {
       )
     );
 
-    await lenderPool.updateVerificationContract(verification.address);
+    await lenderPool.switchVerification(verification.address);
     expect(await lenderPool.verification()).to.be.equal(verification.address);
 
     await lenderPool.switchRewardManager(rewardManager1.address);
