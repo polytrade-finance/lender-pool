@@ -322,7 +322,9 @@ describe("Strategy", async function () {
     const balanceOldStrategy = await strategy.getBalance();
     await lenderPool.switchStrategy(strategy2.address);
     const balanceNewStrategy = await strategy2.getBalance();
-    expect((balanceOldStrategy.sub(balanceNewStrategy)).toNumber()).to.be.lessThan(2);
+    expect(
+      balanceOldStrategy.sub(balanceNewStrategy).toNumber()
+    ).to.be.lessThan(2);
     expect(await strategy.getBalance()).to.be.equal("0");
   });
 

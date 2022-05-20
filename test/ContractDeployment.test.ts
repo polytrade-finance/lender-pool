@@ -11,12 +11,12 @@ import {
   Strategy,
 } from "../typechain";
 
-import { aUSDTAddress } from "./constants/constants.helpers";
+import { aUSDTAddress, USDTAddress } from "./constants/constants.helpers";
 
 describe("Contract Deployment", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
-  let stableToken: Token;
+  let stableToken: any;
   let tStableToken: Token;
   let tradeToken: Token;
   let aStable: any;
@@ -33,7 +33,11 @@ describe("Contract Deployment", function () {
   });
   it("should deploy trade, stable and tStable Token", async () => {
     const Token = await ethers.getContractFactory("Token");
-    stableToken = await Token.deploy("Tether", "USDT", 6);
+    stableToken = await ethers.getContractAt(
+      "IERC20",
+      USDTAddress,
+      accounts[0]
+    );
     tStableToken = await Token.deploy("Tether derivative", "TUSDT", 6);
     tradeToken = await Token.deploy("PolyTrade", "poly", 6);
     expect(

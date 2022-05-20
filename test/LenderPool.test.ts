@@ -11,7 +11,11 @@ import {
   Strategy,
 } from "../typechain";
 
-import { aUSDTAddress } from "./constants/constants.helpers";
+import {
+  aUSDTAddress,
+  USDTAddress,
+  AccountToImpersonateUSDT,
+} from "./constants/constants.helpers";
 
 import {
   increaseTime,
@@ -24,7 +28,7 @@ import {
 describe("Lender Pool", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
-  let stableToken: Token;
+  let stableToken: any;
   let tStableToken: Token;
   let tradeToken: Token;
   let aStable: any;
@@ -41,7 +45,11 @@ describe("Lender Pool", function () {
     addresses = accounts.map((account: SignerWithAddress) => account.address);
 
     const Token = await ethers.getContractFactory("Token");
-    stableToken = await Token.deploy("Tether", "USDT", 6);
+    stableToken = await ethers.getContractAt(
+      "IERC20",
+      USDTAddress,
+      accounts[0]
+    );
     tStableToken = await Token.deploy("Tether derivative", "TUSDT", 6);
     tradeToken = await Token.deploy("PolyTrade", "poly", 6);
     expect(
@@ -213,9 +221,32 @@ describe("Lender Pool", function () {
         lenderPool.address
       )
     );
+
+    lenderPool.switchStrategy(strategy.address);
+  });
+
+  it("should impersonate account", async function () {
+    const hre = require("hardhat");
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [AccountToImpersonateUSDT],
+    });
+    accounts[9] = await ethers.getSigner(AccountToImpersonateUSDT);
+    addresses[9] = accounts[9].address;
+    await hre.network.provider.send("hardhat_setBalance", [
+      addresses[9],
+      "0x100000000000000000000000",
+    ]);
   });
 
   it("should transfer tokens (INITIAL SET UP)", async () => {
+    await stableToken
+      .connect(accounts[9])
+      .transfer(addresses[0], n6("10000000"));
+    expect(await stableToken.balanceOf(addresses[0])).to.be.equal(
+      n6("10000000")
+    );
+
     await stableToken
       .connect(accounts[0])
       .transfer(stableReward.address, n6("10000"));

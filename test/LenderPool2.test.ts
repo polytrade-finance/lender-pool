@@ -11,13 +11,17 @@ import {
   Strategy,
 } from "../typechain";
 
-import { aUSDTAddress } from "./constants/constants.helpers";
+import {
+  aUSDTAddress,
+  USDTAddress,
+  AccountToImpersonateUSDT,
+} from "./constants/constants.helpers";
 
 import { n6, ONE_DAY, now, setNextBlockTimestamp } from "./helpers";
 describe("Lender Pool - Switch Reward Manager", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
-  let stableToken1: Token;
+  let stableToken1: any;
   let tStableToken: Token;
   let tradeToken1: Token;
   let tradeToken2: Token;
@@ -41,7 +45,11 @@ describe("Lender Pool - Switch Reward Manager", function () {
     addresses = accounts.map((account: SignerWithAddress) => account.address);
 
     const Token = await ethers.getContractFactory("Token");
-    stableToken1 = await Token.deploy("Tether", "USDT", 6);
+    stableToken1 = await ethers.getContractAt(
+      "IERC20",
+      USDTAddress,
+      accounts[0]
+    );
     tStableToken = await Token.deploy("Tether derivative", "TUSDT", 6);
     tradeToken1 = await Token.deploy("PolyTrade", "poly", 6);
     expect(
@@ -223,9 +231,32 @@ describe("Lender Pool - Switch Reward Manager", function () {
     );
 
     await verification.updateValidationLimit(n6("5000"));
+
+    lenderPool.switchStrategy(strategy.address);
+  });
+
+  it("should impersonate account", async function () {
+    const hre = require("hardhat");
+    await hre.network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [AccountToImpersonateUSDT],
+    });
+    accounts[9] = await ethers.getSigner(AccountToImpersonateUSDT);
+    addresses[9] = accounts[9].address;
+    await hre.network.provider.send("hardhat_setBalance", [
+      addresses[9],
+      "0x100000000000000000000000",
+    ]);
   });
 
   it("should transfer tokens (INITIAL SET UP)", async () => {
+    await stableToken1
+      .connect(accounts[9])
+      .transfer(addresses[0], n6("10000000"));
+    expect(await stableToken1.balanceOf(addresses[0])).to.be.equal(
+      n6("10000000")
+    );
+
     await stableToken1
       .connect(accounts[0])
       .transfer(stableReward1.address, n6("10000"));
@@ -297,8 +328,8 @@ describe("Lender Pool - Switch Reward Manager", function () {
   it("should check reward at t = 1 year", async () => {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
     const reward = await lenderPool.callStatic.rewardOf(addresses[2]);
-    expect(reward[0]).to.be.equal(n6("25"));
-    expect(reward[1]).to.be.equal(n6("5"));
+    expect(reward[0].sub(n6("25")).toNumber()).to.be.lessThan(20);
+    expect(reward[1].sub(n6("5")).toNumber()).to.be.lessThan(20);
   });
 
   it("should deploy second trade token", async () => {
@@ -436,7 +467,7 @@ describe("Lender Pool - Switch Reward Manager", function () {
   it("should check stable reward from reward manager 1 at t = 4 year", async () => {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 4);
     const reward = await rewardManager1.rewardOf(addresses[2]);
-    expect(reward[0].sub(n6("50")).toNumber()).to.be.lessThan(5);
+    expect(reward[0].sub(n6("50")).toNumber()).to.be.lessThan(20);
   });
 
   it("should claim reward from reward manager 1 at t = 5 year", async () => {
@@ -448,10 +479,10 @@ describe("Lender Pool - Switch Reward Manager", function () {
     const trade1After = await tradeToken1.balanceOf(addresses[2]);
     expect(
       trade1After.sub(trade1Before).sub(n6("10")).toNumber()
-    ).to.be.lessThan(5);
+    ).to.be.lessThan(20);
     expect(
       stable1After.sub(stable1Before).sub(n6("50")).toNumber()
-    ).to.be.lessThan(5);
+    ).to.be.lessThan(20);
   });
 
   it("should deploy stable and trade reward manager", async () => {
