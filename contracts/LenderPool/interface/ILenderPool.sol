@@ -4,7 +4,6 @@ pragma solidity ^0.8.12;
 interface ILenderPool {
     struct Lender {
         uint deposit;
-        uint40 time;
     }
 
     /**

@@ -72,7 +72,6 @@ contract LenderPool is ILenderPool, Ownable {
         }
         rewardManager.increaseDeposit(msg.sender, amount);
         _lender[msg.sender].deposit += amount;
-        _lender[msg.sender].time = uint40(block.timestamp);
         emit Deposit(msg.sender, amount);
     }
 
@@ -88,7 +87,6 @@ contract LenderPool is ILenderPool, Ownable {
         require(balance > 0, "No amount deposited");
         _registerUser(msg.sender);
         rewardManager.withdrawDeposit(msg.sender, _lender[msg.sender].deposit);
-        _lender[msg.sender].time = uint40(block.timestamp);
         _lender[msg.sender].deposit = 0;
         tStable.mint(msg.sender, balance);
         emit Withdraw(msg.sender, balance);
@@ -112,7 +110,6 @@ contract LenderPool is ILenderPool, Ownable {
         require(balance >= amount, "amount request more than deposit");
         _registerUser(msg.sender);
         rewardManager.withdrawDeposit(msg.sender, amount);
-        _lender[msg.sender].time = uint40(block.timestamp);
         _lender[msg.sender].deposit -= amount;
         tStable.mint(msg.sender, amount);
         emit Withdraw(msg.sender, amount);
@@ -291,9 +288,7 @@ contract LenderPool is ILenderPool, Ownable {
 
     function _registerUser(address lender) private {
         rewardManager.registerUser(
-            lender,
-            _lender[lender].deposit,
-            _lender[lender].time
+            lender
         );
     }
 
