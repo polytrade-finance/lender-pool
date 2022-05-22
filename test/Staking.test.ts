@@ -298,7 +298,9 @@ describe("Strategy", async function () {
 
   it("should check staking pool balance", async function () {
     await increaseTime(ONE_DAY * 365);
-    expect((await lenderPool.getStrategyBalance()).sub(n6("200")).toNumber()).to.be.greaterThan(100);
+    expect(
+      (await lenderPool.getStrategyBalance()).sub(n6("200")).toNumber()
+    ).to.be.greaterThan(100);
   });
 
   it("should update staking pool", async function () {
