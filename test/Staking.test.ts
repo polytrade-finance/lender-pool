@@ -238,8 +238,8 @@ describe("Strategy", async function () {
   });
 
   it("should transfer tokens (INITIAL SET UP)", async () => {
-    await stableToken.connect(accounts[2]).transfer(addresses[0], n6("11000"));
-    expect(await stableToken.balanceOf(addresses[0])).to.be.equal(n6("11000"));
+    await stableToken.connect(accounts[2]).transfer(addresses[0], n6("5000"));
+    expect(await stableToken.balanceOf(addresses[0])).to.be.equal(n6("5000"));
 
     await stableToken
       .connect(accounts[0])
@@ -257,9 +257,6 @@ describe("Strategy", async function () {
 
     await stableToken.connect(accounts[0]).transfer(addresses[3], n6("1000"));
     expect(await stableToken.balanceOf(addresses[3])).to.be.equal(n6("1000"));
-
-    await stableToken.connect(accounts[0]).transfer(addresses[4], n6("1000"));
-    expect(await stableToken.balanceOf(addresses[4])).to.be.equal(n6("1000"));
   });
 
   it("should deploy second strategy contract successfully", async function () {
@@ -301,21 +298,7 @@ describe("Strategy", async function () {
 
   it("should check staking pool balance", async function () {
     await increaseTime(ONE_DAY * 365);
-    console.log(await lenderPool.getStrategyBalance());
-  });
-
-  it("should withdraw from staking pool", async function () {
-    const stableBefore = await stableToken.balanceOf(lenderPool.address);
-    await lenderPool.withdrawFromStrategy(n6("200"));
-    const stableAfter = await stableToken.balanceOf(lenderPool.address);
-    expect(stableAfter.sub(stableBefore)).to.be.equal(n6("200"));
-  });
-
-  it("should deposit 100 token in strategy", async () => {
-    const balanceBefore = await stableToken.balanceOf(lenderPool.address);
-    await lenderPool.depositInStrategy(n6("100"));
-    const balanceAfter = await stableToken.balanceOf(lenderPool.address);
-    console.log(balanceBefore.sub(balanceAfter));
+    expect((await lenderPool.getStrategyBalance()).sub(n6("200")).toNumber()).to.be.greaterThan(100);
   });
 
   it("should update staking pool", async function () {
@@ -327,23 +310,5 @@ describe("Strategy", async function () {
       balanceOldStrategy.sub(balanceNewStrategy).toNumber()
     ).to.be.lessThan(2);
     expect(await strategy.getBalance()).to.be.equal("0");
-  });
-
-  it("should withdraw from staking pool( close to 0)", async function () {
-    const aStableBalance = await strategy2.getBalance();
-    console.log(aStableBalance);
-  });
-
-  it("should not be able to withdraw", async function () {
-    expect(lenderPool.withdrawFromStrategy(n6("10000"))).to.be.revertedWith(
-      "Balance less than requested."
-    );
-  });
-
-  it("should withdraw from staking pool", async function () {
-    const stableBefore = await stableToken.balanceOf(lenderPool.address);
-    await lenderPool.withdrawFromStrategy(n6("10"));
-    const stableAfter = await stableToken.balanceOf(lenderPool.address);
-    expect(stableAfter.sub(stableBefore)).to.be.equal(n6("10"));
   });
 });
