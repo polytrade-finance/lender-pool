@@ -12,24 +12,30 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 contract RewardManager is IRewardManager, AccessControl {
     IReward public stable;
     IReward public trade;
-
+    IRewardManager public prevRewardManager;
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
 
     uint40 public startTime;
 
-    constructor(address _stable, address _trade) {
+    mapping(address => Lender) private _lender;
+
+    constructor(
+        address _stable,
+        address _trade,
+        address _prevRewardManager
+    ) {
         stable = IReward(_stable);
         trade = IReward(_trade);
+        prevRewardManager = IRewardManager(_prevRewardManager);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    function registerUser(
-        address lender,
-        uint deposit,
-        uint40 startPeriod
-    ) external {
-        stable.registerUser(lender, deposit, _max(startPeriod, startTime));
-        trade.registerUser(lender, deposit, _max(startPeriod, startTime));
+    function registerUser(address lender) external {
+        if (address(prevRewardManager) != address(0)) {
+            uint lenderBalance = prevRewardManager.getDeposit(lender);
+            stable.registerUser(lender, lenderBalance, startTime);
+            trade.registerUser(lender, lenderBalance, startTime);
+        }
     }
 
     function registerRewardManager() external onlyRole(LENDER_POOL) {
@@ -47,6 +53,7 @@ contract RewardManager is IRewardManager, AccessControl {
         external
         onlyRole(LENDER_POOL)
     {
+        _lender[lender].deposit += amount;
         trade.deposit(lender, amount);
         stable.deposit(lender, amount);
     }
@@ -62,6 +69,7 @@ contract RewardManager is IRewardManager, AccessControl {
         external
         onlyRole(LENDER_POOL)
     {
+        _lender[lender].deposit -= amount;
         trade.withdraw(lender, amount);
         stable.withdraw(lender, amount);
     }
@@ -107,7 +115,7 @@ contract RewardManager is IRewardManager, AccessControl {
         return rewards;
     }
 
-    function _max(uint40 a, uint40 b) private pure returns (uint40) {
-        return a > b ? a : b;
+    function getDeposit(address lender) external view returns (uint) {
+        return _lender[lender].deposit;
     }
 }

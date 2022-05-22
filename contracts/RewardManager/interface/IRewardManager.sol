@@ -2,13 +2,13 @@
 pragma solidity ^0.8.12;
 
 interface IRewardManager {
+    struct Lender {
+        uint deposit;
+    }
+
     function registerRewardManager() external;
 
-    function registerUser(
-        address lender,
-        uint deposit,
-        uint40 startPeriod
-    ) external;
+    function registerUser(address lender) external;
 
     /**
      * @notice `claimRewardsFor` claims reward for the lender.
@@ -54,4 +54,6 @@ interface IRewardManager {
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      */
     function rewardOf(address lender) external view returns (uint[] memory);
+
+    function getDeposit(address lender) external view returns (uint);
 }

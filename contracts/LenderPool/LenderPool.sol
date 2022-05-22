@@ -126,10 +126,11 @@ contract LenderPool is ILenderPool, Ownable {
         rewardManager.claimRewardsFor(msg.sender);
     }
 
-    function claimPreviousRewards(address _rewardManager) external {
-        if (isRewardManager[_rewardManager]) {
+    function claimPreviousRewards(address managerAddress) external {
+        if (isRewardManager[managerAddress]) {
             _registerUser(msg.sender);
-            rewardManager.claimRewardsFor(msg.sender);
+            IRewardManager _rewardManager = IRewardManager(managerAddress);
+            _rewardManager.claimRewardsFor(msg.sender);
         }
     }
 
@@ -287,9 +288,7 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     function _registerUser(address lender) private {
-        rewardManager.registerUser(
-            lender
-        );
+        rewardManager.registerUser(lender);
     }
 
     /**
