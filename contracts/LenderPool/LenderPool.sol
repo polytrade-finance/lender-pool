@@ -196,7 +196,7 @@ contract LenderPool is ILenderPool, Ownable {
         address oldStrategy = address(strategy);
         if (oldStrategy != address(0)) {
             uint amount = _getStrategyBalance();
-            _withdrawAllFromStrategy();
+            _withdrawFromStrategy(amount);
             strategy = Strategy(newStrategy);
             _depositInStrategy(amount);
         }
@@ -223,10 +223,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      * @return Returns the total pending reward
      */
-    function rewardOf(address lender) external returns (uint[] memory) {
-        if (_lender[lender].deposit != 0) {
-            _registerUser(lender);
-        }
+    function rewardOf(address lender) external view returns (uint[] memory) {
         return rewardManager.rewardOf(lender);
     }
 
@@ -248,36 +245,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `withdrawFromStrategy`  withdraws all funds from external protocol.
-     * @dev It transfers all funds from external protocol to `LenderPool`.
-     * @dev It can be called by only owner of LenderPool.
-     * @param amount, total amount to be withdrawn from staking strategy.
-     *
-     * Requirements:
-     * - Total amount in external protcol should be less than `amount` requested.
-     *
-     */
-    function withdrawFromStrategy(uint amount) public onlyOwner {
-        require(
-            _getStrategyBalance() >= amount,
-            "Balance less than requested."
-        );
-        strategy.withdraw(amount);
-    }
-
-    /**
-     * @notice `depositInStrategy` deposits funds in strategy.
-     * @dev Funds will be deposited to external protocol like aave, compund
-     * @dev It transfers token from `LenderPool` to external protocol.
-     * @dev It can be called by only owner of LenderPool.
-     * @param amount, amount to be deposited in strategy.
-     */
-    function depositInStrategy(uint amount) public onlyOwner {
-        stable.approve(address(strategy), amount);
-        strategy.deposit(amount);
-    }
-
-    /**
      * @notice `_depositInStrategydeposit` deposits stable token to external protocol.
      * @dev Funds will be deposited to external protocol like aave, compund
      * @param amount, total amount to be deposited.
@@ -292,12 +259,20 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `_withdrawAllFromStrategy` withdraws all funds from external protocol.
+     * @notice `_withdrawFromStrategy`  withdraws all funds from external protocol.
      * @dev It transfers all funds from external protocol to `LenderPool`.
      * @dev It can be called by only owner of LenderPool.
+     * @param amount, total amount to be withdrawn from staking strategy.
+     *
+     * Requirements:
+     * - Total amount in external protcol should be less than `amount` requested.
+     *
      */
-    function _withdrawAllFromStrategy() private onlyOwner {
-        uint amount = _getStrategyBalance();
+    function _withdrawFromStrategy(uint amount) private onlyOwner {
+        require(
+            _getStrategyBalance() >= amount,
+            "Balance less than requested."
+        );
         strategy.withdraw(amount);
     }
 

@@ -128,33 +128,12 @@ interface ILenderPool {
     function switchStrategy(address newStrategy) external;
 
     /**
-     * @notice `depositInStrategy` deposits funds in strategy.
-     * @dev Funds will be deposited to external protocol like aave, compund
-     * @dev It transfers token from `LenderPool` to external protocol.
-     * @dev It can be called by only owner of LenderPool.
-     * @param amount, amount to be deposited in strategy.
-     */
-    function depositInStrategy(uint amount) external;
-
-    /**
-     * @notice `withdrawFromStrategy`  withdraws all funds from external protocol.
-     * @dev It transfers all funds from external protocol to `LenderPool`.
-     * @dev It can be called by only owner of LenderPool.
-     * @param amount, total amount to be withdrawn from staking strategy.
-     *
-     * Requirements:
-     * - Total amount in external protcol should be less than `amount` requested.
-     *
-     */
-    function withdrawFromStrategy(uint amount) external;
-
-    /**
      * @notice `rewardOf` returns the total reward of the lender
      * @dev It returns array of number, where each element is a reward
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      * @return Returns the total pending reward
      */
-    function rewardOf(address lender) external returns (uint[] memory);
+    function rewardOf(address lender) external view returns (uint[] memory);
 
     /**
      * @notice `getStrategyBalance` Reurns total balance of lender in external protocol
