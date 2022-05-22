@@ -243,9 +243,9 @@ describe("Lender Pool", function () {
   it("should transfer tokens (INITIAL SET UP)", async () => {
     await stableToken
       .connect(accounts[9])
-      .transfer(addresses[0], n6("10000000"));
+      .transfer(addresses[0], n6("1000000"));
     expect(await stableToken.balanceOf(addresses[0])).to.be.equal(
-      n6("10000000")
+      n6("1000000")
     );
 
     await stableToken
