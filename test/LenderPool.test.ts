@@ -84,7 +84,8 @@ describe("Lender Pool", function () {
     const RewardManager = await ethers.getContractFactory("RewardManager");
     rewardManager = await RewardManager.deploy(
       stableReward.address,
-      tradeReward.address
+      tradeReward.address,
+      ethers.constants.AddressZero
     );
     expect(
       await ethers.provider.getCode(rewardManager.address)
