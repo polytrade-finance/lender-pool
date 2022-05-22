@@ -33,8 +33,11 @@ contract RewardManager is IRewardManager, AccessControl {
     function registerUser(address lender) external {
         if (address(prevRewardManager) != address(0)) {
             uint lenderBalance = prevRewardManager.getDeposit(lender);
-            stable.registerUser(lender, lenderBalance, startTime);
-            trade.registerUser(lender, lenderBalance, startTime);
+            if (lenderBalance > 0) {
+                _lender[lender].deposit += lenderBalance;
+                stable.registerUser(lender, lenderBalance, startTime);
+                trade.registerUser(lender, lenderBalance, startTime);
+            }
         }
     }
 

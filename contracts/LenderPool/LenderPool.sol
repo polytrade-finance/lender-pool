@@ -67,9 +67,8 @@ contract LenderPool is ILenderPool, Ownable {
         stable.safeTransferFrom(msg.sender, address(this), amount);
         _depositInStrategy(amount);
 
-        if (_lender[msg.sender].deposit != 0) {
-            _registerUser(msg.sender);
-        }
+        _registerUser(msg.sender);
+
         rewardManager.increaseDeposit(msg.sender, amount);
         _lender[msg.sender].deposit += amount;
         emit Deposit(msg.sender, amount);
@@ -127,11 +126,14 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     function claimPreviousRewards(address managerAddress) external {
-        if (isRewardManager[managerAddress]) {
-            _registerUser(msg.sender);
-            IRewardManager _rewardManager = IRewardManager(managerAddress);
-            _rewardManager.claimRewardsFor(msg.sender);
-        }
+        require(
+            isRewardManager[managerAddress] == true,
+            "Invalid RewardManager"
+        );
+        IRewardManager _rewardManager = IRewardManager(managerAddress);
+
+        _rewardManager.registerUser(msg.sender);
+        _rewardManager.claimRewardsFor(msg.sender);
     }
 
     /**
