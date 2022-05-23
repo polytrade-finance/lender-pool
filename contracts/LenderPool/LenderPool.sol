@@ -128,7 +128,7 @@ contract LenderPool is ILenderPool, Ownable {
     /**
      * @notice `claimPreviousRewards` transfers lender all the reward of `managerAddress`.
      * @dev It calls `claimRewardsFor` from `RewardManager`.
-     * 
+     *
      * Requirements:
      * - All the RewardManager before `managerAddress` must be also called
      *
