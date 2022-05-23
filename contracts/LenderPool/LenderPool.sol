@@ -116,16 +116,23 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `claimRewards` transfers lender all the reward.
+     * @notice `claimRewards` transfers lender all the reward of the current manager.
      * @dev It calls `claimRewardsFor` from `RewardManager`.
      * @dev RewardManager may be changed by LenderPool's owner.
-     * @dev User can obtain reward from old `RewardManager` by calling `claimRewards` function.
      */
     function claimRewards() external {
         _registerUser(msg.sender);
         rewardManager.claimRewardsFor(msg.sender);
     }
 
+    /**
+     * @notice `claimPreviousRewards` transfers lender all the reward of `managerAddress`.
+     * @dev It calls `claimRewardsFor` from `RewardManager`.
+     * 
+     * Requirements:
+     * - All the RewardManager before `managerAddress` must be also called
+     *
+     */
     function claimPreviousRewards(address managerAddress) external {
         require(
             isRewardManager[managerAddress] == true,
