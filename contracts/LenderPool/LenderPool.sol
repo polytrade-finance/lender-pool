@@ -131,10 +131,12 @@ contract LenderPool is ILenderPool, Ownable {
             isRewardManager[managerAddress] == true,
             "Invalid RewardManager"
         );
-        
+
         require(
-            getPreviousRewardManager[managerAddress]==address(0) ||
-            _lender[msg.sender].isRewardClaimed[getPreviousRewardManager[managerAddress]],
+            getPreviousRewardManager[managerAddress] == address(0) ||
+                _lender[msg.sender].isRewardClaimed[
+                    getPreviousRewardManager[managerAddress]
+                ],
             "Please claim reward of previous reward manager first"
         );
 
