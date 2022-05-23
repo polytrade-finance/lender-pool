@@ -243,19 +243,12 @@ describe("Strategy", async function () {
     await stableToken
       .connect(accounts[0])
       .transfer(stableReward.address, n6("1000"));
-    expect(await stableToken.balanceOf(stableReward.address)).to.be.equal(
-      n6("1000")
-    );
 
     await tradeToken
       .connect(accounts[0])
       .transfer(tradeReward.address, n6("1000"));
-    expect(await tradeToken.balanceOf(tradeReward.address)).to.be.equal(
-      n6("1000")
-    );
 
     await stableToken.connect(accounts[0]).transfer(addresses[3], n6("1000"));
-    expect(await stableToken.balanceOf(addresses[3])).to.be.equal(n6("1000"));
   });
 
   it("should deploy second strategy contract successfully", async function () {
