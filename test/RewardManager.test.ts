@@ -796,7 +796,7 @@ describe("Lender Pool - Switch Reward Manager", function () {
     expect(
       Math.abs(stable1After.sub(stable1Before).sub(n6("80")).toNumber())
     ).to.be.lessThan(50);
-  });*/
+  }); */
 
   it("should claim reward of account 6 at t = 7 year manager 3", async () => {
     const stable1Before = await stableToken1.balanceOf(addresses[6]);
