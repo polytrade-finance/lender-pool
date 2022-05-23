@@ -19,6 +19,7 @@ contract LenderPool is ILenderPool, Ownable {
 
     mapping(address => Lender) private _lender;
     mapping(address => bool) public isRewardManager;
+    mapping(address => address) public getPreviousRewardManager;
 
     IToken public immutable stable;
     IToken public immutable tStable;
@@ -130,6 +131,14 @@ contract LenderPool is ILenderPool, Ownable {
             isRewardManager[managerAddress] == true,
             "Invalid RewardManager"
         );
+        
+        require(
+            getPreviousRewardManager[managerAddress]==address(0) ||
+            _lender[msg.sender].isRewardClaimed[getPreviousRewardManager[managerAddress]],
+            "Please claim reward of previous reward manager first"
+        );
+
+        _lender[msg.sender].isRewardClaimed[managerAddress] = true;
         IRewardManager _rewardManager = IRewardManager(managerAddress);
 
         _rewardManager.registerUser(msg.sender);
@@ -182,6 +191,7 @@ contract LenderPool is ILenderPool, Ownable {
         rewardManager = IRewardManager(newRewardManager);
         rewardManager.registerRewardManager();
         isRewardManager[newRewardManager] = true;
+        getPreviousRewardManager[newRewardManager] = oldRewardManager;
         emit RewardManagerSwitched(oldRewardManager, newRewardManager);
     }
 
@@ -225,7 +235,8 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      * @return Returns the total pending reward
      */
-    function rewardOf(address lender) external view returns (uint[] memory) {
+    function rewardOf(address lender) external returns (uint[] memory) {
+        _registerUser(lender);
         return rewardManager.rewardOf(lender);
     }
 

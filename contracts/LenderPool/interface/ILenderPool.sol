@@ -4,6 +4,7 @@ pragma solidity ^0.8.12;
 interface ILenderPool {
     struct Lender {
         uint deposit;
+        mapping(address=>bool) isRewardClaimed;
     }
 
     /**
@@ -133,7 +134,7 @@ interface ILenderPool {
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      * @return Returns the total pending reward
      */
-    function rewardOf(address lender) external view returns (uint[] memory);
+    function rewardOf(address lender) external returns (uint[] memory);
 
     /**
      * @notice `getStrategyBalance` Reurns total balance of lender in external protocol
