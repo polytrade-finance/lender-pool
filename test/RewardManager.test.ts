@@ -794,20 +794,18 @@ describe("Lender Pool - Switch Reward Manager", function () {
       .claimPreviousRewards(rewardManager2.address);
     const stable1After = await stableToken1.balanceOf(addresses[6]);
     expect(
-      Math.abs(stable1After.sub(stable1Before).sub(n6("50")).toNumber())
+      Math.abs(stable1After.sub(stable1Before).sub(n6("80")).toNumber())
     ).to.be.lessThan(50);
-  });
+  });*/
 
   it("should claim reward of account 6 at t = 7 year manager 3", async () => {
     const stable1Before = await stableToken1.balanceOf(addresses[6]);
-    const trade1Before = await tradeToken1.balanceOf(addresses[6]);
     await lenderPool
       .connect(accounts[6])
       .claimPreviousRewards(rewardManager3.address);
     const stable1After = await stableToken1.balanceOf(addresses[6]);
-    const trade1After = await tradeToken1.balanceOf(addresses[6]);
-    console.log(Math.abs(stable1After.sub(stable1Before).toNumber()));
-    console.log(Math.abs(trade1After.sub(trade1Before).toNumber()));
+    expect(
+      Math.abs(stable1After.sub(stable1Before).sub(n6("700")).toNumber())
+    ).to.be.lessThan(250);
   });
-  */
 });
