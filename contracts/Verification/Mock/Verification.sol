@@ -1,30 +1,50 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
+import "../interface/IVerification.sol";
+
 /**
  * @author Polytrade
  * @title Verification
  */
-contract Verification {
-    mapping(address => bool) public userKYC;
+contract Verification is IVerification {
+    mapping(address => bool) public userValidation;
+
+    uint public validationLimit;
 
     /**
-     * @notice Function for test purpose to approve/revoke KYC for any user
+     * @notice Function for test purpose to approve/revoke Validation for any user
      * @dev Not for PROD
-     * @param user, address of the user to set KYC
-     * @param status, true = approve KYC and false = revoke KYC
+     * @param user, address of the user to set Validation
+     * @param status, true = approve Validation and false = revoke Validation
      */
-    function setKYC(address user, bool status) external {
-        userKYC[user] = status;
+    function setValidation(address user, bool status) external {
+        userValidation[user] = status;
     }
 
     /**
-     * @notice Returns whether a user's KYC is verified or not
-     * @dev returns a boolean if the KYC is valid
+     * @notice Updates the limit for the Validation to be required
+     * @dev updates validationLimit variable
+     * @param _validationLimit, new value of depositLimit
+     *
+     * Emits {NewValidationLimit} event
+     */
+    function updateValidationLimit(uint _validationLimit) external {
+        validationLimit = _validationLimit;
+        emit ValidationLimitUpdated(_validationLimit);
+    }
+
+    /**
+     * @notice Returns whether a user's Validation is verified or not
+     * @dev returns a boolean if the Validation is valid
      * @param user, address of the user to check
-     * @return returns true if user's KYC is valid or false if not
+     * @return returns true if user's Validation is valid or false if not
      */
     function isValid(address user) external view returns (bool) {
-        return userKYC[user];
+        return userValidation[user];
+    }
+
+    function isValidationRequired(uint amount) external view returns (bool) {
+        return amount >= validationLimit;
     }
 }

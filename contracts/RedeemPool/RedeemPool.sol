@@ -38,7 +38,7 @@ contract RedeemPool is IRedeemPool, AccessControl {
         onlyRole(OWNER)
     {
         IToken token = IToken(tokenAddress);
-        token.transfer(msg.sender, amount);
+        token.safeTransfer(msg.sender, amount);
     }
 
     /**
@@ -47,7 +47,7 @@ contract RedeemPool is IRedeemPool, AccessControl {
      * @param amount, the number of tokens to be exchanged
      */
     function redeemStable(uint amount) external {
-        _redeemStable(amount, msg.sender);
+        _redeemStable(msg.sender, amount);
     }
 
     /**
@@ -56,11 +56,11 @@ contract RedeemPool is IRedeemPool, AccessControl {
      * @param amount, the number of tokens to be exchanged
      * @param account, address of the account that will receive the stable token
      */
-    function redeemStableTo(uint amount, address account)
+    function redeemStableFor(address account, uint amount)
         external
         onlyRole(LENDER_POOL)
     {
-        _redeemStable(amount, account);
+        _redeemStable(account, amount);
     }
 
     /**
@@ -78,7 +78,8 @@ contract RedeemPool is IRedeemPool, AccessControl {
      *
      * Emits {StableWithdrawn} event
      */
-    function _redeemStable(uint amount, address account) private {
+    function _redeemStable(address account, uint amount) private {
+        require(amount > 0, "Amount is 0");
         require(
             tStable.balanceOf(msg.sender) >= amount,
             "Insufficient balance"
@@ -87,7 +88,6 @@ contract RedeemPool is IRedeemPool, AccessControl {
             tStable.allowance(msg.sender, address(this)) >= amount,
             "Insufficient allowance"
         );
-        require(amount > 0, "Amount is 0");
         require(
             stable.balanceOf(address(this)) >= amount,
             "Insufficient balance in pool"

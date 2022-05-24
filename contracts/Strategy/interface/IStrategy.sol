@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
-interface IStakingStrategy {
+interface IStrategy {
     /**
      * @notice Emitted when funds are deposited
      * @param amount, total amount deposited

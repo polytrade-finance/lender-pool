@@ -3,13 +3,14 @@ pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interface/IReward.sol";
+import "../Token/interface/IToken.sol";
 
 /**
  * @author Polytrade
  * @title Reward V2
  */
 contract Reward is IReward, AccessControl {
-    bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
+    bytes32 public constant REWARD_MANAGER = keccak256("REWARD_MANAGER");
     bytes32 public constant OWNER = keccak256("OWNER");
 
     mapping(address => Lender) private _lender;
@@ -17,36 +18,82 @@ contract Reward is IReward, AccessControl {
 
     uint16 public currentRound = 0;
 
-    constructor() {
+    IToken public rewardToken;
+
+    constructor(address _address) {
+        rewardToken = IToken(_address);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    function registerUser(
+        address lender,
+        uint deposited,
+        uint40 startPeriod
+    ) external onlyRole(REWARD_MANAGER) {
+        if (!_lender[lender].registered) {
+            _lender[lender].deposit = deposited;
+            _lender[lender].registered = true;
+            _lender[lender].startPeriod = startPeriod;
+        }
+    }
+
     /**
-     * @notice sets the reward (APY in case of tStable, trade per year per stable in case of trade reward)
-     * @dev only OWNER can call setReward
-     * @param reward, current reward offered by the contract
+     * @notice `setReward` updates the value of reward.
+     * @dev For example - APY in case of tStable, trade per year per stable in case of trade reward.
+     * @dev It can be called by only OWNER.
+     * @param newReward, current reward offered by the contract.
+     *
+     * Emits {NewReward} event
      */
-    function setReward(uint16 reward) external onlyRole(OWNER) {
+    function setReward(uint16 newReward) external onlyRole(OWNER) {
         if (currentRound > 0) {
             round[currentRound].endTime = uint40(block.timestamp);
         }
         currentRound += 1;
+        uint16 oldReward = round[currentRound].apy;
         round[currentRound] = RoundInfo(
-            reward,
+            newReward,
             uint40(block.timestamp),
             type(uint40).max
         );
+
+        emit NewReward(oldReward, newReward);
     }
 
     /**
-     * @notice increases the `lender` deposit by `amount`
-     * @dev can be called by LENDER_POOL only
+     * @notice `pauseReward` sets the apy to 0.
+     * @dev It is called after `RewardManager` is discontinued.
+     * @dev It can be called by only REWARD_MANAGER.
+     *
+     * Emits {NewReward} event
+     */
+    function pauseReward() external onlyRole(REWARD_MANAGER) {
+        if (currentRound > 0) {
+            round[currentRound].endTime = uint40(block.timestamp);
+        }
+        currentRound += 1;
+        uint16 oldReward = round[currentRound].apy;
+        round[currentRound] = RoundInfo(
+            0,
+            uint40(block.timestamp),
+            type(uint40).max
+        );
+        emit NewReward(oldReward, 0);
+    }
+
+    /**
+     * @notice `deposit` increases the `lender` deposit by `amount`
+     * @dev It can be called by only REWARD_MANAGER.
      * @param lender, address of the lender
      * @param amount, amount deposited by lender
+     *
+     * Requirements:
+     * - `amount` should be greater than 0
+     *
      */
     function deposit(address lender, uint amount)
         external
-        onlyRole(LENDER_POOL)
+        onlyRole(REWARD_MANAGER)
     {
         require(amount > 0, "Lending amount is 0");
         if (_lender[lender].startPeriod > 0) {
@@ -60,14 +107,18 @@ contract Reward is IReward, AccessControl {
     }
 
     /**
-     * @notice withdraws the `amount` from `lender`
-     * @dev can be called by LENDER_POOL only
+     * @notice `withdraw` withdraws the `amount` from `lender`
+     * @dev It can be called by only REWARD_MANAGER.
      * @param lender, address of the lender
-     * @param amount, amount deposited by lender
+     * @param amount, amount requested by lender
+     *
+     * - `amount` should be greater than 0
+     * - `amount` should be greater than deposited by the lender
+     *
      */
     function withdraw(address lender, uint amount)
         external
-        onlyRole(LENDER_POOL)
+        onlyRole(REWARD_MANAGER)
     {
         require(amount > 0, "Cannot withdraw 0 amount");
         require(_lender[lender].deposit >= amount, "Invalid amount requested");
@@ -78,22 +129,32 @@ contract Reward is IReward, AccessControl {
     }
 
     /**
-     * @notice send lender reward and update the pendingReward
-     * @dev can be called by LENDER_POOL only
-     * @param lender, address of the lender
-     * @param amount, amount deposited by lender
+     * @notice `claimReward` send reward to lender.
+     * @dev It calls `_updatePendingReward` function and sets pending reward to 0.
+     * @dev It can be called by only REWARD_MANAGER.
+     * @param lender, address of the lender.
+     *
+     * Emits {RewardClaimed} event
      */
-    function claimReward(address lender, uint amount)
-        external
-        onlyRole(LENDER_POOL)
-    {
+    function claimReward(address lender) external onlyRole(REWARD_MANAGER) {
         _updatePendingReward(lender);
-        _lender[lender].pendingRewards -= amount;
+        uint totalReward = _lender[lender].pendingRewards;
+        _lender[lender].pendingRewards = 0;
+        rewardToken.transfer(lender, totalReward);
+        emit RewardClaimed(lender, totalReward);
     }
 
     /**
-     * @notice returns the total pending reward
-     * @dev returns the total pending reward of msg.sender
+     * @notice `getReward` returns the total reward.
+     * @return returns the total reward.
+     */
+    function getReward() external view returns (uint16) {
+        return round[currentRound].apy;
+    }
+
+    /**
+     * @notice `rewardOf` returns the total pending reward of the lender
+     * @dev It calculates reward of lender upto cuurent time.
      * @param lender, address of the lender
      * @return returns the total pending reward
      */
@@ -109,11 +170,11 @@ contract Reward is IReward, AccessControl {
     }
 
     /**
-     * @notice updates round, pendingRewards and startTime of the lender
-     * @dev compares the lender round with currentRound and updates _lender accordingly
+     * @notice `_updatePendingReward` updates round, pendingRewards and startTime of the lender
+     * @dev It compares the lender round with currentRound and updates _lender accordingly
      * @param lender, address of the lender
      */
-    function _updatePendingReward(address lender) private {
+    function _updatePendingReward(address lender) internal {
         if (_lender[lender].round == currentRound) {
             _lender[lender].pendingRewards += _calculateCurrentRound(lender);
         }
@@ -128,7 +189,7 @@ contract Reward is IReward, AccessControl {
     }
 
     /**
-     * @notice return the total reward when lender round is equal to currentRound
+     * @notice `_calculateCurrentRound` return the total reward when lender round is equal to currentRound
      * @param lender, address of the lender
      * @return returns total pending reward
      */
@@ -147,7 +208,7 @@ contract Reward is IReward, AccessControl {
     }
 
     /**
-     * @notice return the total reward when lender round is less than currentRound
+     * @notice `_calculateFromPreviousRounds` return the total reward when lender round is less than currentRound
      * @param lender, address of the lender
      * @return returns total pending reward
      */
@@ -174,24 +235,24 @@ contract Reward is IReward, AccessControl {
 
     /**
      * @notice calculates the reward
-     * @dev calculates the reward using simple interest formula
+     * @dev calculates the reward using given below folmula
      * @param amount, principal amount
      * @param start, start of the tenure for reward
      * @param end, end of the tenure for reward
-     * @param tradeRate, Annual percentage yield received during the tenure
+     * @param reward, value of reward (eg - tradeRate, APY)
      * @return returns reward
      */
     function _calculateReward(
         uint amount,
         uint40 start,
         uint40 end,
-        uint16 tradeRate
+        uint16 reward
     ) private pure returns (uint) {
-        if (amount == 0 || tradeRate == 0) {
+        if (amount == 0 || reward == 0 || start >= end) {
             return 0;
         }
-        uint oneYear = (100 * 365 days);
-        return (((end - start) * tradeRate * amount) / oneYear);
+        uint oneYear = (10000 * 365 days);
+        return (((end - start) * reward * amount) / oneYear);
     }
 
     /**
