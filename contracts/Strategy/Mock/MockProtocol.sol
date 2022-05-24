@@ -8,10 +8,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  * @title MockProtocol // NOT FOR PROD
  */
 contract MockProtocol {
+    IERC20 public token;
 
-    IERC20 token;
-
-    uint reward = 1;
+    uint public reward = 1;
 
     mapping(address => uint) private _deposits;
     mapping(address => uint) private _time;
@@ -21,17 +20,9 @@ contract MockProtocol {
         token = IERC20(_token);
     }
 
-    function rewardOf(address user) external view returns(uint) {
-        return ((_pendingRewards[user]) + _calculateRewards(user ,_deposits[user]));
-    }
-
-    function getDeposits(address user) external view returns (uint) {
-        return _deposits[user];
-    }
-
     function deposit(uint amount) external {
         token.transferFrom(msg.sender, address(this), amount);
-        if(_deposits[msg.sender] > 0) {
+        if (_deposits[msg.sender] > 0) {
             _updateRewards(msg.sender, _deposits[msg.sender]);
         } else {
             _time[msg.sender] = block.timestamp;
@@ -45,10 +36,10 @@ contract MockProtocol {
         uint amountPending = _pendingRewards[msg.sender];
         uint amount = _deposits[msg.sender];
 
-        token.transfer(msg.sender, (amount + amountPending));
         _deposits[msg.sender] = 0;
         _pendingRewards[msg.sender] = 0;
         _time[msg.sender] = 0;
+        token.transfer(msg.sender, (amount + amountPending));
     }
 
     function withdrawAmount(uint amount) external {
@@ -57,11 +48,19 @@ contract MockProtocol {
         uint amountPending = _pendingRewards[msg.sender];
         _pendingRewards[msg.sender] = 0;
         _deposits[msg.sender] += amountPending;
-//        uint amount = _deposits[msg.sender];
 
-        token.transfer(msg.sender, amount);
         _deposits[msg.sender] -= amount;
         _time[msg.sender] = block.timestamp;
+        token.transfer(msg.sender, amount);
+    }
+
+    function rewardOf(address user) external view returns (uint) {
+        return ((_pendingRewards[user]) +
+            _calculateRewards(user, _deposits[user]));
+    }
+
+    function getDeposits(address user) external view returns (uint) {
+        return _deposits[user];
     }
 
     function _updateRewards(address user, uint amount) private {
@@ -69,8 +68,11 @@ contract MockProtocol {
         _time[user] = block.timestamp;
     }
 
-    function _calculateRewards(address user, uint amount) private view returns(uint) {
+    function _calculateRewards(address user, uint amount)
+        private
+        view
+        returns (uint)
+    {
         return ((block.timestamp - _time[user]) * amount * reward) / 10000000;
     }
-
 }
