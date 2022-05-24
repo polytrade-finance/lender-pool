@@ -19,13 +19,6 @@ interface IRewardManager {
     function claimRewardsFor(address lender) external;
 
     /**
-     * @notice `claimRewardsFor` claims reward for the lender.
-     * @dev All the reward are transfered to the lender.
-     * @dev It can be directly called by lender.
-     */
-    function claimRewards() external;
-
-    /**
      * @notice `increaseDeposit` increases the amount deposited by lender.
      * @dev It calls the `deposit` function of all the rewards in `RewardManager`.
      * @dev It can by only called by `LenderPool`.

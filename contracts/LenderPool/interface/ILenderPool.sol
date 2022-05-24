@@ -4,7 +4,7 @@ pragma solidity ^0.8.12;
 interface ILenderPool {
     struct Lender {
         uint deposit;
-        mapping(address => bool) isRewardClaimed;
+        mapping(address => bool) isRegistered;
     }
 
     /**
@@ -84,14 +84,6 @@ interface ILenderPool {
      * Emits {Withdraw} event
      */
     function withdrawDeposit(uint amount) external;
-
-    /**
-     * @notice `claimRewards` transfers lender all the reward.
-     * @dev It calls `claimRewardsFor` from `RewardManager`.
-     * @dev RewardManager may be changed by LenderPool's owner.
-     * @dev User can obtain reward from old `RewardManager` by calling `claimRewards` function.
-     */
-    function claimRewards() external;
 
     /**
      * @notice `redeemAll` call transfers all reward and deposited amount in stable token.

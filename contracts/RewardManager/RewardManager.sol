@@ -89,16 +89,6 @@ contract RewardManager is IRewardManager, AccessControl {
     }
 
     /**
-     * @notice `claimRewardsFor` claims reward for the lender.
-     * @dev All the reward are transfered to the lender.
-     * @dev It can be directly called by lender.
-     */
-    function claimRewards() external {
-        stable.claimReward(msg.sender);
-        trade.claimReward(msg.sender);
-    }
-
-    /**
      * @notice `pauseRewards` sets the reward for all the tokens to 0
      */
     function pauseReward() external onlyRole(LENDER_POOL) {
