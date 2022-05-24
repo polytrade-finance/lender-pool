@@ -476,7 +476,7 @@ describe("Lender Pool - Switch Reward Manager", function () {
     );
   });
 
-  it("should register in reward manager 2", async ()=>{
+  it("should register in reward manager 2", async () => {
     await lenderPool.connect(accounts[2]).registerUser(rewardManager2.address);
     await lenderPool.connect(accounts[3]).registerUser(rewardManager2.address);
     await lenderPool.connect(accounts[4]).registerUser(rewardManager2.address);
@@ -663,15 +663,11 @@ describe("Lender Pool - Switch Reward Manager", function () {
 
   it("should not able to claim reward", async () => {
     expect(
-      lenderPool
-        .connect(accounts[6])
-        .claimRewards(rewardManager3.address)
-    ).to.be.revertedWith(
-      "Please Register to RewardManager"
-    );
+      lenderPool.connect(accounts[6]).claimRewards(rewardManager3.address)
+    ).to.be.revertedWith("Please Register to RewardManager");
   });
 
-  it("should register in reward manager 2", async ()=>{
+  it("should register in reward manager 2", async () => {
     await lenderPool.connect(accounts[2]).registerUser(rewardManager3.address);
     await lenderPool.connect(accounts[3]).registerUser(rewardManager3.address);
     await lenderPool.connect(accounts[4]).registerUser(rewardManager3.address);
@@ -683,9 +679,7 @@ describe("Lender Pool - Switch Reward Manager", function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 7);
     let stable1Before = await stableToken1.balanceOf(addresses[4]);
     let trade1Before = await tradeToken1.balanceOf(addresses[4]);
-    await lenderPool
-      .connect(accounts[4])
-      .claimRewards(rewardManager1.address);
+    await lenderPool.connect(accounts[4]).claimRewards(rewardManager1.address);
     let stable1After = await stableToken1.balanceOf(addresses[4]);
     let trade1After = await tradeToken1.balanceOf(addresses[4]);
     expect(stable1After.sub(stable1Before).toNumber()).to.be.equal(0);
@@ -693,9 +687,7 @@ describe("Lender Pool - Switch Reward Manager", function () {
 
     stable1Before = await stableToken1.balanceOf(addresses[4]);
     const trade2Before = await tradeToken2.balanceOf(addresses[4]);
-    await lenderPool
-      .connect(accounts[4])
-      .claimRewards(rewardManager2.address);
+    await lenderPool.connect(accounts[4]).claimRewards(rewardManager2.address);
     stable1After = await stableToken1.balanceOf(addresses[4]);
     const trade2After = await tradeToken2.balanceOf(addresses[4]);
     expect(
@@ -707,9 +699,7 @@ describe("Lender Pool - Switch Reward Manager", function () {
 
     stable1Before = await stableToken1.balanceOf(addresses[4]);
     trade1Before = await tradeToken1.balanceOf(addresses[4]);
-    await lenderPool
-      .connect(accounts[4])
-      .claimRewards(rewardManager3.address);
+    await lenderPool.connect(accounts[4]).claimRewards(rewardManager3.address);
     stable1After = await stableToken1.balanceOf(addresses[4]);
     trade1After = await tradeToken1.balanceOf(addresses[4]);
     expect(
@@ -723,9 +713,7 @@ describe("Lender Pool - Switch Reward Manager", function () {
   it("should claim reward of account 3 at t = 7 year manager 1", async () => {
     const stable1Before = await stableToken1.balanceOf(addresses[3]);
     const trade1Before = await tradeToken1.balanceOf(addresses[3]);
-    await lenderPool
-      .connect(accounts[3])
-      .claimRewards(rewardManager1.address);
+    await lenderPool.connect(accounts[3]).claimRewards(rewardManager1.address);
     const stable1After = await stableToken1.balanceOf(addresses[3]);
     const trade1After = await tradeToken1.balanceOf(addresses[3]);
     expect(
@@ -739,9 +727,7 @@ describe("Lender Pool - Switch Reward Manager", function () {
   it("should claim reward of account 3 at t = 7 year manager 2", async () => {
     const stable1Before = await stableToken1.balanceOf(addresses[3]);
     const trade2Before = await tradeToken2.balanceOf(addresses[3]);
-    await lenderPool
-      .connect(accounts[3])
-      .claimRewards(rewardManager2.address);
+    await lenderPool.connect(accounts[3]).claimRewards(rewardManager2.address);
     const stable1After = await stableToken1.balanceOf(addresses[3]);
     const trade2After = await tradeToken2.balanceOf(addresses[3]);
     expect(
@@ -755,9 +741,7 @@ describe("Lender Pool - Switch Reward Manager", function () {
   it("should claim reward of account 3 at t = 7 year manager 3", async () => {
     const stable1Before = await stableToken1.balanceOf(addresses[3]);
     const trade1Before = await tradeToken1.balanceOf(addresses[3]);
-    await lenderPool
-      .connect(accounts[3])
-      .claimRewards(rewardManager3.address);
+    await lenderPool.connect(accounts[3]).claimRewards(rewardManager3.address);
     const stable1After = await stableToken1.balanceOf(addresses[3]);
     const trade1After = await tradeToken1.balanceOf(addresses[3]);
     expect(
@@ -770,31 +754,25 @@ describe("Lender Pool - Switch Reward Manager", function () {
 
   it("should claim reward of account 6 at t = 7 year manager 1", async () => {
     const stable1Before = await stableToken1.balanceOf(addresses[6]);
-    await lenderPool
-      .connect(accounts[6])
-      .claimRewards(rewardManager1.address);
+    await lenderPool.connect(accounts[6]).claimRewards(rewardManager1.address);
     const stable1After = await stableToken1.balanceOf(addresses[6]);
     expect(
       Math.abs(stable1After.sub(stable1Before).sub(n6("37.5")).toNumber())
     ).to.be.lessThan(100);
   });
-  
+
   it("should claim reward of account 6 at t = 7 year manager 2", async () => {
     const stable1Before = await stableToken1.balanceOf(addresses[6]);
-    await lenderPool
-      .connect(accounts[6])
-      .claimRewards(rewardManager2.address);
+    await lenderPool.connect(accounts[6]).claimRewards(rewardManager2.address);
     const stable1After = await stableToken1.balanceOf(addresses[6]);
     expect(
       Math.abs(stable1After.sub(stable1Before).sub(n6("70")).toNumber())
     ).to.be.lessThan(50);
-  }); 
+  });
 
   it("should claim reward of account 6 at t = 7 year manager 3", async () => {
     const stable1Before = await stableToken1.balanceOf(addresses[6]);
-    await lenderPool
-      .connect(accounts[6])
-      .claimRewards(rewardManager3.address);
+    await lenderPool.connect(accounts[6]).claimRewards(rewardManager3.address);
     const stable1After = await stableToken1.balanceOf(addresses[6]);
     expect(
       Math.abs(stable1After.sub(stable1Before).sub(n6("400")).toNumber())

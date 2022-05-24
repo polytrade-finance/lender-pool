@@ -436,9 +436,9 @@ describe("Lender Pool", function () {
   });
 
   it("should check for no reward", async function () {
-    expect(lenderPool.connect(accounts[3]).claimRewards(rewardManager.address)).to.be.revertedWith(
-      "No pending reward"
-    );
+    expect(
+      lenderPool.connect(accounts[3]).claimRewards(rewardManager.address)
+    ).to.be.revertedWith("No pending reward");
   });
 
   it("should withdraw all deposited", async function () {
@@ -495,9 +495,9 @@ describe("Lender Pool", function () {
   });
 
   it("should revert if no reward is pending", async function () {
-    expect(lenderPool.connect(accounts[4]).claimRewards(rewardManager.address)).to.be.revertedWith(
-      "No pending reward"
-    );
+    expect(
+      lenderPool.connect(accounts[4]).claimRewards(rewardManager.address)
+    ).to.be.revertedWith("No pending reward");
   });
 
   it("should set APY to 100%", async function () {

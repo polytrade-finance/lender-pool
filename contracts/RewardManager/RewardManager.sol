@@ -88,7 +88,6 @@ contract RewardManager is IRewardManager, AccessControl {
         trade.claimReward(lender);
     }
 
-
     /**
      * @notice `pauseRewards` sets the reward for all the tokens to 0
      */
