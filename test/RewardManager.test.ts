@@ -274,6 +274,8 @@ describe("Lender Pool - Switch Reward Manager", function () {
     await stableToken1.connect(accounts[0]).transfer(addresses[5], n6("1000"));
 
     await stableToken1.connect(accounts[0]).transfer(addresses[6], n6("5000"));
+
+    await stableToken1.connect(accounts[0]).transfer(addresses[7], n6("1000"));
   });
 
   it("should set stable apy to 25% and trade apy to 5", async function () {
@@ -283,7 +285,7 @@ describe("Lender Pool - Switch Reward Manager", function () {
     expect(await stableReward1.getReward()).to.be.equal(2500);
   });
 
-  it("should approve 100 stable token from account 2, 3, 6", async function () {
+  it("should approve 100 stable token from account 2, 3, 6, 7", async function () {
     await stableToken1
       .connect(accounts[2])
       .approve(lenderPool.address, n6("100"));
@@ -303,6 +305,13 @@ describe("Lender Pool - Switch Reward Manager", function () {
       .approve(lenderPool.address, n6("1000"));
     expect(
       await stableToken1.allowance(addresses[6], lenderPool.address)
+    ).to.be.equal(ethers.BigNumber.from(n6("1000")));
+
+    await stableToken1
+      .connect(accounts[7])
+      .approve(lenderPool.address, n6("1000"));
+    expect(
+      await stableToken1.allowance(addresses[7], lenderPool.address)
     ).to.be.equal(ethers.BigNumber.from(n6("1000")));
   });
 
@@ -474,6 +483,15 @@ describe("Lender Pool - Switch Reward Manager", function () {
     expect(await lenderPool.rewardManager()).to.be.equal(
       rewardManager2.address
     );
+  });
+
+  it("should register in reward manager 2", async () => {
+    await lenderPool.connect(accounts[2]).registerUser(rewardManager1.address);
+    await lenderPool.connect(accounts[3]).registerUser(rewardManager1.address);
+    await lenderPool.connect(accounts[4]).registerUser(rewardManager1.address);
+    await lenderPool.connect(accounts[5]).registerUser(rewardManager1.address);
+    await lenderPool.connect(accounts[6]).registerUser(rewardManager1.address);
+    await lenderPool.connect(accounts[7]).registerUser(rewardManager1.address);
   });
 
   it("should register in reward manager 2", async () => {
@@ -777,5 +795,17 @@ describe("Lender Pool - Switch Reward Manager", function () {
     expect(
       Math.abs(stable1After.sub(stable1Before).sub(n6("400")).toNumber())
     ).to.be.lessThan(250);
+  });
+
+  it("should register in reward manager 3", async () => {
+    await lenderPool.connect(accounts[7]).registerUser(rewardManager2.address);
+    await lenderPool.connect(accounts[7]).registerUser(rewardManager3.address);
+  });
+
+  it("should deposit 1000 stable from account 7 at t = 7 year", async () => {
+    await lenderPool.connect(accounts[7]).deposit(n6("1000"));
+    await lenderPool.getDeposit(addresses[7]).then((result) => {
+      expect(result).to.be.equal(ethers.BigNumber.from(n6("1000")));
+    });
   });
 });
