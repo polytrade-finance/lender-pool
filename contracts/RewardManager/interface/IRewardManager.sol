@@ -48,7 +48,10 @@ interface IRewardManager {
      * @dev It returns array of number, where each element is a reward
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      */
-    function rewardOf(address lender, address token) external view returns (uint);
+    function rewardOf(address lender, address token)
+        external
+        view
+        returns (uint);
 
     function getDeposit(address lender) external view returns (uint);
 }

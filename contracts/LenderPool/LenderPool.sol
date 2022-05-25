@@ -169,7 +169,7 @@ contract LenderPool is ILenderPool, Ownable {
         }
     }
 
-    function claimReward(address token) 
+    function claimReward(address token)
         external
         isUserRegistered(address(rewardManager), msg.sender)
     {
