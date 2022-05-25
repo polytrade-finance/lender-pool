@@ -79,7 +79,7 @@ contract RewardManager is IRewardManager, AccessControl {
 
     /**
      * @notice `claimRewardsFor` claims reward for the lender.
-     * @dev All the reward are transfered to the lender.
+     * @dev All the reward are transferred to the lender.
      * @dev It can by only called by `LenderPool`.
      * @param lender, address of the lender
      */

@@ -48,7 +48,7 @@ interface ILenderPool {
     );
 
     /**
-     * @notice `deposit` is used by lenders to depsoit stable token to smart contract.
+     * @notice `deposit` is used by lenders to deposit stable token to smart contract.
      * @dev It transfers the approved stable token from msg.sender to lender pool.
      * @param amount, The number of stable token to be deposited.
      *
@@ -101,7 +101,7 @@ interface ILenderPool {
      * @dev It pauses reward for previous `RewardManager` and initializes new `RewardManager` .
      * @dev It can be called by only owner of LenderPool.
      * @dev Changed `RewardManager` contract must complies with `IRewardManager`.
-     * @param newRewardManager, Addess of the new `RewardManager`.
+     * @param newRewardManager, Address of the new `RewardManager`.
      *
      * Emits {RewardManagerSwitched} event
      */
@@ -129,8 +129,8 @@ interface ILenderPool {
     function rewardOf(address lender, address token) external returns (uint);
 
     /**
-     * @notice `getStrategyBalance` Reurns total balance of lender in external protocol
-     * @return Reurns total balance of lender in external protocol
+     * @notice `getStrategyBalance` Returns total balance allocated by LenderPool in the Strategy (external protocol)
+     * @return Returns total balance allocated by LenderPool in the Strategy external protocol
      */
     function getStrategyBalance() external view returns (uint);
 

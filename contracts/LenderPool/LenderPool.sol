@@ -32,17 +32,6 @@ contract LenderPool is ILenderPool, Ownable {
     uint public currManager = 0;
 
     modifier isUserRegistered(address _rewardManager, address _user) {
-        /*require(
-            isRewardManager[_rewardManager] == true,
-            "Invalid RewardManager"
-        );
-        require(
-            getPreviousRewardManager[_rewardManager] == address(0) ||
-                (_lender[_user].isRegistered[
-                    getPreviousRewardManager[_rewardManager]
-                ] && _lender[_user].isRegistered[_rewardManager]),
-            "Please Register to RewardManager"
-        );*/
         require(
             _rewardManager == address(0) || managerToIndex[_rewardManager] != 0,
             "Invalid RewardManager"
@@ -54,7 +43,6 @@ contract LenderPool is ILenderPool, Ownable {
                         managerList[managerToIndex[_rewardManager] - 1]
                     ] && _lender[_user].isRegistered[_rewardManager]),
                 "Please Register to RewardManager"
-                // Can Improve the error message. display the address of the manager to register
             );
         }
         _;
@@ -72,8 +60,64 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `deposit` is used by lenders to depsoit stable token to smart contract.
-     * @dev It transfers the approved stable token from msg.sender to lender pool.
+     * @notice `switchStrategy` is used for switching the strategy.
+     * @dev It moves all the funds from the old strategy to the new strategy.
+     * @dev It can be called by only owner of LenderPool.
+     * @dev Changed strategy contract must complies with `IStrategy`.
+     * @param newStrategy, address of the new staking strategy.
+     *
+     * Emits {StrategySwitched} event
+     */
+    function switchStrategy(address newStrategy) external onlyOwner {
+        address oldStrategy = address(strategy);
+        if (oldStrategy != address(0)) {
+            uint amount = _getStrategyBalance();
+            _withdrawFromStrategy(amount);
+            strategy = Strategy(newStrategy);
+            _depositInStrategy(amount);
+        }
+        strategy = Strategy(newStrategy);
+        emit StrategySwitched(oldStrategy, newStrategy);
+    }
+
+    /**
+     * @notice `switchRewardManager` is used to switch reward manager.
+     * @dev It pauses reward for previous `RewardManager` and initializes new `RewardManager` .
+     * @dev It can be called by only owner of LenderPool.
+     * @dev Changed `RewardManager` contract must complies with `IRewardManager`.
+     * @param newRewardManager, Address of the new `RewardManager`.
+     *
+     * Emits {RewardManagerSwitched} event
+     */
+    function switchRewardManager(address newRewardManager) external onlyOwner {
+        address oldRewardManager = address(rewardManager);
+        if (oldRewardManager != address(0)) {
+            rewardManager.pauseReward();
+        }
+        rewardManager = IRewardManager(newRewardManager);
+        rewardManager.registerRewardManager();
+        currManager += 1;
+        managerToIndex[newRewardManager] = currManager;
+        managerList.push(newRewardManager);
+        emit RewardManagerSwitched(oldRewardManager, newRewardManager);
+    }
+
+    /**
+     * @notice `switchVerification` updates the Verification contract address.
+     * @dev Changed verification Contract must complies with `IVerification`
+     * @param newVerification, address of the new Verification contract
+     *
+     * Emits {VerificationContractUpdated} event
+     */
+    function switchVerification(address newVerification) external onlyOwner {
+        address oldVerification = address(verification);
+        verification = IVerification(newVerification);
+        emit VerificationSwitched(oldVerification, newVerification);
+    }
+
+    /**
+     * @notice `deposit` is used by lenders to deposit stable token to the LenderPool.
+     * @dev It transfers the approved stable token from msg.sender to the LenderPool.
      * @param amount, The number of stable token to be deposited.
      *
      * Requirements:
@@ -221,62 +265,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `switchRewardManager` is used to switch reward manager.
-     * @dev It pauses reward for previous `RewardManager` and initializes new `RewardManager` .
-     * @dev It can be called by only owner of LenderPool.
-     * @dev Changed `RewardManager` contract must complies with `IRewardManager`.
-     * @param newRewardManager, Addess of the new `RewardManager`.
-     *
-     * Emits {RewardManagerSwitched} event
-     */
-    function switchRewardManager(address newRewardManager) external onlyOwner {
-        address oldRewardManager = address(rewardManager);
-        if (oldRewardManager != address(0)) {
-            rewardManager.pauseReward();
-        }
-        rewardManager = IRewardManager(newRewardManager);
-        rewardManager.registerRewardManager();
-        currManager += 1;
-        managerToIndex[newRewardManager] = currManager;
-        managerList.push(newRewardManager);
-        emit RewardManagerSwitched(oldRewardManager, newRewardManager);
-    }
-
-    /**
-     * @notice `switchStrategy` is used for switching the strategy.
-     * @dev It moves all the funds from the old strategy to the new strategy.
-     * @dev It can be called by only owner of LenderPool.
-     * @dev Changed strategy contract must complies with `IStrategy`.
-     * @param newStrategy, address of the new staking strategy.
-     *
-     * Emits {StrategySwitched} event
-     */
-    function switchStrategy(address newStrategy) external onlyOwner {
-        address oldStrategy = address(strategy);
-        if (oldStrategy != address(0)) {
-            uint amount = _getStrategyBalance();
-            _withdrawFromStrategy(amount);
-            strategy = Strategy(newStrategy);
-            _depositInStrategy(amount);
-        }
-        strategy = Strategy(newStrategy);
-        emit StrategySwitched(oldStrategy, newStrategy);
-    }
-
-    /**
-     * @notice `switchVerification` updates the Verification contract address.
-     * @dev Changed verification Contract must complies with `IVerification`
-     * @param newVerification, address of the new Verification contract
-     *
-     * Emits {VerificationContractUpdated} event
-     */
-    function switchVerification(address newVerification) external onlyOwner {
-        address oldVerification = address(verification);
-        verification = IVerification(newVerification);
-        emit VerificationSwitched(oldVerification, newVerification);
-    }
-
-    /**
      * @notice `rewardOf` returns the total reward of the lender
      * @dev It returns array of number, where each element is a reward
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
@@ -306,16 +294,16 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `getStrategyBalance` Reurns total balance of lender in external protocol
-     * @return Reurns total balance of lender in external protocol
+     * @notice `getStrategyBalance` Returns total balance allocated by LenderPool in the Strategy (external protocol)
+     * @return Returns total balance allocated by LenderPool in the Strategy external protocol
      */
     function getStrategyBalance() external view onlyOwner returns (uint) {
         return _getStrategyBalance();
     }
 
     /**
-     * @notice `_depositInStrategydeposit` deposits stable token to external protocol.
-     * @dev Funds will be deposited to external protocol like aave, compund
+     * @notice `_depositInStrategy` deposits stable token to external protocol.
+     * @dev Funds will be deposited to a Strategy (external protocols) like Aave, compound
      * @param amount, total amount to be deposited.
      */
     function _depositInStrategy(uint amount) private {
@@ -330,7 +318,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @param amount, total amount to be withdrawn from staking strategy.
      *
      * Requirements:
-     * - Total amount in external protcol should be less than `amount` requested.
+     * - Total amount in external protocol should be less than `amount` requested.
      *
      */
     function _withdrawFromStrategy(uint amount) private onlyOwner {
@@ -342,8 +330,8 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `_getStrategyBalance` Reurns total balance of lender in external protocol
-     * @return Reurns total balance of lender in external protocol
+     * @notice `_getStrategyBalance` Returns total balance of lender in external protocol
+     * @return Returns total balance of lender in external protocol
      */
     function _getStrategyBalance() private view returns (uint) {
         return strategy.getBalance();

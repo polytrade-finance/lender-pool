@@ -24,9 +24,9 @@ interface IReward {
     event NewReward(uint16 oldReward, uint16 newReward);
 
     /**
-     * @notice Emitted after Reward is transfered to user.
+     * @notice Emitted after Reward is transferred to user.
      * @param lender, address of the lender.
-     * @param amount, amount transfered to lender.
+     * @param amount, amount transferred to lender.
      */
     event RewardClaimed(address lender, uint amount);
 
@@ -91,7 +91,7 @@ interface IReward {
 
     /**
      * @notice `rewardOf` returns the total pending reward of the lender
-     * @dev It calculates reward of lender upto cuurent time.
+     * @dev It calculates reward of lender upto current time.
      * @param lender, address of the lender
      * @return returns the total pending reward
      */

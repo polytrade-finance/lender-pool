@@ -158,7 +158,7 @@ contract Reward is IReward, AccessControl {
 
     /**
      * @notice `rewardOf` returns the total pending reward of the lender
-     * @dev It calculates reward of lender upto cuurent time.
+     * @dev It calculates reward of lender upto current time.
      * @param lender, address of the lender
      * @return returns the total pending reward
      */
@@ -239,7 +239,7 @@ contract Reward is IReward, AccessControl {
 
     /**
      * @notice calculates the reward
-     * @dev calculates the reward using given below folmula
+     * @dev calculates the reward using given below formula
      * @param amount, principal amount
      * @param start, start of the tenure for reward
      * @param end, end of the tenure for reward
