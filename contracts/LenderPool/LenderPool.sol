@@ -33,7 +33,7 @@ contract LenderPool is ILenderPool, Ownable {
             isRewardManager[_rewardManager] == true,
             "Invalid RewardManager"
         );
-         require(
+        require(
             getPreviousRewardManager[_rewardManager] == address(0) ||
                 (_lender[_user].isRegistered[
                     getPreviousRewardManager[_rewardManager]
