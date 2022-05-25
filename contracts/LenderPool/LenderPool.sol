@@ -18,8 +18,10 @@ contract LenderPool is ILenderPool, Ownable {
     using SafeERC20 for IToken;
 
     mapping(address => Lender) private _lender;
-    mapping(address => bool) public isRewardManager;
-    mapping(address => address) public getPreviousRewardManager;
+    mapping(address => uint) public managerToIndex;
+    //mapping(address => address) public getPreviousRewardManager;
+
+    address[] public managerList;
 
     IToken public immutable stable;
     IToken public immutable tStable;
@@ -28,8 +30,10 @@ contract LenderPool is ILenderPool, Ownable {
     IVerification public verification;
     IRewardManager public rewardManager;
 
+    uint public currManager = 0;
+
     modifier isUserRegistered(address _rewardManager, address _user) {
-        require(
+        /*require(
             isRewardManager[_rewardManager] == true,
             "Invalid RewardManager"
         );
@@ -39,8 +43,19 @@ contract LenderPool is ILenderPool, Ownable {
                     getPreviousRewardManager[_rewardManager]
                 ] && _lender[_user].isRegistered[_rewardManager]),
             "Please Register to RewardManager"
-            // Can Improve the error message. display the address of the manager to register
-        );
+        );*/
+        require(_rewardManager==address(0) || managerToIndex[_rewardManager] != 0, "Invalid RewardManager");
+        if(_rewardManager!=address(0))
+        {
+            require(
+                managerList[managerToIndex[_rewardManager] - 1] == address(0) ||
+                    (_lender[_user].isRegistered[
+                        managerList[managerToIndex[_rewardManager] - 1]
+                    ] && _lender[_user].isRegistered[_rewardManager]),
+                "Please Register to RewardManager"
+                // Can Improve the error message. display the address of the manager to register
+            );
+        }
         _;
     }
 
@@ -52,6 +67,7 @@ contract LenderPool is ILenderPool, Ownable {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
         redeemPool = IRedeemPool(_redeemPool);
+        managerList.push(address(0));
     }
 
     /**
@@ -178,11 +194,16 @@ contract LenderPool is ILenderPool, Ownable {
         tStable.mint(address(this), balance);
         tStable.approve(address(redeemPool), balance);
         redeemPool.redeemStableFor(msg.sender, balance);
-        //_registerUser(msg.sender);
         rewardManager.claimRewardsFor(msg.sender);
     }
 
-    function registerUser(address _rewardManager) external {
+    function registerUser(address _rewardManager)
+        external
+        isUserRegistered(
+            managerList[managerToIndex[_rewardManager] - 1],
+            msg.sender
+        )
+    {
         IRewardManager manager = IRewardManager(_rewardManager);
         manager.registerUser(msg.sender);
         _lender[msg.sender].isRegistered[_rewardManager] = true;
@@ -204,8 +225,11 @@ contract LenderPool is ILenderPool, Ownable {
         }
         rewardManager = IRewardManager(newRewardManager);
         rewardManager.registerRewardManager();
-        isRewardManager[newRewardManager] = true;
-        getPreviousRewardManager[newRewardManager] = oldRewardManager;
+        currManager+=1;
+        managerToIndex[newRewardManager] = currManager;
+        managerList.push(newRewardManager);
+        //isRewardManager[newRewardManager] = true;
+        //getPreviousRewardManager[newRewardManager] = oldRewardManager;
         emit RewardManagerSwitched(oldRewardManager, newRewardManager);
     }
 
