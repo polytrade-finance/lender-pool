@@ -19,7 +19,6 @@ contract LenderPool is ILenderPool, Ownable {
 
     mapping(address => Lender) private _lender;
     mapping(address => uint) public managerToIndex;
-    //mapping(address => address) public getPreviousRewardManager;
 
     address[] public managerList;
 
@@ -240,8 +239,6 @@ contract LenderPool is ILenderPool, Ownable {
         currManager += 1;
         managerToIndex[newRewardManager] = currManager;
         managerList.push(newRewardManager);
-        //isRewardManager[newRewardManager] = true;
-        //getPreviousRewardManager[newRewardManager] = oldRewardManager;
         emit RewardManagerSwitched(oldRewardManager, newRewardManager);
     }
 
