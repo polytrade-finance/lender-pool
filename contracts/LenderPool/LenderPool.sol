@@ -44,9 +44,11 @@ contract LenderPool is ILenderPool, Ownable {
                 ] && _lender[_user].isRegistered[_rewardManager]),
             "Please Register to RewardManager"
         );*/
-        require(_rewardManager==address(0) || managerToIndex[_rewardManager] != 0, "Invalid RewardManager");
-        if(_rewardManager!=address(0))
-        {
+        require(
+            _rewardManager == address(0) || managerToIndex[_rewardManager] != 0,
+            "Invalid RewardManager"
+        );
+        if (_rewardManager != address(0)) {
             require(
                 managerList[managerToIndex[_rewardManager] - 1] == address(0) ||
                     (_lender[_user].isRegistered[
@@ -197,16 +199,14 @@ contract LenderPool is ILenderPool, Ownable {
         rewardManager.claimRewardsFor(msg.sender);
     }
 
-    function registerUser(address _rewardManager)
-        external
-        isUserRegistered(
-            managerList[managerToIndex[_rewardManager] - 1],
-            msg.sender
-        )
-    {
-        IRewardManager manager = IRewardManager(_rewardManager);
-        manager.registerUser(msg.sender);
-        _lender[msg.sender].isRegistered[_rewardManager] = true;
+    function registerUser() external {
+        for (uint i = 1; i <= currManager; i++) {
+            if (!_lender[msg.sender].isRegistered[managerList[i]]) {
+                IRewardManager manager = IRewardManager(managerList[i]);
+                manager.registerUser(msg.sender);
+                _lender[msg.sender].isRegistered[managerList[i]] = true;
+            }
+        }
     }
 
     /**
@@ -225,7 +225,7 @@ contract LenderPool is ILenderPool, Ownable {
         }
         rewardManager = IRewardManager(newRewardManager);
         rewardManager.registerRewardManager();
-        currManager+=1;
+        currManager += 1;
         managerToIndex[newRewardManager] = currManager;
         managerList.push(newRewardManager);
         //isRewardManager[newRewardManager] = true;
