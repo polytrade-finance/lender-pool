@@ -33,9 +33,11 @@ contract LenderPool is ILenderPool, Ownable {
             isRewardManager[_rewardManager] == true,
             "Invalid RewardManager"
         );
-        require(
+         require(
             getPreviousRewardManager[_rewardManager] == address(0) ||
-                _lender[_user].isRegistered[_rewardManager],
+                (_lender[_user].isRegistered[
+                    getPreviousRewardManager[_rewardManager]
+                ] && _lender[_user].isRegistered[_rewardManager]),
             "Please Register to RewardManager"
             // Can Improve the error message. display the address of the manager to register
         );
