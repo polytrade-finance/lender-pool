@@ -126,7 +126,7 @@ interface ILenderPool {
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      * @return Returns the total pending reward
      */
-    function rewardOf(address lender) external returns (uint[] memory);
+    function rewardOf(address lender, address token) external returns (uint);
 
     /**
      * @notice `getStrategyBalance` Reurns total balance of lender in external protocol

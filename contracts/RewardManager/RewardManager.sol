@@ -83,9 +83,18 @@ contract RewardManager is IRewardManager, AccessControl {
      * @dev It can by only called by `LenderPool`.
      * @param lender, address of the lender
      */
-    function claimRewardsFor(address lender) external onlyRole(LENDER_POOL) {
+    function claimAllRewardsFor(address lender) external onlyRole(LENDER_POOL) {
         stable.claimReward(lender);
         trade.claimReward(lender);
+    }
+
+    function claimRewardFor(address lender, address token) external onlyRole(LENDER_POOL){
+        if(address(stable)==token){
+            stable.claimReward(lender);
+        }
+        else if(address(trade)==token){
+            trade.claimReward(lender);
+        }
     }
 
     /**
@@ -101,11 +110,16 @@ contract RewardManager is IRewardManager, AccessControl {
      * @dev It returns array of number, where each element is a reward
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      */
-    function rewardOf(address lender) external view returns (uint[] memory) {
-        uint[] memory rewards = new uint[](2);
-        rewards[0] = stable.rewardOf(lender);
-        rewards[1] = trade.rewardOf(lender);
-        return rewards;
+    function rewardOf(address lender, address token) external view returns (uint) {
+        if(address(stable)==token){
+            return stable.rewardOf(lender);
+        }
+        else if(address(trade)==token){
+            return trade.rewardOf(lender);
+        }
+        else{
+            return 0;
+        }
     }
 
     function getDeposit(address lender) external view returns (uint) {

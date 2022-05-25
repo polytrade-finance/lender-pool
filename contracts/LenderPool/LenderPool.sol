@@ -159,12 +159,24 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev It calls `claimRewardsFor` from `RewardManager`.
      * @dev RewardManager may be changed by LenderPool's owner.
      */
-    function claimRewards(address _rewardManager)
+    function claimAllRewards()
         external
-        isUserRegistered(address(_rewardManager), msg.sender)
+        isUserRegistered(address(rewardManager), msg.sender)
     {
-        IRewardManager __rewardManager = IRewardManager(_rewardManager);
-        __rewardManager.claimRewardsFor(msg.sender);
+        for (uint i = 1; i <= currManager; i++) {
+            IRewardManager __rewardManager = IRewardManager(managerList[i]);
+            __rewardManager.claimAllRewardsFor(msg.sender);
+        }
+    }
+
+    function claimReward(address token) 
+        external
+        isUserRegistered(address(rewardManager), msg.sender)
+    {
+        for (uint i = 1; i <= currManager; i++) {
+            IRewardManager __rewardManager = IRewardManager(managerList[i]);
+            __rewardManager.claimRewardFor(msg.sender, token);
+        }
     }
 
     /**
@@ -196,7 +208,7 @@ contract LenderPool is ILenderPool, Ownable {
         tStable.mint(address(this), balance);
         tStable.approve(address(redeemPool), balance);
         redeemPool.redeemStableFor(msg.sender, balance);
-        rewardManager.claimRewardsFor(msg.sender);
+        rewardManager.claimAllRewardsFor(msg.sender);
     }
 
     function registerUser() external {
@@ -273,13 +285,18 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      * @return Returns the total pending reward
      */
-    function rewardOf(address lender)
+    function rewardOf(address lender, address token)
         external
         view
         isUserRegistered(address(rewardManager), lender)
-        returns (uint[] memory)
+        returns (uint)
     {
-        return rewardManager.rewardOf(lender);
+        uint totalReward = 0;
+        for (uint i = 1; i <= currManager; i++) {
+            IRewardManager manager = IRewardManager(managerList[i]);
+            totalReward += manager.rewardOf(lender, token);
+        }
+        return totalReward;
     }
 
     /**

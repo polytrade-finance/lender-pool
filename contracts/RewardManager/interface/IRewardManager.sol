@@ -16,7 +16,7 @@ interface IRewardManager {
      * @dev It can by only called by `LenderPool`.
      * @param lender, address of the lender
      */
-    function claimRewardsFor(address lender) external;
+    function claimAllRewardsFor(address lender) external;
 
     /**
      * @notice `increaseDeposit` increases the amount deposited by lender.
@@ -41,12 +41,14 @@ interface IRewardManager {
      */
     function pauseReward() external;
 
+    function claimRewardFor(address lender, address token) external;
+
     /**
      * @notice `rewardOf` returns array of reward for the lender
      * @dev It returns array of number, where each element is a reward
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      */
-    function rewardOf(address lender) external view returns (uint[] memory);
+    function rewardOf(address lender, address token) external view returns (uint);
 
     function getDeposit(address lender) external view returns (uint);
 }
