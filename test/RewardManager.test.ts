@@ -769,7 +769,7 @@ describe("Lender Pool - Switch Reward Manager", function () {
 
   it("should claim reward of account 6 at t = 7 year", async () => {
     const stable1Before = await stableToken1.balanceOf(addresses[6]);
-    await lenderPool.connect(accounts[6]).claimAllRewards();
+    await lenderPool.connect(accounts[6]).claimReward(stableToken1.address);
     const stable1After = await stableToken1.balanceOf(addresses[6]);
     expect(
       Math.abs(stable1After.sub(stable1Before).sub(n6("507.5")).toNumber())
