@@ -102,4 +102,6 @@ interface IReward {
      * @return returns the total reward.
      */
     function getReward() external view returns (uint16);
+
+    function getRewardToken() external view returns(address);
 }

@@ -18,10 +18,10 @@ contract Reward is IReward, AccessControl {
 
     uint16 public currentRound = 0;
 
-    IToken public rewardToken;
+    IToken private _rewardToken;
 
     constructor(address _address) {
-        rewardToken = IToken(_address);
+        _rewardToken = IToken(_address);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -140,7 +140,7 @@ contract Reward is IReward, AccessControl {
         _updatePendingReward(lender);
         uint totalReward = _lender[lender].pendingRewards;
         _lender[lender].pendingRewards = 0;
-        rewardToken.transfer(lender, totalReward);
+        _rewardToken.transfer(lender, totalReward);
         emit RewardClaimed(lender, totalReward);
     }
 
@@ -150,6 +150,10 @@ contract Reward is IReward, AccessControl {
      */
     function getReward() external view returns (uint16) {
         return round[currentRound].apy;
+    }
+
+    function getRewardToken() external view returns(address){
+        return address(_rewardToken);
     }
 
     /**
