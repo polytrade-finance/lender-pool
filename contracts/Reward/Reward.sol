@@ -152,7 +152,7 @@ contract Reward is IReward, AccessControl {
         return round[currentRound].apy;
     }
 
-    function getRewardToken() external view returns(address){
+    function getRewardToken() external view returns (address) {
         return address(_rewardToken);
     }
 

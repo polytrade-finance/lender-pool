@@ -495,10 +495,10 @@ describe("Lender Pool", function () {
     const balanceAfter = await stableToken.balanceOf(addresses[4]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("50"));
   });
-  
+
   it("should revert if no reward is pending", async function () {
     const balanceBefore = await stableToken.balanceOf(addresses[4]);
-    lenderPool.connect(accounts[4]).claimAllRewards()
+    lenderPool.connect(accounts[4]).claimAllRewards();
     const balanceAfter = await stableToken.balanceOf(addresses[4]);
     expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("0"));
   });
@@ -507,7 +507,7 @@ describe("Lender Pool", function () {
     await stableReward.connect(accounts[1]).setReward(10000);
     expect(await stableReward.getReward()).to.be.equal(10000);
   });
-  
+
   it("should deposit 1000 tokens from account 5 at t = 0 year", async function () {
     await stableToken
       .connect(accounts[5])
@@ -522,7 +522,9 @@ describe("Lender Pool", function () {
 
   it("should check reward at t = 1 year total of 1000 tStable token", async function () {
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365);
-    expect(await lenderPool.rewardOf(addresses[5], stableToken.address)).to.be.equal(n6("1000"));
+    expect(
+      await lenderPool.rewardOf(addresses[5], stableToken.address)
+    ).to.be.equal(n6("1000"));
   });
 
   it("should approve 5000 stable to the Lender Pool", async () => {
@@ -581,7 +583,7 @@ describe("Lender Pool", function () {
 
   it("should check reward at t = 4 year total of 9700 tStable token", async function () {
     expect(
-      (await lenderPool.rewardOf(addresses[6],stableToken.address))
+      (await lenderPool.rewardOf(addresses[6], stableToken.address))
         .sub(n6("9700"))
         .toNumber()
     ).to.be.lessThan(200);
@@ -600,5 +602,4 @@ describe("Lender Pool", function () {
       tradeAfter.sub(tradeBefore).sub(n6("9700")).toNumber()
     ).to.be.lessThan(10);
   });
-  
 });

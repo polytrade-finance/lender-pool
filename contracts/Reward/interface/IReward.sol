@@ -103,5 +103,5 @@ interface IReward {
      */
     function getReward() external view returns (uint16);
 
-    function getRewardToken() external view returns(address);
+    function getRewardToken() external view returns (address);
 }
