@@ -190,6 +190,11 @@ contract LenderPool is ILenderPool, Ownable {
         }
     }
 
+    /**
+     * @notice `claimReward` transfer all the `token` reward to `msg.sender`
+     * @dev It loops through all the `RewardManager` and transfer `token` reward.
+     * @param token, address of the token
+     */
     function claimReward(address token) external {
         _isUserRegistered(msg.sender);
         for (uint i = 1; i <= currManager; i++) {
