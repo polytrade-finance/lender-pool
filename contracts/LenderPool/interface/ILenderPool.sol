@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.14;
 
 interface ILenderPool {
     struct Lender {
@@ -42,13 +42,19 @@ interface ILenderPool {
      */
     event StrategySwitched(address oldStrategy, address newStrategy);
 
+    /**
+     * @notice Emitted when `RewardManager` is switched
+     * @dev Emitted when `RewardManager` function is called by owner
+     * @param oldRewardManager, address of the old RewardManager
+     * @param newRewardManager, address of the old RewardManager
+     */
     event RewardManagerSwitched(
         address oldRewardManager,
         address newRewardManager
     );
 
     /**
-     * @notice `deposit` is used by lenders to depsoit stable token to smart contract.
+     * @notice `deposit` is used by lenders to deposit stable token to smart contract.
      * @dev It transfers the approved stable token from msg.sender to lender pool.
      * @param amount, The number of stable token to be deposited.
      *
@@ -101,12 +107,19 @@ interface ILenderPool {
      * @dev It pauses reward for previous `RewardManager` and initializes new `RewardManager` .
      * @dev It can be called by only owner of LenderPool.
      * @dev Changed `RewardManager` contract must complies with `IRewardManager`.
-     * @param newRewardManager, Addess of the new `RewardManager`.
+     * @param newRewardManager, Address of the new `RewardManager`.
      *
      * Emits {RewardManagerSwitched} event
      */
     function switchRewardManager(address newRewardManager) external;
 
+    /**
+     * @notice `switchVerification` updates the Verification contract address.
+     * @dev Changed verification Contract must complies with `IVerification`
+     * @param newVerification, address of the new Verification contract
+     *
+     * Emits {VerificationContractUpdated} event
+     */
     function switchVerification(address newVerification) external;
 
     /**
@@ -126,11 +139,11 @@ interface ILenderPool {
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      * @return Returns the total pending reward
      */
-    function rewardOf(address lender) external returns (uint[] memory);
+    function rewardOf(address lender, address token) external returns (uint);
 
     /**
-     * @notice `getStrategyBalance` Reurns total balance of lender in external protocol
-     * @return Reurns total balance of lender in external protocol
+     * @notice `getStrategyBalance` Returns total balance allocated by LenderPool in the Strategy (external protocol)
+     * @return Returns total balance allocated by LenderPool in the Strategy external protocol
      */
     function getStrategyBalance() external view returns (uint);
 

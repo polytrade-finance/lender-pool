@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.14;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interface/IReward.sol";
@@ -18,13 +18,20 @@ contract Reward is IReward, AccessControl {
 
     uint16 public currentRound = 0;
 
-    IToken public rewardToken;
+    IToken private _rewardToken;
 
     constructor(address _address) {
-        rewardToken = IToken(_address);
+        _rewardToken = IToken(_address);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    /**
+     * @notice `registerUser` registers user to the `Reward`
+     * @dev Gers the lender info from previous `RewardManager`
+     * @param lender, address of the lender
+     * @param deposited, amount deposit by the lender
+     * @param startPeriod, start period of the
+     */
     function registerUser(
         address lender,
         uint deposited,
@@ -140,7 +147,7 @@ contract Reward is IReward, AccessControl {
         _updatePendingReward(lender);
         uint totalReward = _lender[lender].pendingRewards;
         _lender[lender].pendingRewards = 0;
-        rewardToken.transfer(lender, totalReward);
+        _rewardToken.transfer(lender, totalReward);
         emit RewardClaimed(lender, totalReward);
     }
 
@@ -153,8 +160,16 @@ contract Reward is IReward, AccessControl {
     }
 
     /**
+     * @notice `getRewardToken` returns the address of the reward token
+     * @return address of the reward token
+     */
+    function getRewardToken() external view returns (address) {
+        return address(_rewardToken);
+    }
+
+    /**
      * @notice `rewardOf` returns the total pending reward of the lender
-     * @dev It calculates reward of lender upto cuurent time.
+     * @dev It calculates reward of lender upto current time.
      * @param lender, address of the lender
      * @return returns the total pending reward
      */
@@ -235,7 +250,7 @@ contract Reward is IReward, AccessControl {
 
     /**
      * @notice calculates the reward
-     * @dev calculates the reward using given below folmula
+     * @dev calculates the reward using given below formula
      * @param amount, principal amount
      * @param start, start of the tenure for reward
      * @param end, end of the tenure for reward

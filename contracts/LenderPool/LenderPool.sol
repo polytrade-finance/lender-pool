@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.14;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -18,8 +18,9 @@ contract LenderPool is ILenderPool, Ownable {
     using SafeERC20 for IToken;
 
     mapping(address => Lender) private _lender;
-    mapping(address => bool) public isRewardManager;
-    mapping(address => address) public getPreviousRewardManager;
+    mapping(address => uint) public managerToIndex;
+
+    address[] public managerList;
 
     IToken public immutable stable;
     IToken public immutable tStable;
@@ -28,19 +29,7 @@ contract LenderPool is ILenderPool, Ownable {
     IVerification public verification;
     IRewardManager public rewardManager;
 
-    modifier isUserRegistered(address _rewardManager, address _user) {
-        require(
-            isRewardManager[_rewardManager] == true,
-            "Invalid RewardManager"
-        );
-        require(
-            getPreviousRewardManager[_rewardManager] == address(0) ||
-                _lender[_user].isRegistered[_rewardManager],
-            "Please Register to RewardManager"
-            // Can Improve the error message. display the address of the manager to register
-        );
-        _;
-    }
+    uint public currManager = 0;
 
     constructor(
         address _stableAddress,
@@ -50,11 +39,71 @@ contract LenderPool is ILenderPool, Ownable {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
         redeemPool = IRedeemPool(_redeemPool);
+        managerList.push(address(0));
     }
 
     /**
-     * @notice `deposit` is used by lenders to depsoit stable token to smart contract.
-     * @dev It transfers the approved stable token from msg.sender to lender pool.
+     * @notice `switchStrategy` is used for switching the strategy.
+     * @dev It moves all the funds from the old strategy to the new strategy.
+     * @dev It can be called by only owner of LenderPool.
+     * @dev Changed strategy contract must complies with `IStrategy`.
+     * @param newStrategy, address of the new staking strategy.
+     *
+     * Emits {StrategySwitched} event
+     */
+    function switchStrategy(address newStrategy) external onlyOwner {
+        require(newStrategy != address(0), "Address can not be 0");
+        address oldStrategy = address(strategy);
+        if (oldStrategy != address(0)) {
+            uint amount = _getStrategyBalance();
+            _withdrawFromStrategy(amount);
+            strategy = Strategy(newStrategy);
+            _depositInStrategy(amount);
+        }
+        strategy = Strategy(newStrategy);
+        emit StrategySwitched(oldStrategy, newStrategy);
+    }
+
+    /**
+     * @notice `switchRewardManager` is used to switch reward manager.
+     * @dev It pauses reward for previous `RewardManager` and initializes new `RewardManager` .
+     * @dev It can be called by only owner of LenderPool.
+     * @dev Changed `RewardManager` contract must complies with `IRewardManager`.
+     * @param newRewardManager, Address of the new `RewardManager`.
+     *
+     * Emits {RewardManagerSwitched} event
+     */
+    function switchRewardManager(address newRewardManager) external onlyOwner {
+        require(newRewardManager != address(0), "Address can not be 0");
+        address oldRewardManager = address(rewardManager);
+        if (oldRewardManager != address(0)) {
+            rewardManager.pauseReward();
+        }
+        rewardManager = IRewardManager(newRewardManager);
+        rewardManager.registerRewardManager();
+        currManager += 1;
+        managerToIndex[newRewardManager] = currManager;
+        managerList.push(newRewardManager);
+        emit RewardManagerSwitched(oldRewardManager, newRewardManager);
+    }
+
+    /**
+     * @notice `switchVerification` updates the Verification contract address.
+     * @dev Changed verification Contract must complies with `IVerification`
+     * @param newVerification, address of the new Verification contract
+     *
+     * Emits {VerificationContractUpdated} event
+     */
+    function switchVerification(address newVerification) external onlyOwner {
+        require(newVerification != address(0), "Address can not be 0");
+        address oldVerification = address(verification);
+        verification = IVerification(newVerification);
+        emit VerificationSwitched(oldVerification, newVerification);
+    }
+
+    /**
+     * @notice `deposit` is used by lenders to deposit stable token to the LenderPool.
+     * @dev It transfers the approved stable token from msg.sender to the LenderPool.
      * @param amount, The number of stable token to be deposited.
      *
      * Requirements:
@@ -65,10 +114,8 @@ contract LenderPool is ILenderPool, Ownable {
      *
      * Emits {Deposit} event
      */
-    function deposit(uint amount)
-        external
-        isUserRegistered(address(rewardManager), msg.sender)
-    {
+    function deposit(uint amount) external {
+        _isUserRegistered(msg.sender);
         require(amount > 0, "Amount must be positive integer");
         uint allowance = stable.allowance(msg.sender, address(this));
         require(allowance >= amount, "Not enough allowance");
@@ -97,10 +144,8 @@ contract LenderPool is ILenderPool, Ownable {
      *
      * Emits {Withdraw} event
      */
-    function withdrawAllDeposit()
-        external
-        isUserRegistered(address(rewardManager), msg.sender)
-    {
+    function withdrawAllDeposit() external {
+        _isUserRegistered(msg.sender);
         uint balance = _lender[msg.sender].deposit;
         require(balance > 0, "No amount deposited");
         rewardManager.withdrawDeposit(msg.sender, _lender[msg.sender].deposit);
@@ -121,10 +166,8 @@ contract LenderPool is ILenderPool, Ownable {
      *
      * Emits {Withdraw} event
      */
-    function withdrawDeposit(uint amount)
-        external
-        isUserRegistered(address(rewardManager), msg.sender)
-    {
+    function withdrawDeposit(uint amount) external {
+        _isUserRegistered(msg.sender);
         require(amount > 0, "amount must be positive integer");
         uint balance = _lender[msg.sender].deposit;
         require(balance >= amount, "amount request more than deposit");
@@ -139,12 +182,20 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev It calls `claimRewardsFor` from `RewardManager`.
      * @dev RewardManager may be changed by LenderPool's owner.
      */
-    function claimRewards(address _rewardManager)
-        external
-        isUserRegistered(address(_rewardManager), msg.sender)
-    {
-        IRewardManager __rewardManager = IRewardManager(_rewardManager);
-        __rewardManager.claimRewardsFor(msg.sender);
+    function claimAllRewards() external {
+        _isUserRegistered(msg.sender);
+        for (uint i = 1; i <= currManager; i++) {
+            IRewardManager __rewardManager = IRewardManager(managerList[i]);
+            __rewardManager.claimAllRewardsFor(msg.sender);
+        }
+    }
+
+    function claimReward(address token) external {
+        _isUserRegistered(msg.sender);
+        for (uint i = 1; i <= currManager; i++) {
+            IRewardManager __rewardManager = IRewardManager(managerList[i]);
+            __rewardManager.claimRewardFor(msg.sender, token);
+        }
     }
 
     /**
@@ -156,11 +207,8 @@ contract LenderPool is ILenderPool, Ownable {
      * - `RedeemPool` should have stable tokens more than lender deposited.
      *
      */
-    // This function is not ready to be used now.
-    function redeemAll()
-        external
-        isUserRegistered(address(rewardManager), msg.sender)
-    {
+    function redeemAll() external {
+        _isUserRegistered(msg.sender);
         uint balance = _lender[msg.sender].deposit;
         require(
             stable.balanceOf(address(redeemPool)) >= balance,
@@ -176,69 +224,27 @@ contract LenderPool is ILenderPool, Ownable {
         tStable.mint(address(this), balance);
         tStable.approve(address(redeemPool), balance);
         redeemPool.redeemStableFor(msg.sender, balance);
-        //_registerUser(msg.sender);
-        rewardManager.claimRewardsFor(msg.sender);
+        rewardManager.claimAllRewardsFor(msg.sender);
     }
 
-    function registerUser(address _rewardManager) external {
-        IRewardManager manager = IRewardManager(_rewardManager);
-        manager.registerUser(msg.sender);
-        _lender[msg.sender].isRegistered[_rewardManager] = true;
+    function fillRedeemPool(uint amount) external onlyOwner {
+        require(amount > 0, "Amount can not be zero");
+        _withdrawFromStrategy(amount);
+        stable.transfer(address(redeemPool), amount);
     }
 
     /**
-     * @notice `switchRewardManager` is used to switch reward manager.
-     * @dev It pauses reward for previous `RewardManager` and initializes new `RewardManager` .
-     * @dev It can be called by only owner of LenderPool.
-     * @dev Changed `RewardManager` contract must complies with `IRewardManager`.
-     * @param newRewardManager, Addess of the new `RewardManager`.
-     *
-     * Emits {RewardManagerSwitched} event
+     * @notice Registers user to all the reward manager
+     * @dev User have to register to RewardManager before interacting with RewardManager
      */
-    function switchRewardManager(address newRewardManager) external onlyOwner {
-        address oldRewardManager = address(rewardManager);
-        if (oldRewardManager != address(0)) {
-            rewardManager.pauseReward();
+    function registerUser() external {
+        for (uint i = 1; i <= currManager; i++) {
+            if (!_lender[msg.sender].isRegistered[managerList[i]]) {
+                IRewardManager manager = IRewardManager(managerList[i]);
+                manager.registerUser(msg.sender);
+                _lender[msg.sender].isRegistered[managerList[i]] = true;
+            }
         }
-        rewardManager = IRewardManager(newRewardManager);
-        rewardManager.registerRewardManager();
-        isRewardManager[newRewardManager] = true;
-        getPreviousRewardManager[newRewardManager] = oldRewardManager;
-        emit RewardManagerSwitched(oldRewardManager, newRewardManager);
-    }
-
-    /**
-     * @notice `switchStrategy` is used for switching the strategy.
-     * @dev It moves all the funds from the old strategy to the new strategy.
-     * @dev It can be called by only owner of LenderPool.
-     * @dev Changed strategy contract must complies with `IStrategy`.
-     * @param newStrategy, address of the new staking strategy.
-     *
-     * Emits {StrategySwitched} event
-     */
-    function switchStrategy(address newStrategy) external onlyOwner {
-        address oldStrategy = address(strategy);
-        if (oldStrategy != address(0)) {
-            uint amount = _getStrategyBalance();
-            _withdrawFromStrategy(amount);
-            strategy = Strategy(newStrategy);
-            _depositInStrategy(amount);
-        }
-        strategy = Strategy(newStrategy);
-        emit StrategySwitched(oldStrategy, newStrategy);
-    }
-
-    /**
-     * @notice `switchVerification` updates the Verification contract address.
-     * @dev Changed verification Contract must complies with `IVerification`
-     * @param newVerification, address of the new Verification contract
-     *
-     * Emits {VerificationContractUpdated} event
-     */
-    function switchVerification(address newVerification) external onlyOwner {
-        address oldVerification = address(verification);
-        verification = IVerification(newVerification);
-        emit VerificationSwitched(oldVerification, newVerification);
     }
 
     /**
@@ -247,13 +253,18 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      * @return Returns the total pending reward
      */
-    function rewardOf(address lender)
+    function rewardOf(address lender, address token)
         external
         view
-        isUserRegistered(address(rewardManager), lender)
-        returns (uint[] memory)
+        returns (uint)
     {
-        return rewardManager.rewardOf(lender);
+        _isUserRegistered(lender);
+        uint totalReward = 0;
+        for (uint i = 1; i <= currManager; i++) {
+            IRewardManager manager = IRewardManager(managerList[i]);
+            totalReward += manager.rewardOf(lender, token);
+        }
+        return totalReward;
     }
 
     /**
@@ -266,16 +277,16 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `getStrategyBalance` Reurns total balance of lender in external protocol
-     * @return Reurns total balance of lender in external protocol
+     * @notice `getStrategyBalance` Returns total balance allocated by LenderPool in the Strategy (external protocol)
+     * @return Returns total balance allocated by LenderPool in the Strategy external protocol
      */
     function getStrategyBalance() external view onlyOwner returns (uint) {
         return _getStrategyBalance();
     }
 
     /**
-     * @notice `_depositInStrategydeposit` deposits stable token to external protocol.
-     * @dev Funds will be deposited to external protocol like aave, compund
+     * @notice `_depositInStrategy` deposits stable token to external protocol.
+     * @dev Funds will be deposited to a Strategy (external protocols) like Aave, compound
      * @param amount, total amount to be deposited.
      */
     function _depositInStrategy(uint amount) private {
@@ -290,7 +301,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @param amount, total amount to be withdrawn from staking strategy.
      *
      * Requirements:
-     * - Total amount in external protcol should be less than `amount` requested.
+     * - Total amount in external protocol should be less than `amount` requested.
      *
      */
     function _withdrawFromStrategy(uint amount) private onlyOwner {
@@ -302,8 +313,30 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `_getStrategyBalance` Reurns total balance of lender in external protocol
-     * @return Reurns total balance of lender in external protocol
+     * @notice `_isUserRegistered` checks if user is registered in the current RewardManager
+     * @param _user, address of the user
+     */
+    function _isUserRegistered(address _user) private view {
+        require(
+            address(rewardManager) == address(0) ||
+                managerToIndex[address(rewardManager)] != 0,
+            "Invalid RewardManager"
+        );
+        if (address(rewardManager) != address(0)) {
+            require(
+                managerList[managerToIndex[address(rewardManager)] - 1] ==
+                    address(0) ||
+                    (_lender[_user].isRegistered[
+                        managerList[managerToIndex[address(rewardManager)] - 1]
+                    ] && _lender[_user].isRegistered[address(rewardManager)]),
+                "Please Register to RewardManager"
+            );
+        }
+    }
+
+    /**
+     * @notice `_getStrategyBalance` Returns total balance of lender in external protocol
+     * @return Returns total balance of lender in external protocol
      */
     function _getStrategyBalance() private view returns (uint) {
         return strategy.getBalance();

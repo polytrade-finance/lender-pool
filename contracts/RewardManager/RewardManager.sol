@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.14;
 
 import "./interface/IRewardManager.sol";
 import "../Reward/interface/IReward.sol";
@@ -30,6 +30,11 @@ contract RewardManager is IRewardManager, AccessControl {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    /**
+     * @notice `registerUser` registers the user to the current `RewardManager`
+     * @dev It copies the user information from previous `RewardManager`.
+     * @param lender, address of the lender
+     */
     function registerUser(address lender) external {
         if (address(prevRewardManager) != address(0)) {
             uint lenderBalance = prevRewardManager.getDeposit(lender);
@@ -41,6 +46,10 @@ contract RewardManager is IRewardManager, AccessControl {
         }
     }
 
+    /**
+     * @notice `registerRewardManager` registers the `RewardManager`
+     * @dev It can be called by LENDER_POOL only
+     */
     function registerRewardManager() external onlyRole(LENDER_POOL) {
         startTime = uint40(block.timestamp);
     }
@@ -79,13 +88,30 @@ contract RewardManager is IRewardManager, AccessControl {
 
     /**
      * @notice `claimRewardsFor` claims reward for the lender.
-     * @dev All the reward are transfered to the lender.
+     * @dev All the reward are transferred to the lender.
      * @dev It can by only called by `LenderPool`.
      * @param lender, address of the lender
      */
-    function claimRewardsFor(address lender) external onlyRole(LENDER_POOL) {
+    function claimAllRewardsFor(address lender) external onlyRole(LENDER_POOL) {
         stable.claimReward(lender);
         trade.claimReward(lender);
+    }
+
+    /**
+     * @notice `claimRewardFor` transfer all the `token` reward to the `user`
+     * @dev It can be called by LENDER_POOL only.
+     * @param lender, address of the lender
+     * @param token, address of the token
+     */
+    function claimRewardFor(address lender, address token)
+        external
+        onlyRole(LENDER_POOL)
+    {
+        if (stable.getRewardToken() == token) {
+            stable.claimReward(lender);
+        } else if (trade.getRewardToken() == token) {
+            trade.claimReward(lender);
+        }
     }
 
     /**
@@ -101,13 +127,26 @@ contract RewardManager is IRewardManager, AccessControl {
      * @dev It returns array of number, where each element is a reward
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      */
-    function rewardOf(address lender) external view returns (uint[] memory) {
-        uint[] memory rewards = new uint[](2);
-        rewards[0] = stable.rewardOf(lender);
-        rewards[1] = trade.rewardOf(lender);
-        return rewards;
+    function rewardOf(address lender, address token)
+        external
+        view
+        returns (uint)
+    {
+        if (stable.getRewardToken() == token) {
+            return stable.rewardOf(lender);
+        } else if (trade.getRewardToken() == token) {
+            return trade.rewardOf(lender);
+        } else {
+            return 0;
+        }
     }
 
+    /**
+     * @notice `getDeposit` returns the total amount deposited by the lender
+     * @dev If this RewardManager is not the current and user has registered then this value will not be updated
+     * @param lender, address of the lender
+     * @return total amount deposited by the lender
+     */
     function getDeposit(address lender) external view returns (uint) {
         return _lender[lender].deposit;
     }

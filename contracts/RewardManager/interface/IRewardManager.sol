@@ -1,22 +1,31 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.14;
 
 interface IRewardManager {
     struct Lender {
         uint deposit;
     }
 
+    /**
+     * @notice `registerRewardManager` registers the `RewardManager`
+     * @dev It can be called by LENDER_POOL only
+     */
     function registerRewardManager() external;
 
+    /**
+     * @notice `registerUser` registers the user to the current `RewardManager`
+     * @dev It copies the user information from previous `RewardManager`.
+     * @param lender, address of the lender
+     */
     function registerUser(address lender) external;
 
     /**
      * @notice `claimRewardsFor` claims reward for the lender.
-     * @dev All the reward are transfered to the lender.
+     * @dev All the reward are transferred to the lender.
      * @dev It can by only called by `LenderPool`.
      * @param lender, address of the lender
      */
-    function claimRewardsFor(address lender) external;
+    function claimAllRewardsFor(address lender) external;
 
     /**
      * @notice `increaseDeposit` increases the amount deposited by lender.
@@ -42,11 +51,28 @@ interface IRewardManager {
     function pauseReward() external;
 
     /**
+     * @notice `claimRewardFor` transfer all the `token` reward to the `user`
+     * @dev It can be called by LENDER_POOL only.
+     * @param lender, address of the lender
+     * @param token, address of the token
+     */
+    function claimRewardFor(address lender, address token) external;
+
+    /**
      * @notice `rewardOf` returns array of reward for the lender
      * @dev It returns array of number, where each element is a reward
      * @dev For example - [stable reward, trade reward 1, trade reward 2]
      */
-    function rewardOf(address lender) external view returns (uint[] memory);
+    function rewardOf(address lender, address token)
+        external
+        view
+        returns (uint);
 
+    /**
+     * @notice `getDeposit` returns the total amount deposited by the lender
+     * @dev If this RewardManager is not the current and user has registered then this value will not be updated
+     * @param lender, address of the lender
+     * @return total amount deposited by the lender
+     */
     function getDeposit(address lender) external view returns (uint);
 }
