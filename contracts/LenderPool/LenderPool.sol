@@ -228,6 +228,12 @@ contract LenderPool is ILenderPool, Ownable {
         rewardManager.claimAllRewardsFor(msg.sender);
     }
 
+    function fillRedeemPool(uint amount) external onlyOwner {
+        require(amount > 0, "Amount can not be zero");
+        _withdrawFromStrategy(amount);
+        stable.transfer(address(redeemPool), amount);
+    }
+
     function registerUser() external {
         for (uint i = 1; i <= currManager; i++) {
             if (!_lender[msg.sender].isRegistered[managerList[i]]) {
