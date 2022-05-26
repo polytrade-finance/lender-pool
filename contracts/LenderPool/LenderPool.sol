@@ -207,7 +207,6 @@ contract LenderPool is ILenderPool, Ownable {
      * - `RedeemPool` should have stable tokens more than lender deposited.
      *
      */
-    // This function is not ready to be used now.
     function redeemAll() external {
         _isUserRegistered(msg.sender);
         uint balance = _lender[msg.sender].deposit;
