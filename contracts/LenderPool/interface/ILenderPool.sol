@@ -134,6 +134,13 @@ interface ILenderPool {
     function switchStrategy(address newStrategy) external;
 
     /**
+     * @notice `claimReward` transfer all the `token` reward to `msg.sender`
+     * @dev It loops through all the `RewardManager` and transfer `token` reward.
+     * @param token, address of the token
+     */
+    function claimReward(address token) external;
+
+    /**
      * @notice `rewardOf` returns the total reward of the lender
      * @dev It returns array of number, where each element is a reward
      * @dev For example - [stable reward, trade reward 1, trade reward 2]

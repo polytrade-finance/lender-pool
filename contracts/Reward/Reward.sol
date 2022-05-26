@@ -27,7 +27,7 @@ contract Reward is IReward, AccessControl {
 
     /**
      * @notice `registerUser` registers user to the `Reward`
-     * @dev Gers the lender info from previous `RewardManager`
+     * @dev Gets the lender info from previous `RewardManager`
      * @param lender, address of the lender
      * @param deposited, amount deposit by the lender
      * @param startPeriod, start period of the
