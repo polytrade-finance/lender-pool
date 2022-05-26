@@ -69,6 +69,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {StrategySwitched} event
      */
     function switchStrategy(address newStrategy) external onlyOwner {
+        require(newStrategy!=address(0), "Address can not be 0");
         address oldStrategy = address(strategy);
         if (oldStrategy != address(0)) {
             uint amount = _getStrategyBalance();
@@ -90,6 +91,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {RewardManagerSwitched} event
      */
     function switchRewardManager(address newRewardManager) external onlyOwner {
+        require(newRewardManager!=address(0), "Address can not be 0");
         address oldRewardManager = address(rewardManager);
         if (oldRewardManager != address(0)) {
             rewardManager.pauseReward();
@@ -110,6 +112,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {VerificationContractUpdated} event
      */
     function switchVerification(address newVerification) external onlyOwner {
+        require(newVerification!=address(0), "Address can not be 0");
         address oldVerification = address(verification);
         verification = IVerification(newVerification);
         emit VerificationSwitched(oldVerification, newVerification);
