@@ -28,20 +28,6 @@ contract RedeemPool is IRedeemPool, AccessControl {
     }
 
     /**
-     * @notice withdraw any token sent to RedeemPool by mistake
-     * @dev callable by only owner
-     * @param tokenAddress, address of the token
-     * @param amount, the number of tokens to be sent
-     */
-    function withdrawStuckToken(address tokenAddress, uint amount)
-        external
-        onlyRole(OWNER)
-    {
-        IToken token = IToken(tokenAddress);
-        token.safeTransfer(msg.sender, amount);
-    }
-
-    /**
      * @notice exchange tStable token for the stable token
      * @dev users can directly call this function using EOA after approving `amount`
      * @param amount, the number of tokens to be exchanged
