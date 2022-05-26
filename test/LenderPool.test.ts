@@ -622,11 +622,8 @@ describe("Lender Pool", function () {
 
   it("should fillRedeemPool", async () => {
     const balanceBefore1 = await stableToken.balanceOf(redeemPool.address);
-    const balanceBefore2 = await stableToken.balanceOf(strategy.address);
     await lenderPool.fillRedeemPool(n6("100"));
     const balanceAfter1 = await stableToken.balanceOf(redeemPool.address);
-    const balanceAfter2 = await stableToken.balanceOf(strategy.address);
     expect(balanceAfter1.sub(balanceBefore1)).to.be.equal(n6("100"));
-    expect(balanceAfter2.sub(balanceBefore2)).to.be.equal(n6("100"));
   });
 });
