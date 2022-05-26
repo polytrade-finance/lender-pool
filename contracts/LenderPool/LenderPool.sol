@@ -166,9 +166,7 @@ contract LenderPool is ILenderPool, Ownable {
      *
      * Emits {Withdraw} event
      */
-    function withdrawDeposit(uint amount)
-        external
-    {
+    function withdrawDeposit(uint amount) external {
         _isUserRegistered(msg.sender);
         require(amount > 0, "amount must be positive integer");
         uint balance = _lender[msg.sender].deposit;
