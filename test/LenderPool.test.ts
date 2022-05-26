@@ -488,12 +488,15 @@ describe("Lender Pool", function () {
     expect(await stableReward.getReward()).to.be.equal(2000);
   });
 
-  it("should claim reward at t = 5 year", async function () {
-    const balanceBefore = await stableToken.balanceOf(addresses[4]);
+  it("should claim reward at t = 5 year and fail to claim twice", async function () {
+    const balance1 = await stableToken.balanceOf(addresses[4]);
     await setNextBlockTimestamp(currentTime + ONE_DAY * 365 * 5);
     await lenderPool.connect(accounts[4]).claimAllRewards();
-    const balanceAfter = await stableToken.balanceOf(addresses[4]);
-    expect(balanceAfter.sub(balanceBefore)).to.be.equal(n6("50"));
+    const balance2 = await stableToken.balanceOf(addresses[4]);
+    await lenderPool.connect(accounts[4]).claimAllRewards();
+    const balance3 = await stableToken.balanceOf(addresses[4]);
+    expect(balance2.sub(balance1)).to.be.equal(n6("50"));
+    expect(balance3.sub(balance2)).to.be.equal(n6("0"));
   });
 
   it("should revert if no reward is pending", async function () {
