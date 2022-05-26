@@ -31,17 +31,19 @@ contract LenderPool is ILenderPool, Ownable {
 
     uint public currManager = 0;
 
-    modifier isUserRegistered(address _rewardManager, address _user) {
+    modifier isUserRegistered(address _user) {
         require(
-            _rewardManager == address(0) || managerToIndex[_rewardManager] != 0,
+            address(rewardManager) == address(0) ||
+                managerToIndex[address(rewardManager)] != 0,
             "Invalid RewardManager"
         );
-        if (_rewardManager != address(0)) {
+        if (address(rewardManager) != address(0)) {
             require(
-                managerList[managerToIndex[_rewardManager] - 1] == address(0) ||
+                managerList[managerToIndex[address(rewardManager)] - 1] ==
+                    address(0) ||
                     (_lender[_user].isRegistered[
-                        managerList[managerToIndex[_rewardManager] - 1]
-                    ] && _lender[_user].isRegistered[_rewardManager]),
+                        managerList[managerToIndex[address(rewardManager)] - 1]
+                    ] && _lender[_user].isRegistered[address(rewardManager)]),
                 "Please Register to RewardManager"
             );
         }
@@ -69,7 +71,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {StrategySwitched} event
      */
     function switchStrategy(address newStrategy) external onlyOwner {
-        require(newStrategy!=address(0), "Address can not be 0");
+        require(newStrategy != address(0), "Address can not be 0");
         address oldStrategy = address(strategy);
         if (oldStrategy != address(0)) {
             uint amount = _getStrategyBalance();
@@ -91,7 +93,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {RewardManagerSwitched} event
      */
     function switchRewardManager(address newRewardManager) external onlyOwner {
-        require(newRewardManager!=address(0), "Address can not be 0");
+        require(newRewardManager != address(0), "Address can not be 0");
         address oldRewardManager = address(rewardManager);
         if (oldRewardManager != address(0)) {
             rewardManager.pauseReward();
@@ -112,7 +114,7 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {VerificationContractUpdated} event
      */
     function switchVerification(address newVerification) external onlyOwner {
-        require(newVerification!=address(0), "Address can not be 0");
+        require(newVerification != address(0), "Address can not be 0");
         address oldVerification = address(verification);
         verification = IVerification(newVerification);
         emit VerificationSwitched(oldVerification, newVerification);
@@ -131,10 +133,7 @@ contract LenderPool is ILenderPool, Ownable {
      *
      * Emits {Deposit} event
      */
-    function deposit(uint amount)
-        external
-        isUserRegistered(address(rewardManager), msg.sender)
-    {
+    function deposit(uint amount) external isUserRegistered(msg.sender) {
         require(amount > 0, "Amount must be positive integer");
         uint allowance = stable.allowance(msg.sender, address(this));
         require(allowance >= amount, "Not enough allowance");
@@ -163,10 +162,7 @@ contract LenderPool is ILenderPool, Ownable {
      *
      * Emits {Withdraw} event
      */
-    function withdrawAllDeposit()
-        external
-        isUserRegistered(address(rewardManager), msg.sender)
-    {
+    function withdrawAllDeposit() external isUserRegistered(msg.sender) {
         uint balance = _lender[msg.sender].deposit;
         require(balance > 0, "No amount deposited");
         rewardManager.withdrawDeposit(msg.sender, _lender[msg.sender].deposit);
@@ -189,7 +185,7 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function withdrawDeposit(uint amount)
         external
-        isUserRegistered(address(rewardManager), msg.sender)
+        isUserRegistered(msg.sender)
     {
         require(amount > 0, "amount must be positive integer");
         uint balance = _lender[msg.sender].deposit;
@@ -205,20 +201,14 @@ contract LenderPool is ILenderPool, Ownable {
      * @dev It calls `claimRewardsFor` from `RewardManager`.
      * @dev RewardManager may be changed by LenderPool's owner.
      */
-    function claimAllRewards()
-        external
-        isUserRegistered(address(rewardManager), msg.sender)
-    {
+    function claimAllRewards() external isUserRegistered(msg.sender) {
         for (uint i = 1; i <= currManager; i++) {
             IRewardManager __rewardManager = IRewardManager(managerList[i]);
             __rewardManager.claimAllRewardsFor(msg.sender);
         }
     }
 
-    function claimReward(address token)
-        external
-        isUserRegistered(address(rewardManager), msg.sender)
-    {
+    function claimReward(address token) external isUserRegistered(msg.sender) {
         for (uint i = 1; i <= currManager; i++) {
             IRewardManager __rewardManager = IRewardManager(managerList[i]);
             __rewardManager.claimRewardFor(msg.sender, token);
@@ -235,10 +225,7 @@ contract LenderPool is ILenderPool, Ownable {
      *
      */
     // This function is not ready to be used now.
-    function redeemAll()
-        external
-        isUserRegistered(address(rewardManager), msg.sender)
-    {
+    function redeemAll() external isUserRegistered(msg.sender) {
         uint balance = _lender[msg.sender].deposit;
         require(
             stable.balanceOf(address(redeemPool)) >= balance,
@@ -276,7 +263,7 @@ contract LenderPool is ILenderPool, Ownable {
     function rewardOf(address lender, address token)
         external
         view
-        isUserRegistered(address(rewardManager), lender)
+        isUserRegistered(lender)
         returns (uint)
     {
         uint totalReward = 0;
