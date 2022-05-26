@@ -42,6 +42,12 @@ interface ILenderPool {
      */
     event StrategySwitched(address oldStrategy, address newStrategy);
 
+    /**
+     * @notice Emitted when `RewardManager` is switched
+     * @dev Emitted when `RewardManager` function is called by owner
+     * @param oldRewardManager, address of the old RewardManager
+     * @param newRewardManager, address of the old RewardManager
+     */
     event RewardManagerSwitched(
         address oldRewardManager,
         address newRewardManager
@@ -107,6 +113,13 @@ interface ILenderPool {
      */
     function switchRewardManager(address newRewardManager) external;
 
+    /**
+     * @notice `switchVerification` updates the Verification contract address.
+     * @dev Changed verification Contract must complies with `IVerification`
+     * @param newVerification, address of the new Verification contract
+     *
+     * Emits {VerificationContractUpdated} event
+     */
     function switchVerification(address newVerification) external;
 
     /**

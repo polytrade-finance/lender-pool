@@ -103,5 +103,9 @@ interface IReward {
      */
     function getReward() external view returns (uint16);
 
+    /**
+     * @notice `getRewardToken` returns the address of the reward token
+     * @return address of the reward token
+     */
     function getRewardToken() external view returns (address);
 }

@@ -30,6 +30,11 @@ contract RewardManager is IRewardManager, AccessControl {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    /**
+     * @notice `registerUser` registers the user to the current `RewardManager`
+     * @dev It copies the user information from previous `RewardManager`.
+     * @param lender, address of the lender
+     */
     function registerUser(address lender) external {
         if (address(prevRewardManager) != address(0)) {
             uint lenderBalance = prevRewardManager.getDeposit(lender);
@@ -41,6 +46,10 @@ contract RewardManager is IRewardManager, AccessControl {
         }
     }
 
+    /**
+     * @notice `registerRewardManager` registers the `RewardManager`
+     * @dev It can be called by LENDER_POOL only
+     */
     function registerRewardManager() external onlyRole(LENDER_POOL) {
         startTime = uint40(block.timestamp);
     }
@@ -88,6 +97,12 @@ contract RewardManager is IRewardManager, AccessControl {
         trade.claimReward(lender);
     }
 
+    /**
+     * @notice `claimRewardFor` transfer all the `token` reward to the `user`
+     * @dev It can be called by LENDER_POOL only.
+     * @param lender, address of the lender
+     * @param token, address of the token
+     */
     function claimRewardFor(address lender, address token)
         external
         onlyRole(LENDER_POOL)
@@ -126,6 +141,12 @@ contract RewardManager is IRewardManager, AccessControl {
         }
     }
 
+    /**
+     * @notice `getDeposit` returns the total amount deposited by the lender
+     * @dev If this RewardManager is not the current and user has registered then this value will not be updated
+     * @param lender, address of the lender
+     * @return total amount deposited by the lender
+     */
     function getDeposit(address lender) external view returns (uint) {
         return _lender[lender].deposit;
     }

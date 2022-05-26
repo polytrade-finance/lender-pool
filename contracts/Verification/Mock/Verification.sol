@@ -44,6 +44,10 @@ contract Verification is IVerification {
         return userValidation[user];
     }
 
+    /**
+     * @notice `isValidationRequired` returns if KYC is required to deposit `amount`
+     * @dev returns true if KYC is required otherwise false
+     */
     function isValidationRequired(uint amount) external view returns (bool) {
         return amount >= validationLimit;
     }

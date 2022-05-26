@@ -233,6 +233,10 @@ contract LenderPool is ILenderPool, Ownable {
         stable.transfer(address(redeemPool), amount);
     }
 
+    /**
+     * @notice Registers user to all the reward manager
+     * @dev User have to register to RewardManager before interacting with RewardManager
+     */
     function registerUser() external {
         for (uint i = 1; i <= currManager; i++) {
             if (!_lender[msg.sender].isRegistered[managerList[i]]) {
@@ -308,6 +312,10 @@ contract LenderPool is ILenderPool, Ownable {
         strategy.withdraw(amount);
     }
 
+    /**
+     * @notice `_isUserRegistered` checks if user is registered in the current RewardManager
+     * @param _user, address of the user
+     */
     function _isUserRegistered(address _user) private view {
         require(
             address(rewardManager) == address(0) ||

@@ -25,6 +25,13 @@ contract Reward is IReward, AccessControl {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    /**
+     * @notice `registerUser` registers user to the `Reward`
+     * @dev Gers the lender info from previous `RewardManager`
+     * @param lender, address of the lender
+     * @param deposited, amount deposit by the lender
+     * @param startPeriod, start period of the
+     */
     function registerUser(
         address lender,
         uint deposited,
@@ -152,6 +159,10 @@ contract Reward is IReward, AccessControl {
         return round[currentRound].apy;
     }
 
+    /**
+     * @notice `getRewardToken` returns the address of the reward token
+     * @return address of the reward token
+     */
     function getRewardToken() external view returns (address) {
         return address(_rewardToken);
     }
