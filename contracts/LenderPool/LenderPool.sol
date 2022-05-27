@@ -285,7 +285,7 @@ contract LenderPool is ILenderPool, Ownable {
      * @notice `getStrategyBalance` Returns total balance allocated by LenderPool in the Strategy (external protocol)
      * @return Returns total balance allocated by LenderPool in the Strategy external protocol
      */
-    function getStrategyBalance() external view onlyOwner returns (uint) {
+    function getStrategyBalance() external view returns (uint) {
         return _getStrategyBalance();
     }
 
