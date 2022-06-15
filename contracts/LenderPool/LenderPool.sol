@@ -27,17 +27,20 @@ contract LenderPool is ILenderPool, Ownable {
     IStrategy public strategy;
     IVerification public verification;
     IRewardManager public rewardManager;
+    address public treasury;
 
     uint public currManager = 0;
 
     constructor(
         address _stableAddress,
         address _tStableAddress,
-        address _redeemPool
+        address _redeemPool,
+        address _treasuryAddress
     ) {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
         redeemPool = IRedeemPool(_redeemPool);
+        treasury = _treasuryAddress;
         managerList.push(address(0));
     }
 
