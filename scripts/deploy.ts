@@ -8,10 +8,10 @@ import {
   IERC20,
   LenderPool,
   MockProtocol,
+  MockStrategy,
   RedeemPool,
   Reward,
   RewardManager,
-  Strategy,
   Token,
   Verification,
 } from "../typechain";
@@ -25,7 +25,7 @@ let tradeReward: Reward;
 let rewardManager: RewardManager;
 let verification: Verification;
 let lenderPool: LenderPool;
-let strategy: Strategy;
+let strategy: MockStrategy;
 let protocol: MockProtocol;
 
 const USDCAddress = "0xbEc686095Cfad43B741FA0ED305200100986CEf1";
@@ -33,7 +33,7 @@ const tUSDCAddress = "0xecb4e60166B1A7a6Fd815F75A0e7c243bB45D540";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  const Token = await ethers.getContractFactory("Token");
+  const TokenContract = await ethers.getContractFactory("Token");
 
   USDC = await ethers.getContractAt("IERC20", USDCAddress);
   console.log(`USDC: ${USDC.address}`);
@@ -41,7 +41,7 @@ async function main() {
   tUSDC = await ethers.getContractAt("Token", tUSDCAddress);
   console.log(`tUSDC: ${tUSDC.address}`);
 
-  trade = await Token.deploy("Polytrade", "TRADE", 18);
+  trade = await TokenContract.deploy("Polytrade", "TRADE", 18);
   console.log(`trade: ${trade.address}`);
 
   const RedeemPoolContract = await ethers.getContractFactory("RedeemPool");
@@ -166,7 +166,7 @@ async function main() {
   await lenderPool.switchRewardManager(rewardManager.address);
   console.log("RewardManager switched");
 
-  await verification.updateValidationLimit(n6("5000"));
+  await verification.updateValidationLimit(n6("100"));
   console.log("Validation switched");
 
   await lenderPool.switchStrategy(strategy.address);
