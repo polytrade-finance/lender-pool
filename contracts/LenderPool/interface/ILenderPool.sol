@@ -157,12 +157,6 @@ interface ILenderPool {
     function rewardOf(address lender, address token) external returns (uint);
 
     /**
-     * @notice `getStrategyBalance` Returns total balance allocated by LenderPool in the Strategy (external protocol)
-     * @return Returns total balance allocated by LenderPool in the Strategy external protocol
-     */
-    function getStrategyBalance() external view returns (uint);
-
-    /**
      * @notice `getDeposit` returns total amount deposited by the lender
      * @param lender, address of the lender
      * @return returns amount of stable token deposited by the lender
