@@ -21,6 +21,7 @@ contract Reward is IReward, AccessControl {
     IToken private _rewardToken;
 
     constructor(address _address) {
+        require(_address != address(0), "Invalid address");
         _rewardToken = IToken(_address);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
