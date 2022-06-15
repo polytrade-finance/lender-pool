@@ -272,6 +272,16 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
+     * @notice Withdraw funds from strategy and approve Treasury to spend
+     * @param amount to be withdrawn from Strategy and approved to treasury
+     */
+    function requestFundInvoice(uint amount) external {
+        require(msg.sender == treasury);
+        strategy.withdraw(amount);
+        stable.approve(address(treasury), amount);
+    }
+
+    /**
      * @notice Registers user to all the reward manager
      * @dev User have to register to RewardManager before interacting with RewardManager
      */
