@@ -7,10 +7,17 @@ interface IRewardManager {
     }
 
     /**
-     * @notice `registerRewardManager` registers the `RewardManager`
+     * @notice Emitted when RewardManger has started
+     * @dev Emitted when RewardManger has started (can be called only by owner)
+     * @param startTime, starting time (timestamp)
+     */
+    event RewardManagerStarted(uint40 startTime);
+
+    /**
+     * @notice `startRewardManager` registers the `RewardManager`
      * @dev It can be called by LENDER_POOL only
      */
-    function registerRewardManager() external;
+    function startRewardManager() external;
 
     /**
      * @notice `registerUser` registers the user to the current `RewardManager`

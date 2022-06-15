@@ -15,8 +15,6 @@ import "../RewardManager/interface/IRewardManager.sol";
  * @title LenderPool V2
  */
 contract LenderPool is ILenderPool, Ownable {
-    using SafeERC20 for IToken;
-
     mapping(address => Lender) private _lender;
     mapping(address => uint) public managerToIndex;
 
@@ -28,17 +26,20 @@ contract LenderPool is ILenderPool, Ownable {
     IStrategy public strategy;
     IVerification public verification;
     IRewardManager public rewardManager;
+    address public treasury;
 
     uint public currManager = 0;
 
     constructor(
         address _stableAddress,
         address _tStableAddress,
-        address _redeemPool
+        address _redeemPool,
+        address _treasuryAddress
     ) {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
         redeemPool = IRedeemPool(_redeemPool);
+        treasury = _treasuryAddress;
         managerList.push(address(0));
     }
 
@@ -52,11 +53,11 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {StrategySwitched} event
      */
     function switchStrategy(address newStrategy) external onlyOwner {
-        require(newStrategy != address(0), "Address can not be 0");
+        require(newStrategy != address(0));
         address oldStrategy = address(strategy);
         if (oldStrategy != address(0)) {
-            uint amount = _getStrategyBalance();
-            _withdrawFromStrategy(amount);
+            uint amount = strategy.getBalance();
+            strategy.withdraw(amount);
             strategy = Strategy(newStrategy);
             _depositInStrategy(amount);
         }
@@ -74,13 +75,13 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {RewardManagerSwitched} event
      */
     function switchRewardManager(address newRewardManager) external onlyOwner {
-        require(newRewardManager != address(0), "Address can not be 0");
+        require(newRewardManager != address(0));
         address oldRewardManager = address(rewardManager);
         if (oldRewardManager != address(0)) {
             rewardManager.pauseReward();
         }
         rewardManager = IRewardManager(newRewardManager);
-        rewardManager.registerRewardManager();
+        rewardManager.startRewardManager();
         currManager += 1;
         managerToIndex[newRewardManager] = currManager;
         managerList.push(newRewardManager);
@@ -95,10 +96,25 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {VerificationContractUpdated} event
      */
     function switchVerification(address newVerification) external onlyOwner {
-        require(newVerification != address(0), "Address can not be 0");
+        require(newVerification != address(0));
         address oldVerification = address(verification);
         verification = IVerification(newVerification);
         emit VerificationSwitched(oldVerification, newVerification);
+    }
+
+    /**
+     * @notice `switchTreasury` updates the Treasury contract address.
+     * @dev Changed treasury Contract must complies with `ITreasury`
+     * @param newTreasury, address of the new Treasury contract
+     *
+     * Emits {TreasuryContractUpdated} event
+     */
+    function switchTreasury(address newTreasury) external onlyOwner {
+        require(newTreasury != address(0));
+        address oldTreasury = address(treasury);
+        stable.approve(oldTreasury, 0);
+        treasury = newTreasury;
+        emit TreasurySwitched(oldTreasury, newTreasury);
     }
 
     /**
@@ -115,21 +131,16 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {Deposit} event
      */
     function deposit(uint amount) external {
+        require(amount > 0);
+
         _isUserRegistered(msg.sender);
-        require(amount > 0, "Amount must be positive integer");
-        uint allowance = stable.allowance(msg.sender, address(this));
-        require(allowance >= amount, "Not enough allowance");
 
         require(
-            !(
-                verification.isValidationRequired(
-                    _lender[msg.sender].deposit + amount
-                )
-            ) || verification.isValid(msg.sender),
-            "Need to have valid KYC"
+            !verification.isValidationRequired(msg.sender, amount),
+            "Need verification"
         );
 
-        stable.safeTransferFrom(msg.sender, address(this), amount);
+        stable.transferFrom(msg.sender, address(this), amount);
         _depositInStrategy(amount);
 
         rewardManager.increaseDeposit(msg.sender, amount);
@@ -147,8 +158,8 @@ contract LenderPool is ILenderPool, Ownable {
     function withdrawAllDeposit() external {
         _isUserRegistered(msg.sender);
         uint balance = _lender[msg.sender].deposit;
-        require(balance > 0, "No amount deposited");
-        rewardManager.withdrawDeposit(msg.sender, _lender[msg.sender].deposit);
+        require(balance > 0);
+        rewardManager.withdrawDeposit(msg.sender, balance);
         _lender[msg.sender].deposit = 0;
         tStable.mint(msg.sender, balance);
         emit Withdraw(msg.sender, balance);
@@ -168,9 +179,9 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function withdrawDeposit(uint amount) external {
         _isUserRegistered(msg.sender);
-        require(amount > 0, "amount must be positive integer");
+        require(amount > 0);
         uint balance = _lender[msg.sender].deposit;
-        require(balance >= amount, "amount request more than deposit");
+        require(balance >= amount);
         rewardManager.withdrawDeposit(msg.sender, amount);
         _lender[msg.sender].deposit -= amount;
         tStable.mint(msg.sender, amount);
@@ -185,8 +196,7 @@ contract LenderPool is ILenderPool, Ownable {
     function claimAllRewards() external {
         _isUserRegistered(msg.sender);
         for (uint i = 1; i <= currManager; i++) {
-            IRewardManager __rewardManager = IRewardManager(managerList[i]);
-            __rewardManager.claimAllRewardsFor(msg.sender);
+            IRewardManager(managerList[i]).claimAllRewardsFor(msg.sender);
         }
     }
 
@@ -198,8 +208,7 @@ contract LenderPool is ILenderPool, Ownable {
     function claimReward(address token) external {
         _isUserRegistered(msg.sender);
         for (uint i = 1; i <= currManager; i++) {
-            IRewardManager __rewardManager = IRewardManager(managerList[i]);
-            __rewardManager.claimRewardFor(msg.sender, token);
+            IRewardManager(managerList[i]).claimRewardFor(msg.sender, token);
         }
     }
 
@@ -214,17 +223,16 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function redeemAll() external {
         _isUserRegistered(msg.sender);
+
         uint balance = _lender[msg.sender].deposit;
-        require(
-            stable.balanceOf(address(redeemPool)) >= balance,
-            "Insufficient balance in pool"
-        );
+
         if (balance > 0) {
             rewardManager.withdrawDeposit(
                 msg.sender,
                 _lender[msg.sender].deposit
             );
         }
+
         _lender[msg.sender].deposit = 0;
         tStable.mint(address(this), balance);
         tStable.approve(address(redeemPool), balance);
@@ -232,10 +240,44 @@ contract LenderPool is ILenderPool, Ownable {
         rewardManager.claimAllRewardsFor(msg.sender);
     }
 
+    /**
+     * @notice `redeem` send caller the amount in stable token by converting its tStable to Stable
+     * @dev It converts the tStable to stable using `RedeemPool`.
+     *
+     * Requirements :
+     * - `RedeemPool` should have enough stable tokens on the RedeemPool.
+     *
+     */
+    function redeem(uint amount) external {
+        require(amount > 0 && _lender[msg.sender].deposit >= amount);
+
+        _isUserRegistered(msg.sender);
+
+        rewardManager.withdrawDeposit(msg.sender, amount);
+        _lender[msg.sender].deposit -= amount;
+        tStable.mint(address(this), amount);
+        tStable.approve(address(redeemPool), amount);
+        redeemPool.redeemStableFor(msg.sender, amount);
+    }
+
+    /**
+     * @notice Withdraw funds from strategy and send it to the RedeemPool
+     * @param amount to be send to the RedeemPool
+     */
     function fillRedeemPool(uint amount) external onlyOwner {
-        require(amount > 0, "Amount can not be zero");
-        _withdrawFromStrategy(amount);
+        require(amount > 0);
+        strategy.withdraw(amount);
         stable.transfer(address(redeemPool), amount);
+    }
+
+    /**
+     * @notice Withdraw funds from strategy and approve Treasury to spend
+     * @param amount to be withdrawn from Strategy and approved to treasury
+     */
+    function requestFundInvoice(uint amount) external {
+        require(msg.sender == treasury);
+        strategy.withdraw(amount);
+        stable.approve(address(treasury), amount);
     }
 
     /**
@@ -247,7 +289,7 @@ contract LenderPool is ILenderPool, Ownable {
             if (!_lender[msg.sender].isRegistered[managerList[i]]) {
                 IRewardManager manager = IRewardManager(managerList[i]);
                 manager.registerUser(msg.sender);
-                _lender[msg.sender].isRegistered[managerList[i]] = true;
+                _lender[msg.sender].isRegistered[address(manager)] = true;
             }
         }
     }
@@ -263,7 +305,6 @@ contract LenderPool is ILenderPool, Ownable {
         view
         returns (uint)
     {
-        _isUserRegistered(lender);
         uint totalReward = 0;
         for (uint i = 1; i <= currManager; i++) {
             IRewardManager manager = IRewardManager(managerList[i]);
@@ -282,14 +323,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `getStrategyBalance` Returns total balance allocated by LenderPool in the Strategy (external protocol)
-     * @return Returns total balance allocated by LenderPool in the Strategy external protocol
-     */
-    function getStrategyBalance() external view returns (uint) {
-        return _getStrategyBalance();
-    }
-
-    /**
      * @notice `_depositInStrategy` deposits stable token to external protocol.
      * @dev Funds will be deposited to a Strategy (external protocols) like Aave, compound
      * @param amount, total amount to be deposited.
@@ -300,32 +333,13 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `_withdrawFromStrategy`  withdraws all funds from external protocol.
-     * @dev It transfers all funds from external protocol to `LenderPool`.
-     * @dev It can be called by only owner of LenderPool.
-     * @param amount, total amount to be withdrawn from staking strategy.
-     *
-     * Requirements:
-     * - Total amount in external protocol should be less than `amount` requested.
-     *
-     */
-    function _withdrawFromStrategy(uint amount) private onlyOwner {
-        require(
-            _getStrategyBalance() >= amount,
-            "Balance less than requested."
-        );
-        strategy.withdraw(amount);
-    }
-
-    /**
      * @notice `_isUserRegistered` checks if user is registered in the current RewardManager
      * @param _user, address of the user
      */
     function _isUserRegistered(address _user) private view {
         require(
             address(rewardManager) == address(0) ||
-                managerToIndex[address(rewardManager)] != 0,
-            "Invalid RewardManager"
+                managerToIndex[address(rewardManager)] != 0
         );
         if (address(rewardManager) != address(0)) {
             require(
@@ -333,17 +347,8 @@ contract LenderPool is ILenderPool, Ownable {
                     address(0) ||
                     (_lender[_user].isRegistered[
                         managerList[managerToIndex[address(rewardManager)] - 1]
-                    ] && _lender[_user].isRegistered[address(rewardManager)]),
-                "Please Register to RewardManager"
+                    ] && _lender[_user].isRegistered[address(rewardManager)])
             );
         }
-    }
-
-    /**
-     * @notice `_getStrategyBalance` Returns total balance of lender in external protocol
-     * @return Returns total balance of lender in external protocol
-     */
-    function _getStrategyBalance() private view returns (uint) {
-        return strategy.getBalance();
     }
 }

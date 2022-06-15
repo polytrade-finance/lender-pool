@@ -21,6 +21,7 @@ contract Reward is IReward, AccessControl {
     IToken private _rewardToken;
 
     constructor(address _address) {
+        require(_address != address(0), "Invalid address");
         _rewardToken = IToken(_address);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
@@ -37,11 +38,10 @@ contract Reward is IReward, AccessControl {
         uint deposited,
         uint40 startPeriod
     ) external onlyRole(REWARD_MANAGER) {
-        if (!_lender[lender].registered) {
-            _lender[lender].deposit = deposited;
-            _lender[lender].registered = true;
-            _lender[lender].startPeriod = startPeriod;
-        }
+        require(!_lender[lender].registered, "User already registered");
+        _lender[lender].deposit = deposited;
+        _lender[lender].registered = true;
+        _lender[lender].startPeriod = startPeriod;
     }
 
     /**
@@ -53,6 +53,7 @@ contract Reward is IReward, AccessControl {
      * Emits {NewReward} event
      */
     function setReward(uint16 newReward) external onlyRole(OWNER) {
+        require(newReward > 0, "Should be higher than 0");
         if (currentRound > 0) {
             round[currentRound].endTime = uint40(block.timestamp);
         }

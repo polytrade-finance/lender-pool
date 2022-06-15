@@ -2,21 +2,21 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-  Token,
   LenderPool,
-  Verification,
+  RedeemPool,
   Reward,
   RewardManager,
-  RedeemPool,
   Strategy,
+  Token,
+  Verification,
 } from "../typechain";
-import { n6, increaseTime, ONE_DAY } from "./helpers";
+import { increaseTime, n6, ONE_DAY } from "./helpers";
 import {
-  USDTAddress,
-  aUSDTAddress,
   AccountToImpersonateUSDT,
-  // eslint-disable-next-line node/no-missing-import
+  aUSDTAddress,
+  USDTAddress,
 } from "./constants/constants.helpers";
+import { constants } from "ethers";
 
 describe("Strategy", async function () {
   let accounts: SignerWithAddress[];
@@ -88,14 +88,15 @@ describe("Strategy", async function () {
     lenderPool = await LenderPool.deploy(
       stableToken.address,
       tStableToken.address,
-      redeemPool.address
+      redeemPool.address,
+      constants.AddressZero
     );
     expect(
       await ethers.provider.getCode(lenderPool.address)
     ).to.be.length.above(10);
 
     const Verification = await ethers.getContractFactory("Verification");
-    verification = await Verification.deploy();
+    verification = await Verification.deploy(lenderPool.address);
     expect(
       await ethers.provider.getCode(verification.address)
     ).to.be.length.above(10);
@@ -288,12 +289,12 @@ describe("Strategy", async function () {
     expect(await lenderPool.getDeposit(addresses[3])).to.be.equal(n6("200"));
   });
 
-  it("should check staking pool balance", async function () {
-    await increaseTime(ONE_DAY * 365);
-    expect(
-      (await lenderPool.getStrategyBalance()).sub(n6("200")).toNumber()
-    ).to.be.greaterThan(100);
-  });
+  // it("should check staking pool balance", async function () {
+  //   await increaseTime(ONE_DAY * 365);
+  //   expect(
+  //     (await lenderPool.getStrategyBalance()).sub(n6("200")).toNumber()
+  //   ).to.be.greaterThan(100);
+  // });
 
   it("should update staking pool", async function () {
     await increaseTime(ONE_DAY * 365);

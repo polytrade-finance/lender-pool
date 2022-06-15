@@ -25,7 +25,6 @@
     "no-empty-blocks": "error",
     "no-unused-vars": "error",
     "payable-fallback": "error",
-    "reason-string": ["warn", { "maxLength": 32 }],
     "constructor-syntax": "error",
     "not-rely-on-time": "off"
   },

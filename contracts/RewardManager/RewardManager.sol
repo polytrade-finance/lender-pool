@@ -35,7 +35,8 @@ contract RewardManager is IRewardManager, AccessControl {
      * @dev It copies the user information from previous `RewardManager`.
      * @param lender, address of the lender
      */
-    function registerUser(address lender) external {
+    function registerUser(address lender) external onlyRole(LENDER_POOL) {
+        require(startTime > 0, "Not initialized yet");
         if (address(prevRewardManager) != address(0)) {
             uint lenderBalance = prevRewardManager.getDeposit(lender);
             if (lenderBalance > 0) {
@@ -47,11 +48,12 @@ contract RewardManager is IRewardManager, AccessControl {
     }
 
     /**
-     * @notice `registerRewardManager` registers the `RewardManager`
+     * @notice `startRewardManager` registers the `RewardManager`
      * @dev It can be called by LENDER_POOL only
      */
-    function registerRewardManager() external onlyRole(LENDER_POOL) {
+    function startRewardManager() external onlyRole(LENDER_POOL) {
         startTime = uint40(block.timestamp);
+        emit RewardManagerStarted(startTime);
     }
 
     /**

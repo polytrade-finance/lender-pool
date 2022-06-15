@@ -2,6 +2,7 @@
 pragma solidity ^0.8.14;
 
 import "../interface/IVerification.sol";
+import "../../LenderPool/interface/ILenderPool.sol";
 
 /**
  * @author Polytrade
@@ -11,6 +12,11 @@ contract Verification is IVerification {
     mapping(address => bool) public userValidation;
 
     uint public validationLimit;
+    ILenderPool public lenderPool;
+
+    constructor(address _lenderPool) {
+        lenderPool = ILenderPool(_lenderPool);
+    }
 
     /**
      * @notice Function for test purpose to approve/revoke Validation for any user
@@ -45,10 +51,18 @@ contract Verification is IVerification {
     }
 
     /**
-     * @notice `isValidationRequired` returns if KYC is required to deposit `amount`
-     * @dev returns true if KYC is required otherwise false
+     * @notice `isValidationRequired` returns if Validation is required to deposit `amount` on LenderPool
+     * @dev returns true if Validation is required otherwise false
      */
-    function isValidationRequired(uint amount) external view returns (bool) {
-        return amount >= validationLimit;
+    function isValidationRequired(address user, uint amount)
+        external
+        view
+        returns (bool)
+    {
+        if (userValidation[user]) {
+            return false;
+        }
+        uint deposit = lenderPool.getDeposit(user);
+        return deposit + amount >= validationLimit;
     }
 }

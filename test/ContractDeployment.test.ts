@@ -2,16 +2,17 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-  Token,
   LenderPool,
-  Verification,
+  RedeemPool,
   Reward,
   RewardManager,
-  RedeemPool,
   Strategy,
+  Token,
+  Verification,
 } from "../typechain";
 
 import { aUSDTAddress, USDTAddress } from "./constants/constants.helpers";
+import { constants } from "ethers";
 
 describe("Contract Deployment", function () {
   let accounts: SignerWithAddress[];
@@ -91,7 +92,8 @@ describe("Contract Deployment", function () {
     lenderPool = await LenderPool.deploy(
       stableToken.address,
       tStableToken.address,
-      redeemPool.address
+      redeemPool.address,
+      constants.AddressZero
     );
     expect(
       await ethers.provider.getCode(lenderPool.address)
@@ -100,7 +102,7 @@ describe("Contract Deployment", function () {
 
   it("should deploy Verification", async () => {
     const Verification = await ethers.getContractFactory("Verification");
-    verification = await Verification.deploy();
+    verification = await Verification.deploy(lenderPool.address);
     expect(
       await ethers.provider.getCode(verification.address)
     ).to.be.length.above(10);

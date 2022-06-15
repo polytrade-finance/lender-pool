@@ -24,6 +24,14 @@ interface ILenderPool {
     event Withdraw(address indexed lender, uint amount);
 
     /**
+     * @notice Emitted when staking treasury is switched
+     * @dev Emitted when switchTreasury function is called by owner
+     * @param oldTreasury, address of the old staking treasury
+     * @param newTreasury, address of the new staking treasury
+     */
+    event TreasurySwitched(address oldTreasury, address newTreasury);
+
+    /**
      * @notice Emits when new DepositLimit is set
      * @dev Emitted when new DepositLimit is set by the owner
      * @param oldVerification, old verification Address
@@ -147,12 +155,6 @@ interface ILenderPool {
      * @return Returns the total pending reward
      */
     function rewardOf(address lender, address token) external returns (uint);
-
-    /**
-     * @notice `getStrategyBalance` Returns total balance allocated by LenderPool in the Strategy (external protocol)
-     * @return Returns total balance allocated by LenderPool in the Strategy external protocol
-     */
-    function getStrategyBalance() external view returns (uint);
 
     /**
      * @notice `getDeposit` returns total amount deposited by the lender
