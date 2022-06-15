@@ -2,6 +2,7 @@
 pragma solidity ^0.8.14;
 
 import "../interface/IVerification.sol";
+import "../../LenderPool/interface/ILenderPool.sol";
 
 /**
  * @author Polytrade
@@ -11,6 +12,11 @@ contract Verification is IVerification {
     mapping(address => bool) public userValidation;
 
     uint public validationLimit;
+    ILenderPool public lenderPool;
+
+    constructor(address _lenderPool) {
+        lenderPool = ILenderPool(_lenderPool);
+    }
 
     /**
      * @notice Function for test purpose to approve/revoke Validation for any user
