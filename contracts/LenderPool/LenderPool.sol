@@ -334,24 +334,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `_withdrawFromStrategy`  withdraws all funds from external protocol.
-     * @dev It transfers all funds from external protocol to `LenderPool`.
-     * @dev It can be called by only owner of LenderPool.
-     * @param amount, total amount to be withdrawn from staking strategy.
-     *
-     * Requirements:
-     * - Total amount in external protocol should be less than `amount` requested.
-     *
-     */
-    function _withdrawFromStrategy(uint amount) private onlyOwner {
-        require(
-            _getStrategyBalance() >= amount,
-            "Balance less than requested."
-        );
-        strategy.withdraw(amount);
-    }
-
-    /**
      * @notice `_isUserRegistered` checks if user is registered in the current RewardManager
      * @param _user, address of the user
      */
