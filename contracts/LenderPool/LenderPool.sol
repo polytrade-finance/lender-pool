@@ -159,8 +159,8 @@ contract LenderPool is ILenderPool, Ownable {
     function withdrawAllDeposit() external {
         _isUserRegistered(msg.sender);
         uint balance = _lender[msg.sender].deposit;
-        require(balance > 0, "No amount deposited");
-        rewardManager.withdrawDeposit(msg.sender, _lender[msg.sender].deposit);
+        require(balance > 0);
+        rewardManager.withdrawDeposit(msg.sender, balance);
         _lender[msg.sender].deposit = 0;
         tStable.mint(msg.sender, balance);
         emit Withdraw(msg.sender, balance);
