@@ -53,6 +53,7 @@ contract Reward is IReward, AccessControl {
      * Emits {NewReward} event
      */
     function setReward(uint16 newReward) external onlyRole(OWNER) {
+        require(newReward > 0, "Should be higher than 0");
         if (currentRound > 0) {
             round[currentRound].endTime = uint40(block.timestamp);
         }
