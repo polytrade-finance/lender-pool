@@ -15,7 +15,6 @@ import "../RewardManager/interface/IRewardManager.sol";
  * @title LenderPool V2
  */
 contract LenderPool is ILenderPool, Ownable {
-    using SafeERC20 for IToken;
 
     mapping(address => Lender) private _lender;
     mapping(address => uint) public managerToIndex;
