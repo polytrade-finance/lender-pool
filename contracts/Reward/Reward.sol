@@ -38,11 +38,10 @@ contract Reward is IReward, AccessControl {
         uint deposited,
         uint40 startPeriod
     ) external onlyRole(REWARD_MANAGER) {
-        if (!_lender[lender].registered) {
-            _lender[lender].deposit = deposited;
-            _lender[lender].registered = true;
-            _lender[lender].startPeriod = startPeriod;
-        }
+        require(!_lender[lender].registered, "User already registered");
+        _lender[lender].deposit = deposited;
+        _lender[lender].registered = true;
+        _lender[lender].startPeriod = startPeriod;
     }
 
     /**
