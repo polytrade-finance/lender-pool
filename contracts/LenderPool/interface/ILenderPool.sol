@@ -24,6 +24,14 @@ interface ILenderPool {
     event Withdraw(address indexed lender, uint amount);
 
     /**
+     * @notice Emitted when staking treasury is switched
+     * @dev Emitted when switchTreasury function is called by owner
+     * @param oldTreasury, address of the old staking treasury
+     * @param newTreasury, address of the new staking treasury
+     */
+    event TreasurySwitched(address oldTreasury, address newTreasury);
+
+    /**
      * @notice Emits when new DepositLimit is set
      * @dev Emitted when new DepositLimit is set by the owner
      * @param oldVerification, old verification Address
