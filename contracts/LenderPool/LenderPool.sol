@@ -290,7 +290,7 @@ contract LenderPool is ILenderPool, Ownable {
             if (!_lender[msg.sender].isRegistered[managerList[i]]) {
                 IRewardManager manager = IRewardManager(managerList[i]);
                 manager.registerUser(msg.sender);
-                _lender[msg.sender].isRegistered[managerList[i]] = true;
+                _lender[msg.sender].isRegistered[address(manager)] = true;
             }
         }
     }
