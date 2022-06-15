@@ -306,7 +306,6 @@ contract LenderPool is ILenderPool, Ownable {
         view
         returns (uint)
     {
-        _isUserRegistered(lender);
         uint totalReward = 0;
         for (uint i = 1; i <= currManager; i++) {
             IRewardManager manager = IRewardManager(managerList[i]);
