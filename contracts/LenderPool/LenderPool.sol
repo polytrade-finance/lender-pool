@@ -82,7 +82,7 @@ contract LenderPool is ILenderPool, Ownable {
             rewardManager.pauseReward();
         }
         rewardManager = IRewardManager(newRewardManager);
-        rewardManager.registerRewardManager();
+        rewardManager.startRewardManager();
         currManager += 1;
         managerToIndex[newRewardManager] = currManager;
         managerList.push(newRewardManager);
