@@ -266,8 +266,8 @@ contract LenderPool is ILenderPool, Ownable {
      * @param amount to be send to the RedeemPool
      */
     function fillRedeemPool(uint amount) external onlyOwner {
-        require(amount > 0, "Amount can not be zero");
-        _withdrawFromStrategy(amount);
+        require(amount > 0);
+        strategy.withdraw(amount);
         stable.transfer(address(redeemPool), amount);
     }
 
