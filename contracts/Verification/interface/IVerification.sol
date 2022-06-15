@@ -13,8 +13,11 @@ interface IVerification {
      */
     event ValidationLimitUpdated(uint kycLimit);
 
-    function setValidation(address user, bool status) external;
-
+    /**
+   * @notice update the validation limit before verification is required
+     * @dev update validationLimit
+     * @param validationLimit, limit beforeValidation is required
+     */
     function updateValidationLimit(uint validationLimit) external;
 
     /**
