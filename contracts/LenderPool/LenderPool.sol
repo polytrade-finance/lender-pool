@@ -104,6 +104,21 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
+     * @notice `switchTreasury` updates the Treasury contract address.
+     * @dev Changed treasury Contract must complies with `ITreasury`
+     * @param newTreasury, address of the new Treasury contract
+     *
+     * Emits {TreasuryContractUpdated} event
+     */
+    function switchTreasury(address newTreasury) external onlyOwner {
+        require(newTreasury != address(0));
+        address oldTreasury = address(treasury);
+        stable.approve(oldTreasury, 0);
+        treasury = newTreasury;
+        emit TreasurySwitched(oldTreasury, newTreasury);
+    }
+
+    /**
      * @notice `deposit` is used by lenders to deposit stable token to the LenderPool.
      * @dev It transfers the approved stable token from msg.sender to the LenderPool.
      * @param amount, The number of stable token to be deposited.
