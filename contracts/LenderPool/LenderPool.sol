@@ -57,8 +57,8 @@ contract LenderPool is ILenderPool, Ownable {
         require(newStrategy != address(0));
         address oldStrategy = address(strategy);
         if (oldStrategy != address(0)) {
-            uint amount = _getStrategyBalance();
-            _withdrawFromStrategy(amount);
+            uint amount = strategy.getBalance();
+            strategy.withdraw(amount);
             strategy = Strategy(newStrategy);
             _depositInStrategy(amount);
         }
@@ -284,14 +284,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `getStrategyBalance` Returns total balance allocated by LenderPool in the Strategy (external protocol)
-     * @return Returns total balance allocated by LenderPool in the Strategy external protocol
-     */
-    function getStrategyBalance() external view returns (uint) {
-        return _getStrategyBalance();
-    }
-
-    /**
      * @notice `_depositInStrategy` deposits stable token to external protocol.
      * @dev Funds will be deposited to a Strategy (external protocols) like Aave, compound
      * @param amount, total amount to be deposited.
@@ -339,13 +331,5 @@ contract LenderPool is ILenderPool, Ownable {
                 "Please Register to RewardManager"
             );
         }
-    }
-
-    /**
-     * @notice `_getStrategyBalance` Returns total balance of lender in external protocol
-     * @return Returns total balance of lender in external protocol
-     */
-    function _getStrategyBalance() private view returns (uint) {
-        return strategy.getBalance();
     }
 }
