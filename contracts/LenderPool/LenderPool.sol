@@ -358,8 +358,7 @@ contract LenderPool is ILenderPool, Ownable {
     function _isUserRegistered(address _user) private view {
         require(
             address(rewardManager) == address(0) ||
-                managerToIndex[address(rewardManager)] != 0,
-            "Invalid RewardManager"
+                managerToIndex[address(rewardManager)] != 0
         );
         if (address(rewardManager) != address(0)) {
             require(
@@ -367,8 +366,7 @@ contract LenderPool is ILenderPool, Ownable {
                     address(0) ||
                     (_lender[_user].isRegistered[
                         managerList[managerToIndex[address(rewardManager)] - 1]
-                    ] && _lender[_user].isRegistered[address(rewardManager)]),
-                "Please Register to RewardManager"
+                    ] && _lender[_user].isRegistered[address(rewardManager)])
             );
         }
     }
