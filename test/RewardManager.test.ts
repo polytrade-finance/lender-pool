@@ -2,22 +2,24 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-  Token,
   LenderPool,
-  Verification,
+  RedeemPool,
   Reward,
   RewardManager,
-  RedeemPool,
   Strategy,
+  Token,
+  Verification,
 } from "../typechain";
 
 import {
+  AccountToImpersonateUSDT,
   aUSDTAddress,
   USDTAddress,
-  AccountToImpersonateUSDT,
 } from "./constants/constants.helpers";
 
-import { n6, ONE_DAY, now, setNextBlockTimestamp } from "./helpers";
+import { n6, now, ONE_DAY, setNextBlockTimestamp } from "./helpers";
+import { constants } from "ethers";
+
 describe("Lender Pool - Switch Reward Manager", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
@@ -95,14 +97,15 @@ describe("Lender Pool - Switch Reward Manager", function () {
     lenderPool = await LenderPool.deploy(
       stableToken1.address,
       tStableToken.address,
-      redeemPool.address
+      redeemPool.address,
+      constants.AddressZero
     );
     expect(
       await ethers.provider.getCode(lenderPool.address)
     ).to.be.length.above(10);
 
     const Verification = await ethers.getContractFactory("Verification");
-    verification = await Verification.deploy();
+    verification = await Verification.deploy(lenderPool.address);
     expect(
       await ethers.provider.getCode(verification.address)
     ).to.be.length.above(10);
