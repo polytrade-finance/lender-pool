@@ -197,8 +197,7 @@ contract LenderPool is ILenderPool, Ownable {
     function claimAllRewards() external {
         _isUserRegistered(msg.sender);
         for (uint i = 1; i <= currManager; i++) {
-            IRewardManager __rewardManager = IRewardManager(managerList[i]);
-            __rewardManager.claimAllRewardsFor(msg.sender);
+            IRewardManager(managerList[i]).claimAllRewardsFor(msg.sender);
         }
     }
 
@@ -210,8 +209,7 @@ contract LenderPool is ILenderPool, Ownable {
     function claimReward(address token) external {
         _isUserRegistered(msg.sender);
         for (uint i = 1; i <= currManager; i++) {
-            IRewardManager __rewardManager = IRewardManager(managerList[i]);
-            __rewardManager.claimRewardFor(msg.sender, token);
+            IRewardManager(managerList[i]).claimRewardFor(msg.sender, token);
         }
     }
 
