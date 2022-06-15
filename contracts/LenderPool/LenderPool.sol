@@ -132,21 +132,16 @@ contract LenderPool is ILenderPool, Ownable {
      * Emits {Deposit} event
      */
     function deposit(uint amount) external {
+        require(amount > 0);
+
         _isUserRegistered(msg.sender);
-        require(amount > 0, "Amount must be positive integer");
-        uint allowance = stable.allowance(msg.sender, address(this));
-        require(allowance >= amount, "Not enough allowance");
 
         require(
-            !(
-                verification.isValidationRequired(
-                    _lender[msg.sender].deposit + amount
-                )
-            ) || verification.isValid(msg.sender),
-            "Need to have valid KYC"
+            !verification.isValidationRequired(msg.sender, amount),
+            "Need verification"
         );
 
-        stable.safeTransferFrom(msg.sender, address(this), amount);
+        stable.transferFrom(msg.sender, address(this), amount);
         _depositInStrategy(amount);
 
         rewardManager.increaseDeposit(msg.sender, amount);
