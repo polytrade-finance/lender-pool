@@ -2,28 +2,30 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
-  Token,
   LenderPool,
-  Verification,
+  RedeemPool,
   Reward,
   RewardManager,
-  RedeemPool,
   Strategy,
+  Token,
+  Verification,
 } from "../typechain";
 
 import {
+  AccountToImpersonateUSDT,
   aUSDTAddress,
   USDTAddress,
-  AccountToImpersonateUSDT,
 } from "./constants/constants.helpers";
 
 import {
+  f6,
   increaseTime,
   n6,
-  ONE_DAY,
   now,
+  ONE_DAY,
   setNextBlockTimestamp,
 } from "./helpers";
+import { constants } from "ethers";
 
 describe("Lender Pool", function () {
   let accounts: SignerWithAddress[];
@@ -95,14 +97,15 @@ describe("Lender Pool", function () {
     lenderPool = await LenderPool.deploy(
       stableToken.address,
       tStableToken.address,
-      redeemPool.address
+      redeemPool.address,
+      addresses[10]
     );
     expect(
       await ethers.provider.getCode(lenderPool.address)
     ).to.be.length.above(10);
 
     const Verification = await ethers.getContractFactory("Verification");
-    verification = await Verification.deploy();
+    verification = await Verification.deploy(lenderPool.address);
     expect(
       await ethers.provider.getCode(verification.address)
     ).to.be.length.above(10);
@@ -314,7 +317,7 @@ describe("Lender Pool", function () {
   it("should fail deposits stable token without KYC", async function () {
     await expect(
       lenderPool.connect(accounts[2]).deposit(n6("100"))
-    ).to.be.revertedWith("Need to have valid KYC");
+    ).to.be.revertedWith("Need verification");
   });
 
   it("should increase the minimum deposit before KYC", async () => {
@@ -542,7 +545,7 @@ describe("Lender Pool", function () {
   it("should fail deposit if no valid KYC", async () => {
     await expect(
       lenderPool.connect(accounts[6]).deposit(n6("5000"))
-    ).to.be.revertedWith("Need to have valid KYC");
+    ).to.be.revertedWith("Need verification");
   });
 
   it("should approve KYC for user3", async () => {
@@ -625,5 +628,85 @@ describe("Lender Pool", function () {
     await lenderPool.fillRedeemPool(n6("100"));
     const balanceAfter1 = await stableToken.balanceOf(redeemPool.address);
     expect(balanceAfter1.sub(balanceBefore1)).to.be.equal(n6("100"));
+  });
+
+  it("Should set Treasury to address[0]", async () => {
+    await lenderPool.switchTreasury(addresses[0]);
+  });
+
+  it("Should fail transfer using LenderPool funds", async () => {
+    await expect(
+      stableToken.transferFrom(lenderPool.address, addresses[0], 1)
+    ).to.be.revertedWith("ERC20: transfer amount exceeds balance");
+  });
+
+  it("Should request Fund Invoice", async () => {
+    await lenderPool.requestFundInvoice(1);
+  });
+
+  it("Should fail transfer using LenderPool funds if more than requested", async () => {
+    await expect(
+      stableToken.transferFrom(lenderPool.address, addresses[0], 2)
+    ).to.be.revertedWith("ERC20: transfer amount exceeds balance");
+  });
+
+  it("Should transfer using LenderPool funds", async () => {
+    await stableToken.transferFrom(lenderPool.address, addresses[0], 1);
+  });
+
+  it("Should fail switching RewardManager", async () => {
+    await expect(lenderPool.switchRewardManager(constants.AddressZero)).to.be
+      .reverted;
+  });
+
+  it("Should fail switching Treasury", async () => {
+    await expect(lenderPool.switchTreasury(constants.AddressZero)).to.be
+      .reverted;
+  });
+
+  it("Should fail switching Verification", async () => {
+    await expect(lenderPool.switchVerification(constants.AddressZero)).to.be
+      .reverted;
+  });
+
+  it("Should fail switching Strategy", async () => {
+    await expect(lenderPool.switchStrategy(constants.AddressZero)).to.be
+      .reverted;
+  });
+
+  it("Should fail switching Strategy", async () => {
+    await expect(lenderPool.withdrawDeposit(0)).to.be.reverted;
+  });
+
+  it("Should redeem 10 USDT", async () => {
+    await stableToken.connect(accounts[0]).transfer(addresses[6], n6("100"));
+    await stableToken
+      .connect(accounts[6])
+      .approve(lenderPool.address, n6("100"));
+
+    await lenderPool.connect(accounts[6]).deposit(n6("100"));
+    expect(f6(await lenderPool.getDeposit(addresses[6]))).to.equal("100.0");
+
+    expect(f6(await stableToken.balanceOf(addresses[6]))).to.equal(
+      "12700.000253"
+    );
+
+    await lenderPool.connect(accounts[6]).redeem(n6("10"));
+    expect(f6(await lenderPool.getDeposit(addresses[6]))).to.equal("90.0");
+    expect(f6(await stableToken.balanceOf(addresses[6]))).to.equal(
+      "12710.000253"
+    );
+  });
+
+  it("Should fill redeem pool", async () => {
+    await lenderPool.fillRedeemPool("1000");
+  });
+
+  it("Should fill redeem pool", async () => {
+    await lenderPool.requestFundInvoice("1000");
+  });
+
+  it("Should fail request fund", async () => {
+    await expect(lenderPool.requestFundInvoice("0")).to.be.reverted;
   });
 });
