@@ -28,5 +28,15 @@ interface IVerification {
      */
     function isValid(address user) external view returns (bool);
 
-    function isValidationRequired(uint amount) external view returns (bool);
+    /**
+ * @notice Returns whether a validation is required or not based on deposit
+     * @dev returns a boolean if the KYC is required or not
+     * @param user, address of the user to check
+     * @param amount, amount to be added
+     * @return returns a boolean if the amount requires a Validation or not
+     */
+    function isValidationRequired(address user, uint amount)
+        external
+        view
+        returns (bool);
 }
