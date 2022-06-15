@@ -233,6 +233,7 @@ contract LenderPool is ILenderPool, Ownable {
                 _lender[msg.sender].deposit
             );
         }
+
         _lender[msg.sender].deposit = 0;
         tStable.mint(address(this), balance);
         tStable.approve(address(redeemPool), balance);
@@ -240,6 +241,30 @@ contract LenderPool is ILenderPool, Ownable {
         rewardManager.claimAllRewardsFor(msg.sender);
     }
 
+    /**
+     * @notice `redeem` send caller the amount in stable token by converting its tStable to Stable
+     * @dev It converts the tStable to stable using `RedeemPool`.
+     *
+     * Requirements :
+     * - `RedeemPool` should have enough stable tokens on the RedeemPool.
+     *
+     */
+    function redeem(uint amount) external {
+        require(amount > 0 && _lender[msg.sender].deposit >= amount);
+
+        _isUserRegistered(msg.sender);
+
+        rewardManager.withdrawDeposit(msg.sender, amount);
+        _lender[msg.sender].deposit -= amount;
+        tStable.mint(address(this), amount);
+        tStable.approve(address(redeemPool), amount);
+        redeemPool.redeemStableFor(msg.sender, amount);
+    }
+
+    /**
+     * @notice Withdraw funds from strategy and send it to the RedeemPool
+     * @param amount to be send to the RedeemPool
+     */
     function fillRedeemPool(uint amount) external onlyOwner {
         require(amount > 0, "Amount can not be zero");
         _withdrawFromStrategy(amount);
