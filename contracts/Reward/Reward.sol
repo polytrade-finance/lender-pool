@@ -51,7 +51,7 @@ contract Reward is IReward, AccessControl {
     /**
      * @notice `setReward` updates the value of reward.
      * @dev For example - APY in case of tStable, trade per year per stable in case of trade reward.
-     * @dev It can be called by only OWNER.
+     * @dev It can only be called by OWNER role.
      * @param newReward, current reward offered by the contract.
      *
      * Emits {NewReward} event
@@ -95,7 +95,7 @@ contract Reward is IReward, AccessControl {
 
     /**
      * @notice `deposit` increases the `lender` deposit by `amount`
-     * @dev It can be called by only REWARD_MANAGER.
+     * @dev It can only be called by the REWARD_MANAGER.
      * @param lender, address of the lender
      * @param amount, amount deposited by lender
      *
@@ -121,7 +121,7 @@ contract Reward is IReward, AccessControl {
 
     /**
      * @notice `withdraw` withdraws the `amount` from `lender`
-     * @dev It can be called by only REWARD_MANAGER.
+     * @dev It can only be called by the REWARD_MANAGER.
      * @param lender, address of the lender
      * @param amount, amount requested by lender
      *
@@ -145,7 +145,7 @@ contract Reward is IReward, AccessControl {
     /**
      * @notice `claimReward` send reward to lender.
      * @dev It calls `_updatePendingReward` function and sets pending reward to 0.
-     * @dev It can be called by only REWARD_MANAGER.
+     * @dev It can only be called by the REWARD_MANAGER.
      * @param lender, address of the lender.
      *
      * Emits {RewardClaimed} event
@@ -257,7 +257,7 @@ contract Reward is IReward, AccessControl {
 
     /**
      * @notice calculates the reward
-     * @dev calculates the reward using given below formula
+     * @dev calculates the reward using the formula given below
      * @param amount, principal amount
      * @param start, start of the tenure for reward
      * @param end, end of the tenure for reward
