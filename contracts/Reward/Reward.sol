@@ -176,7 +176,7 @@ contract Reward is IReward, AccessControl {
      * @dev It compares the lender round with currentRound and updates _lender accordingly
      * @param lender, address of the lender
      */
-    function _updatePendingReward(address lender) internal {
+    function _updatePendingReward(address lender) private {
         if (_lender[lender].round == currentRound) {
             _lender[lender].pendingRewards += _calculateCurrentRound(lender);
         }
