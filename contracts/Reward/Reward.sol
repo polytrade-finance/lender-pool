@@ -41,6 +41,7 @@ contract Reward is IReward, AccessControl {
         uint deposited,
         uint40 startPeriod
     ) external onlyRole(REWARD_MANAGER) {
+        require(lender != address(0), "Should not be address(0)");
         require(!_lender[lender].registered, "User already registered");
         _lender[lender].deposit = deposited;
         _lender[lender].registered = true;
@@ -107,6 +108,7 @@ contract Reward is IReward, AccessControl {
         onlyRole(REWARD_MANAGER)
     {
         require(amount > 0, "Lending amount is 0");
+        require(lender != address(0), "Should not be address(0)");
         if (_lender[lender].startPeriod > 0) {
             _updatePendingReward(lender);
         } else {
@@ -133,6 +135,7 @@ contract Reward is IReward, AccessControl {
     {
         require(amount > 0, "Cannot withdraw 0 amount");
         require(_lender[lender].deposit >= amount, "Invalid amount requested");
+        require(lender != address(0), "Should not be address(0)");
         if (currentRound > 0) {
             _updatePendingReward(lender);
         }
