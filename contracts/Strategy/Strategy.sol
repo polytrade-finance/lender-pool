@@ -17,7 +17,7 @@ contract Strategy is IStrategy, AccessControl {
     IToken public stable;
     IToken public aStable;
 
-    IAaveLendingPool public aave =
+    IAaveLendingPool public constant AAVE =
         IAaveLendingPool(0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf);
 
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
@@ -34,12 +34,9 @@ contract Strategy is IStrategy, AccessControl {
      * @param amount, total amount accepted from user and transferred to aave
      */
     function deposit(uint amount) external {
-        require(
-            stable.transferFrom(msg.sender, address(this), amount),
-            "Stable Transfer failed"
-        );
-        stable.approve(address(aave), amount);
-        aave.deposit(address(stable), amount, address(this), 0);
+        stable.safeTransferFrom(msg.sender, address(this), amount);
+        stable.safeApprove(address(AAVE), amount);
+        AAVE.deposit(address(stable), amount, address(this), 0);
         emit Deposit(amount);
     }
 
@@ -49,7 +46,7 @@ contract Strategy is IStrategy, AccessControl {
      * @param amount, total amount accepted from user and transferred to aave
      */
     function withdraw(uint amount) external onlyRole(LENDER_POOL) {
-        aave.withdraw(address(stable), amount, msg.sender);
+        AAVE.withdraw(address(stable), amount, msg.sender);
         emit Withdraw(amount);
     }
 

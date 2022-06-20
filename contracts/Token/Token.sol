@@ -18,7 +18,7 @@ contract Token is IToken, ERC20, AccessControl {
         string memory symbol_,
         uint8 decimals_
     ) ERC20(name_, symbol_) {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _decimals = decimals_;
         _mint(msg.sender, 1_000_000_000 * (10**decimals_));
     }
@@ -36,6 +36,7 @@ contract Token is IToken, ERC20, AccessControl {
      * - `to` cannot be the zero address.
      */
     function mint(address to, uint amount) external onlyRole(MINTER_ROLE) {
+        require(amount > 0, "Amount must be higher than 0");
         _mint(to, amount);
     }
 
@@ -51,6 +52,7 @@ contract Token is IToken, ERC20, AccessControl {
      * `amount`.
      */
     function burnFrom(address account, uint amount) external {
+        require(amount > 0, "Amount must be higher than 0");
         _spendAllowance(account, _msgSender(), amount);
         _burn(account, amount);
     }

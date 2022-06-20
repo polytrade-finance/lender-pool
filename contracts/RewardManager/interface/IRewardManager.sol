@@ -4,6 +4,7 @@ pragma solidity ^0.8.14;
 interface IRewardManager {
     struct Lender {
         uint deposit;
+        bool registered;
     }
 
     /**

@@ -46,8 +46,8 @@ contract LenderPool is ILenderPool, Ownable {
     /**
      * @notice `switchStrategy` is used for switching the strategy.
      * @dev It moves all the funds from the old strategy to the new strategy.
-     * @dev It can be called by only owner of LenderPool.
-     * @dev Changed strategy contract must complies with `IStrategy`.
+     * @dev It can only be called by the owner of LenderPool.
+     * @dev Changed strategy contract must comply with `IStrategy`.
      * @param newStrategy, address of the new staking strategy.
      *
      * Emits {StrategySwitched} event
@@ -68,8 +68,8 @@ contract LenderPool is ILenderPool, Ownable {
     /**
      * @notice `switchRewardManager` is used to switch reward manager.
      * @dev It pauses reward for previous `RewardManager` and initializes new `RewardManager` .
-     * @dev It can be called by only owner of LenderPool.
-     * @dev Changed `RewardManager` contract must complies with `IRewardManager`.
+     * @dev It can only be called by the owner of LenderPool.
+     * @dev Changed `RewardManager` contract must comply with `IRewardManager`.
      * @param newRewardManager, Address of the new `RewardManager`.
      *
      * Emits {RewardManagerSwitched} event
@@ -90,7 +90,7 @@ contract LenderPool is ILenderPool, Ownable {
 
     /**
      * @notice `switchVerification` updates the Verification contract address.
-     * @dev Changed verification Contract must complies with `IVerification`
+     * @dev Changed verification Contract must comply with `IVerification`
      * @param newVerification, address of the new Verification contract
      *
      * Emits {VerificationContractUpdated} event
@@ -104,7 +104,6 @@ contract LenderPool is ILenderPool, Ownable {
 
     /**
      * @notice `switchTreasury` updates the Treasury contract address.
-     * @dev Changed treasury Contract must complies with `ITreasury`
      * @param newTreasury, address of the new Treasury contract
      *
      * Emits {TreasuryContractUpdated} event
@@ -296,8 +295,9 @@ contract LenderPool is ILenderPool, Ownable {
 
     /**
      * @notice `rewardOf` returns the total reward of the lender
-     * @dev It returns array of number, where each element is a reward
-     * @dev For example - [stable reward, trade reward 1, trade reward 2]
+     * @dev It returns the amount of rewards from all RewardManagers
+     * @param lender, address of the lender to check rewards.
+     * @param token, address of the token to check rewards from (USDC, TRADE, etc.).
      * @return Returns the total pending reward
      */
     function rewardOf(address lender, address token)
@@ -307,8 +307,10 @@ contract LenderPool is ILenderPool, Ownable {
     {
         uint totalReward = 0;
         for (uint i = 1; i <= currManager; i++) {
-            IRewardManager manager = IRewardManager(managerList[i]);
-            totalReward += manager.rewardOf(lender, token);
+            totalReward += IRewardManager(managerList[i]).rewardOf(
+                lender,
+                token
+            );
         }
         return totalReward;
     }
@@ -333,7 +335,7 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `_isUserRegistered` checks if user is registered in the current RewardManager
+     * @notice `_isUserRegistered` checks if user is registered in the current and previous RewardManager
      * @param _user, address of the user
      */
     function _isUserRegistered(address _user) private view {
