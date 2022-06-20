@@ -1,15 +1,18 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.14;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interface/IReward.sol";
 import "../Token/interface/IToken.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @author Polytrade
  * @title Reward V2
  */
 contract Reward is IReward, AccessControl {
+    using SafeERC20 for IToken;
+
     bytes32 public constant REWARD_MANAGER = keccak256("REWARD_MANAGER");
     bytes32 public constant OWNER = keccak256("OWNER");
 
@@ -148,7 +151,7 @@ contract Reward is IReward, AccessControl {
         _updatePendingReward(lender);
         uint totalReward = _lender[lender].pendingRewards;
         _lender[lender].pendingRewards = 0;
-        _rewardToken.transfer(lender, totalReward);
+        _rewardToken.safeTransfer(lender, totalReward);
         emit RewardClaimed(lender, totalReward);
     }
 
