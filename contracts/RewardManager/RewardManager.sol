@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 contract RewardManager is IRewardManager, AccessControl {
     IReward public stable;
     IReward public trade;
-    IRewardManager public prevRewardManager;
+    address public prevRewardManager;
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
 
     uint40 public startTime;
@@ -26,7 +26,7 @@ contract RewardManager is IRewardManager, AccessControl {
     ) {
         stable = IReward(_stable);
         trade = IReward(_trade);
-        prevRewardManager = IRewardManager(_prevRewardManager);
+        prevRewardManager = _prevRewardManager;
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
