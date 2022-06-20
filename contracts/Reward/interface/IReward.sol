@@ -24,6 +24,11 @@ interface IReward {
     event NewReward(uint16 oldReward, uint16 newReward);
 
     /**
+     * @notice Emitted after `reward` is paused.
+     */
+    event RewardsPaused();
+
+    /**
      * @notice Emitted after Reward is transferred to user.
      * @param lender, address of the lender.
      * @param amount, amount transferred to lender.
