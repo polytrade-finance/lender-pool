@@ -17,7 +17,7 @@ contract Strategy is IStrategy, AccessControl {
     IToken public stable;
     IToken public aStable;
 
-    IAaveLendingPool public aave =
+    IAaveLendingPool public constant AAVE =
         IAaveLendingPool(0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf);
 
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
