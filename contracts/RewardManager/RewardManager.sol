@@ -37,8 +37,12 @@ contract RewardManager is IRewardManager, AccessControl {
      */
     function registerUser(address lender) external onlyRole(LENDER_POOL) {
         require(startTime > 0, "Not initialized yet");
-        if (address(prevRewardManager) != address(0)) {
-            uint lenderBalance = prevRewardManager.getDeposit(lender);
+        require(!_lender[lender].registered, "Already registered");
+        require(lender != address(0), "Should not be address(0)");
+        if (prevRewardManager != address(0)) {
+            uint lenderBalance = IRewardManager(prevRewardManager).getDeposit(
+                lender
+            );
             if (lenderBalance > 0) {
                 _lender[lender].deposit += lenderBalance;
                 stable.registerUser(lender, lenderBalance, startTime);
@@ -67,6 +71,8 @@ contract RewardManager is IRewardManager, AccessControl {
         external
         onlyRole(LENDER_POOL)
     {
+        require(lender != address(0), "Should not be address(0)");
+
         _lender[lender].deposit += amount;
         trade.deposit(lender, amount);
         stable.deposit(lender, amount);
@@ -83,6 +89,8 @@ contract RewardManager is IRewardManager, AccessControl {
         external
         onlyRole(LENDER_POOL)
     {
+        require(lender != address(0), "Should not be address(0)");
+
         _lender[lender].deposit -= amount;
         trade.withdraw(lender, amount);
         stable.withdraw(lender, amount);
@@ -95,6 +103,8 @@ contract RewardManager is IRewardManager, AccessControl {
      * @param lender, address of the lender
      */
     function claimAllRewardsFor(address lender) external onlyRole(LENDER_POOL) {
+        require(lender != address(0), "Should not be address(0)");
+
         stable.claimReward(lender);
         trade.claimReward(lender);
     }
@@ -109,6 +119,8 @@ contract RewardManager is IRewardManager, AccessControl {
         external
         onlyRole(LENDER_POOL)
     {
+        require(lender != address(0), "Should not be address(0)");
+
         if (stable.getRewardToken() == token) {
             stable.claimReward(lender);
         } else if (trade.getRewardToken() == token) {
