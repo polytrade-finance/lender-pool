@@ -58,18 +58,7 @@ contract Reward is IReward, AccessControl {
      */
     function setReward(uint16 newReward) external onlyRole(OWNER) {
         require(newReward > 0, "Should be higher than 0");
-        if (currentRound > 0) {
-            round[currentRound].endTime = uint40(block.timestamp);
-        }
-        currentRound += 1;
-        uint16 oldReward = round[currentRound].apy;
-        round[currentRound] = RoundInfo(
-            newReward,
-            uint40(block.timestamp),
-            type(uint40).max
-        );
-
-        emit NewReward(oldReward, newReward);
+        _setReward(newReward);
     }
 
     /**
@@ -80,17 +69,8 @@ contract Reward is IReward, AccessControl {
      * Emits {NewReward} event
      */
     function pauseReward() external onlyRole(REWARD_MANAGER) {
-        if (currentRound > 0) {
-            round[currentRound].endTime = uint40(block.timestamp);
-        }
-        currentRound += 1;
-        uint16 oldReward = round[currentRound].apy;
-        round[currentRound] = RoundInfo(
-            0,
-            uint40(block.timestamp),
-            type(uint40).max
-        );
-        emit NewReward(oldReward, 0);
+        _setReward(0);
+        emit RewardsPaused();
     }
 
     /**
@@ -208,6 +188,29 @@ contract Reward is IReward, AccessControl {
             _lender[lender].round = currentRound;
         }
         _lender[lender].startPeriod = uint40(block.timestamp);
+    }
+
+    /**
+     * @notice `_setReward` updates the value of reward.
+     * @param newReward, current reward offered by the contract.
+     *
+     * Emits {NewReward} event
+     */
+    function _setReward(uint16 newReward) private {
+        if (currentRound > 0) {
+            round[currentRound].endTime = uint40(block.timestamp);
+        }
+
+        currentRound++;
+
+        uint16 oldReward = round[currentRound].apy;
+        round[currentRound] = RoundInfo(
+            newReward,
+            uint40(block.timestamp),
+            type(uint40).max
+        );
+
+        emit NewReward(oldReward, newReward);
     }
 
     /**
