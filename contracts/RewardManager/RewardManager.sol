@@ -47,6 +47,7 @@ contract RewardManager is IRewardManager, AccessControl {
                 _lender[lender].deposit += lenderBalance;
                 stable.registerUser(lender, lenderBalance, startTime);
                 trade.registerUser(lender, lenderBalance, startTime);
+                _lender[lender].registered = true;
             }
         }
     }
