@@ -307,8 +307,10 @@ contract LenderPool is ILenderPool, Ownable {
     {
         uint totalReward = 0;
         for (uint i = 1; i <= currManager; i++) {
-            IRewardManager manager = IRewardManager(managerList[i]);
-            totalReward += manager.rewardOf(lender, token);
+            totalReward += IRewardManager(managerList[i]).rewardOf(
+                lender,
+                token
+            );
         }
         return totalReward;
     }
