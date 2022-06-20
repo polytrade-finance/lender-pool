@@ -26,7 +26,8 @@
     "no-unused-vars": "error",
     "payable-fallback": "error",
     "constructor-syntax": "error",
-    "not-rely-on-time": "off"
+    "not-rely-on-time": "off",
+    "reason-string": "off"
   },
   "plugins": ["prettier"]
 }
