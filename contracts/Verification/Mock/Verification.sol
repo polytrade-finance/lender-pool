@@ -33,7 +33,7 @@ contract Verification is IVerification {
      * @dev updates validationLimit variable
      * @param _validationLimit, new value of depositLimit
      *
-     * Emits {NewValidationLimit} event
+     * Emits {ValidationLimitUpdated} event
      */
     function updateValidationLimit(uint _validationLimit) external {
         validationLimit = _validationLimit;
