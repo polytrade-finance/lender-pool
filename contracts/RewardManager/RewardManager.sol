@@ -120,7 +120,10 @@ contract RewardManager is IRewardManager, AccessControl {
         external
         onlyRole(LENDER_POOL)
     {
-        require(lender != address(0), "Should not be address(0)");
+        require(
+            lender != address(0) && token != address(0),
+            "Should not be address(0)"
+        );
 
         if (stable.getRewardToken() == token) {
             stable.claimReward(lender);
