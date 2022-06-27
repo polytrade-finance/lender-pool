@@ -39,8 +39,8 @@ contract Strategy is IStrategy, AccessControl {
      */
     function deposit(uint amount) external {
         stable.safeTransferFrom(msg.sender, address(this), amount);
-        stable.safeApprove(address(AAVE), amount);
-        AAVE.deposit(address(stable), amount, address(this), 0);
+        stable.safeApprove(address(aave), amount);
+        aave.deposit(address(stable), amount, address(this), 0);
         emit Deposit(amount);
     }
 
@@ -50,7 +50,7 @@ contract Strategy is IStrategy, AccessControl {
      * @param amount, total amount accepted from user and transferred to aave
      */
     function withdraw(uint amount) external onlyRole(LENDER_POOL) {
-        AAVE.withdraw(address(stable), amount, msg.sender);
+        aave.withdraw(address(stable), amount, msg.sender);
         emit Withdraw(amount);
     }
 
