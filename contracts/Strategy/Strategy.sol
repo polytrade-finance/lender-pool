@@ -17,15 +17,15 @@ contract Strategy is IStrategy, AccessControl {
     IToken public stable;
     IToken public aStable;
 
-    IAaveLendingPool public constant AAVE =
-        IAaveLendingPool(0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf);
+    IAaveLendingPool public immutable AAVE;
 
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
 
-    constructor(address _stable, address _aStable) {
+    constructor(address _aave, address _stable, address _aStable) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         stable = IToken(_stable);
         aStable = IToken(_aStable);
+        AAVE = IAaveLendingPool(_aave);
     }
 
     /**
