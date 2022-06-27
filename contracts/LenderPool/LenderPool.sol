@@ -338,10 +338,6 @@ contract LenderPool is ILenderPool, Ownable {
      * @param _user, address of the user
      */
     function _isUserRegistered(address _user) private view {
-        require(
-            address(rewardManager) == address(0) ||
-                managerToIndex[address(rewardManager)] != 0
-        );
         if (address(rewardManager) != address(0)) {
             require(
                 managerList[managerToIndex[address(rewardManager)] - 1] ==
