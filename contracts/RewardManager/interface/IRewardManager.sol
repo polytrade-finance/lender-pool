@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.14;
+pragma solidity =0.8.15;
 
 interface IRewardManager {
     struct Lender {
@@ -54,9 +54,9 @@ interface IRewardManager {
     function withdrawDeposit(address lender, uint amount) external;
 
     /**
-     * @notice `pauseRewards` sets the reward for all the tokens to 0
+     * @notice `resetRewards` sets the reward for all the tokens to 0
      */
-    function pauseReward() external;
+    function resetRewards() external;
 
     /**
      * @notice `claimRewardFor` transfer all the `token` reward to the `user`

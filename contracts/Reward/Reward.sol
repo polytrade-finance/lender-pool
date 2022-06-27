@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.14;
+pragma solidity =0.8.15;
 
 import "./interface/IReward.sol";
 import "../Token/interface/IToken.sol";
@@ -65,12 +65,9 @@ contract Reward is IReward, AccessControl {
      * @notice `pauseReward` sets the apy to 0.
      * @dev It is called after `RewardManager` is discontinued.
      * @dev It can be called by only REWARD_MANAGER.
-     *
-     * Emits {NewReward} event
      */
-    function pauseReward() external onlyRole(REWARD_MANAGER) {
+    function resetReward() external onlyRole(REWARD_MANAGER) {
         _setReward(0);
-        emit RewardsPaused();
     }
 
     /**
@@ -276,7 +273,7 @@ contract Reward is IReward, AccessControl {
         if (amount == 0 || reward == 0 || start >= end) {
             return 0;
         }
-        uint oneYear = (10000 * 365 days);
+        uint oneYear = (1E4 * 365 days);
         return (((end - start) * reward * amount) / oneYear);
     }
 

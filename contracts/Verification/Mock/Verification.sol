@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.14;
+pragma solidity =0.8.15;
 
 import "../interface/IVerification.sol";
 import "../../LenderPool/interface/ILenderPool.sol";
@@ -33,7 +33,7 @@ contract Verification is IVerification {
      * @dev updates validationLimit variable
      * @param _validationLimit, new value of depositLimit
      *
-     * Emits {NewValidationLimit} event
+     * Emits {ValidationLimitUpdated} event
      */
     function updateValidationLimit(uint _validationLimit) external {
         validationLimit = _validationLimit;

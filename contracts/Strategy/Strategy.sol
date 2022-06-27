@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.14;
+pragma solidity =0.8.15;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
@@ -17,15 +17,19 @@ contract Strategy is IStrategy, AccessControl {
     IToken public stable;
     IToken public aStable;
 
-    IAaveLendingPool public constant AAVE =
-        IAaveLendingPool(0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf);
+    IAaveLendingPool public immutable aave;
 
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
 
-    constructor(address _stable, address _aStable) {
+    constructor(
+        address _aave,
+        address _stable,
+        address _aStable
+    ) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         stable = IToken(_stable);
         aStable = IToken(_aStable);
+        aave = IAaveLendingPool(_aave);
     }
 
     /**
@@ -35,8 +39,8 @@ contract Strategy is IStrategy, AccessControl {
      */
     function deposit(uint amount) external {
         stable.safeTransferFrom(msg.sender, address(this), amount);
-        stable.safeApprove(address(AAVE), amount);
-        AAVE.deposit(address(stable), amount, address(this), 0);
+        stable.safeApprove(address(aave), amount);
+        aave.deposit(address(stable), amount, address(this), 0);
         emit Deposit(amount);
     }
 
@@ -46,7 +50,7 @@ contract Strategy is IStrategy, AccessControl {
      * @param amount, total amount accepted from user and transferred to aave
      */
     function withdraw(uint amount) external onlyRole(LENDER_POOL) {
-        AAVE.withdraw(address(stable), amount, msg.sender);
+        aave.withdraw(address(stable), amount, msg.sender);
         emit Withdraw(amount);
     }
 

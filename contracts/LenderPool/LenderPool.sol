@@ -1,14 +1,13 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.14;
+pragma solidity =0.8.15;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../Strategy/Strategy.sol";
 import "./interface/ILenderPool.sol";
 import "../Token/interface/IToken.sol";
 import "../RedeemPool/interface/IRedeemPool.sol";
 import "../Verification/interface/IVerification.sol";
 import "../RewardManager/interface/IRewardManager.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @author Polytrade
@@ -78,7 +77,7 @@ contract LenderPool is ILenderPool, Ownable {
         require(newRewardManager != address(0));
         address oldRewardManager = address(rewardManager);
         if (oldRewardManager != address(0)) {
-            rewardManager.pauseReward();
+            rewardManager.resetRewards();
         }
         rewardManager = IRewardManager(newRewardManager);
         rewardManager.startRewardManager();
@@ -339,10 +338,6 @@ contract LenderPool is ILenderPool, Ownable {
      * @param _user, address of the user
      */
     function _isUserRegistered(address _user) private view {
-        require(
-            address(rewardManager) == address(0) ||
-                managerToIndex[address(rewardManager)] != 0
-        );
         if (address(rewardManager) != address(0)) {
             require(
                 managerList[managerToIndex[address(rewardManager)] - 1] ==

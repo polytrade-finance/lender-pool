@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.14;
+pragma solidity =0.8.15;
 
 interface IReward {
     struct Lender {
@@ -22,11 +22,6 @@ interface IReward {
      * @param newReward, value of the new reward.
      */
     event NewReward(uint16 oldReward, uint16 newReward);
-
-    /**
-     * @notice Emitted after `reward` is paused.
-     */
-    event RewardsPaused();
 
     /**
      * @notice Emitted after Reward is transferred to user.
@@ -92,7 +87,7 @@ interface IReward {
      *
      * Emits {NewReward} event
      */
-    function pauseReward() external;
+    function resetReward() external;
 
     /**
      * @notice `rewardOf` returns the total pending reward of the lender

@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.14;
+pragma solidity =0.8.15;
 
 import "./interface/IRewardManager.sol";
 import "../Reward/interface/IReward.sol";
@@ -120,7 +120,10 @@ contract RewardManager is IRewardManager, AccessControl {
         external
         onlyRole(LENDER_POOL)
     {
-        require(lender != address(0), "Should not be address(0)");
+        require(
+            lender != address(0) && token != address(0),
+            "Should not be address(0)"
+        );
 
         if (stable.getRewardToken() == token) {
             stable.claimReward(lender);
@@ -130,11 +133,11 @@ contract RewardManager is IRewardManager, AccessControl {
     }
 
     /**
-     * @notice `pauseRewards` sets the reward for all the tokens to 0
+     * @notice `resetRewards` sets the reward for all the tokens to 0
      */
-    function pauseReward() external onlyRole(LENDER_POOL) {
-        stable.pauseReward();
-        trade.pauseReward();
+    function resetRewards() external onlyRole(LENDER_POOL) {
+        stable.resetReward();
+        trade.resetReward();
     }
 
     /**
