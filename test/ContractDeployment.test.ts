@@ -111,7 +111,11 @@ describe("Contract Deployment", function () {
   it("should deploy Strategy", async () => {
     aStable = await ethers.getContractAt("IERC20", aUSDTAddress, accounts[0]);
     const Strategy = await ethers.getContractFactory("Strategy");
-    strategy = await Strategy.deploy(stableToken.address, aStable.address);
+    strategy = await Strategy.deploy(
+      "0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf",
+      stableToken.address,
+      aStable.address
+    );
     await strategy.deployed();
     expect(await ethers.provider.getCode(strategy.address)).to.be.length.above(
       10
