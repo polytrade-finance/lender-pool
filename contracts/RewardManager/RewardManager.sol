@@ -133,11 +133,11 @@ contract RewardManager is IRewardManager, AccessControl {
     }
 
     /**
-     * @notice `pauseRewards` sets the reward for all the tokens to 0
+     * @notice `resetRewards` sets the reward for all the tokens to 0
      */
-    function pauseReward() external onlyRole(LENDER_POOL) {
-        stable.pauseReward();
-        trade.pauseReward();
+    function resetRewards() external onlyRole(LENDER_POOL) {
+        stable.resetReward();
+        trade.resetReward();
     }
 
     /**
