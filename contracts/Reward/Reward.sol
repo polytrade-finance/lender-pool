@@ -273,7 +273,7 @@ contract Reward is IReward, AccessControl {
         if (amount == 0 || reward == 0 || start >= end) {
             return 0;
         }
-        uint oneYear = (10000 * 365 days);
+        uint oneYear = (1E4 * 365 days);
         return (((end - start) * reward * amount) / oneYear);
     }
 
