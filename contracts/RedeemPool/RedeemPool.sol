@@ -70,10 +70,6 @@ contract RedeemPool is IRedeemPool, AccessControl {
             "Insufficient balance"
         );
         require(
-            tStable.allowance(msg.sender, address(this)) >= amount,
-            "Insufficient allowance"
-        );
-        require(
             stable.balanceOf(address(this)) >= amount,
             "Insufficient balance in pool"
         );
