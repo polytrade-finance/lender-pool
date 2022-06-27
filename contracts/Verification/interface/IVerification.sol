@@ -14,9 +14,11 @@ interface IVerification {
     event ValidationLimitUpdated(uint kycLimit);
 
     /**
-     * @notice update the validation limit before verification is required
-     * @dev update validationLimit
-     * @param validationLimit, limit beforeValidation is required
+     * @notice Updates the limit for the Validation to be required
+     * @dev updates validationLimit variable
+     * @param validationLimit, new value of depositLimit
+     *
+     * Emits {ValidationLimitUpdated} event
      */
     function updateValidationLimit(uint validationLimit) external;
 
