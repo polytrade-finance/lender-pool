@@ -65,12 +65,9 @@ contract Reward is IReward, AccessControl {
      * @notice `pauseReward` sets the apy to 0.
      * @dev It is called after `RewardManager` is discontinued.
      * @dev It can be called by only REWARD_MANAGER.
-     *
-     * Emits {NewReward} event
      */
-    function pauseReward() external onlyRole(REWARD_MANAGER) {
+    function resetReward() external onlyRole(REWARD_MANAGER) {
         _setReward(0);
-        emit RewardsPaused();
     }
 
     /**
