@@ -8,13 +8,6 @@ import "../RedeemPool/interface/IRedeemPool.sol";
 import "../Verification/interface/IVerification.sol";
 import "../RewardManager/interface/IRewardManager.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "../Strategy/Strategy.sol";
-import "./interface/ILenderPool.sol";
-import "../Token/interface/IToken.sol";
-import "../RedeemPool/interface/IRedeemPool.sol";
-import "../Verification/interface/IVerification.sol";
-import "../RewardManager/interface/IRewardManager.sol";
 
 /**
  * @author Polytrade
