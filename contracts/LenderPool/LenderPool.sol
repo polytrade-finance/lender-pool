@@ -78,7 +78,7 @@ contract LenderPool is ILenderPool, Ownable {
         require(newRewardManager != address(0));
         address oldRewardManager = address(rewardManager);
         if (oldRewardManager != address(0)) {
-            rewardManager.pauseReward();
+            rewardManager.resetRewards();
         }
         rewardManager = IRewardManager(newRewardManager);
         rewardManager.startRewardManager();
