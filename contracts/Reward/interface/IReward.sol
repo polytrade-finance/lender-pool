@@ -87,7 +87,7 @@ interface IReward {
      *
      * Emits {NewReward} event
      */
-    function pauseReward() external;
+    function resetReward() external;
 
     /**
      * @notice `rewardOf` returns the total pending reward of the lender
