@@ -89,7 +89,8 @@ describe("Strategy", async function () {
       stableToken.address,
       tStableToken.address,
       redeemPool.address,
-      constants.AddressZero
+      constants.AddressZero,
+      rewardManager.address
     );
     expect(
       await ethers.provider.getCode(lenderPool.address)
@@ -296,13 +297,6 @@ describe("Strategy", async function () {
     await lenderPool.connect(accounts[3]).deposit(n6("200"));
     expect(await lenderPool.getDeposit(addresses[3])).to.be.equal(n6("200"));
   });
-
-  // it("should check staking pool balance", async function () {
-  //   await increaseTime(ONE_DAY * 365);
-  //   expect(
-  //     (await lenderPool.getStrategyBalance()).sub(n6("200")).toNumber()
-  //   ).to.be.greaterThan(100);
-  // });
 
   it("should update staking pool", async function () {
     await increaseTime(ONE_DAY * 365);

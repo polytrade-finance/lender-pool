@@ -33,13 +33,15 @@ contract LenderPool is ILenderPool, Ownable {
         address _stableAddress,
         address _tStableAddress,
         address _redeemPool,
-        address _treasuryAddress
+        address _treasuryAddress,
+        address _rewardManager
     ) {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
         redeemPool = IRedeemPool(_redeemPool);
         treasury = _treasuryAddress;
-        managerList.push(address(0));
+        rewardManager = IRewardManager(_rewardManager);
+        managerList.push(address(rewardManager));
     }
 
     /**
@@ -81,7 +83,7 @@ contract LenderPool is ILenderPool, Ownable {
         }
         rewardManager = IRewardManager(newRewardManager);
         rewardManager.startRewardManager();
-        currManager += 1;
+        currManager++;
         managerToIndex[newRewardManager] = currManager;
         managerList.push(newRewardManager);
         emit RewardManagerSwitched(oldRewardManager, newRewardManager);
@@ -130,6 +132,9 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function deposit(uint amount) external {
         require(amount > 0);
+        if (!(_lender[msg.sender].isRegistered[address(rewardManager)])) {
+            registerUser();
+        }
 
         _isUserRegistered(msg.sender);
 
@@ -279,20 +284,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice Registers user to all the reward manager
-     * @dev User have to register to RewardManager before interacting with RewardManager
-     */
-    function registerUser() external {
-        for (uint i = 1; i <= currManager; i++) {
-            if (!_lender[msg.sender].isRegistered[managerList[i]]) {
-                IRewardManager manager = IRewardManager(managerList[i]);
-                manager.registerUser(msg.sender);
-                _lender[msg.sender].isRegistered[address(manager)] = true;
-            }
-        }
-    }
-
-    /**
      * @notice `rewardOf` returns the total reward of the lender
      * @dev It returns the amount of rewards from all RewardManagers
      * @param lender, address of the lender to check rewards.
@@ -324,6 +315,20 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
+     * @notice Registers user to all the reward manager
+     * @dev User have to register to RewardManager before interacting with RewardManager
+     */
+    function registerUser() public {
+        for (uint i = 0; i <= currManager; i++) {
+            if (!_lender[msg.sender].isRegistered[managerList[i]]) {
+                IRewardManager manager = IRewardManager(managerList[i]);
+                manager.registerUser(msg.sender);
+                _lender[msg.sender].isRegistered[address(manager)] = true;
+            }
+        }
+    }
+
+    /**
      * @notice `_depositInStrategy` deposits stable token to external protocol.
      * @dev Funds will be deposited to a Strategy (external protocols) like Aave, compound
      * @param amount, total amount to be deposited.
@@ -338,13 +343,13 @@ contract LenderPool is ILenderPool, Ownable {
      * @param _user, address of the user
      */
     function _isUserRegistered(address _user) private view {
-        if (address(rewardManager) != address(0)) {
+        if (currManager == 0) {
+            require((_lender[_user].isRegistered[address(rewardManager)]));
+        } else {
             require(
-                managerList[managerToIndex[address(rewardManager)] - 1] ==
-                    address(0) ||
-                    (_lender[_user].isRegistered[
-                        managerList[managerToIndex[address(rewardManager)] - 1]
-                    ] && _lender[_user].isRegistered[address(rewardManager)])
+                _lender[_user].isRegistered[
+                    managerList[managerToIndex[address(rewardManager)] - 1]
+                ] && _lender[_user].isRegistered[address(rewardManager)]
             );
         }
     }
