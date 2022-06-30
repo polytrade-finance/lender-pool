@@ -33,7 +33,8 @@ contract LenderPool is ILenderPool, Ownable {
         address _stableAddress,
         address _tStableAddress,
         address _redeemPool,
-        address _treasuryAddress
+        address _treasuryAddress,
+        address _rewardManager
     ) {
         stable = IToken(_stableAddress);
         tStable = IToken(_tStableAddress);
