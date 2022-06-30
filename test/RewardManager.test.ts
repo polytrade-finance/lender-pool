@@ -98,7 +98,8 @@ describe("Lender Pool - Switch Reward Manager", function () {
       stableToken1.address,
       tStableToken.address,
       redeemPool.address,
-      constants.AddressZero
+      constants.AddressZero,
+      rewardManager1.address
     );
     expect(
       await ethers.provider.getCode(lenderPool.address)

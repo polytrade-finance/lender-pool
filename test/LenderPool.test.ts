@@ -98,7 +98,8 @@ describe("Lender Pool", function () {
       stableToken.address,
       tStableToken.address,
       redeemPool.address,
-      addresses[10]
+      addresses[10],
+      rewardManager.address
     );
     expect(
       await ethers.provider.getCode(lenderPool.address)
@@ -627,7 +628,7 @@ describe("Lender Pool", function () {
     expect(await lenderPool.getDeposit(addresses[5])).to.be.equal(n6("1100"));
   });
 
-  it("should fillRedeemPool", async () => {
+  it("should fill RedeemPool", async () => {
     const balanceBefore1 = await stableToken.balanceOf(redeemPool.address);
     await lenderPool.fillRedeemPool(n6("100"));
     const balanceAfter1 = await stableToken.balanceOf(redeemPool.address);

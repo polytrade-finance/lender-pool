@@ -93,7 +93,8 @@ describe("Contract Deployment", function () {
       stableToken.address,
       tStableToken.address,
       redeemPool.address,
-      constants.AddressZero
+      constants.AddressZero,
+      rewardManager.address
     );
     expect(
       await ethers.provider.getCode(lenderPool.address)
