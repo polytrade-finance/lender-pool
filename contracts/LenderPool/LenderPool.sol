@@ -284,20 +284,6 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice Registers user to all the reward manager
-     * @dev User have to register to RewardManager before interacting with RewardManager
-     */
-    function registerUser() external {
-        for (uint i = 1; i <= currManager; i++) {
-            if (!_lender[msg.sender].isRegistered[managerList[i]]) {
-                IRewardManager manager = IRewardManager(managerList[i]);
-                manager.registerUser(msg.sender);
-                _lender[msg.sender].isRegistered[address(manager)] = true;
-            }
-        }
-    }
-
-    /**
      * @notice `rewardOf` returns the total reward of the lender
      * @dev It returns the amount of rewards from all RewardManagers
      * @param lender, address of the lender to check rewards.
@@ -326,6 +312,20 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function getDeposit(address lender) external view returns (uint) {
         return _lender[lender].deposit;
+    }
+
+    /**
+     * @notice Registers user to all the reward manager
+     * @dev User have to register to RewardManager before interacting with RewardManager
+     */
+    function registerUser() public {
+        for (uint i = 0; i <= currManager; i++) {
+            if (!_lender[msg.sender].isRegistered[managerList[i]]) {
+                IRewardManager manager = IRewardManager(managerList[i]);
+                manager.registerUser(msg.sender);
+                _lender[msg.sender].isRegistered[address(manager)] = true;
+            }
+        }
     }
 
     /**
