@@ -344,9 +344,7 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function _isUserRegistered(address _user) private view {
         if (currManager == 0) {
-            require(
-                (_lender[_user].isRegistered[address(rewardManager)])
-            );
+            require((_lender[_user].isRegistered[address(rewardManager)]));
         } else {
             require(
                 _lender[_user].isRegistered[
