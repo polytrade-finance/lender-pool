@@ -40,7 +40,8 @@ contract LenderPool is ILenderPool, Ownable {
         tStable = IToken(_tStableAddress);
         redeemPool = IRedeemPool(_redeemPool);
         treasury = _treasuryAddress;
-        managerList.push(address(0));
+        rewardManager = IRewardManager(_rewardManager);
+        managerList.push(address(rewardManager));
     }
 
     /**
