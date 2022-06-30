@@ -83,7 +83,7 @@ contract LenderPool is ILenderPool, Ownable {
         }
         rewardManager = IRewardManager(newRewardManager);
         rewardManager.startRewardManager();
-        currManager += 1;
+        currManager++;
         managerToIndex[newRewardManager] = currManager;
         managerList.push(newRewardManager);
         emit RewardManagerSwitched(oldRewardManager, newRewardManager);
@@ -132,6 +132,9 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function deposit(uint amount) external {
         require(amount > 0);
+        if (!(_lender[msg.sender].isRegistered[address(rewardManager)])) {
+            registerUser();
+        }
 
         _isUserRegistered(msg.sender);
 
