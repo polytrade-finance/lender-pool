@@ -4,15 +4,10 @@ pragma solidity =0.8.15;
 interface IRedeemPool {
     /**
      * @notice Emits when tStable token is exchanged for stable token
-     * @param amount, the number of tokens exchanged
+     * @param account, the number of tokens exchanged
+     * @param amount, address of the account receiving the stable token
      */
-    event StableWithdrawn(uint amount);
-
-    /**
-     * @notice Emits when stable token is added to the Redeem Pool
-     * @param amount, the number of stable token deposited
-     */
-    event StableDeposited(uint amount);
+    event StableWithdrawn(address account, uint amount);
 
     /**
      * @notice exchange tStable token for the stable token
