@@ -20,7 +20,7 @@ contract Token is IToken, ERC20, AccessControl {
     ) ERC20(name_, symbol_) {
         _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _decimals = decimals_;
-        _mint(msg.sender, 1_000_000_000 * (10**decimals_));
+        _mint(_msgSender(), 1_000_000_000 * (10**decimals_));
     }
 
     /**

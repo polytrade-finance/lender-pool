@@ -89,6 +89,7 @@ describe("Lender Pool", function () {
       tradeReward.address,
       ethers.constants.AddressZero
     );
+
     expect(
       await ethers.provider.getCode(rewardManager.address)
     ).to.be.length.above(10);
@@ -101,6 +102,9 @@ describe("Lender Pool", function () {
       addresses[10],
       rewardManager.address
     );
+
+    await rewardManager["startRewardManager(address)"](lenderPool.address);
+
     expect(
       await ethers.provider.getCode(lenderPool.address)
     ).to.be.length.above(10);
@@ -231,7 +235,7 @@ describe("Lender Pool", function () {
       )
     );
 
-    lenderPool.switchStrategy(strategy.address);
+    await lenderPool.switchStrategy(strategy.address);
   });
 
   it("should impersonate account", async function () {
@@ -299,11 +303,6 @@ describe("Lender Pool", function () {
   it("Should set verification contract to LenderPool", async () => {
     await lenderPool.switchVerification(verification.address);
     expect(await lenderPool.verification()).to.be.equal(verification.address);
-  });
-
-  it("should set RewardManager in LenderPool", async () => {
-    await lenderPool.switchRewardManager(rewardManager.address);
-    expect(await lenderPool.rewardManager()).to.be.equal(rewardManager.address);
   });
 
   it("should check deposit of account 2 is 0 in LenderPool", async () => {

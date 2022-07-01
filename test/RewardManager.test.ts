@@ -105,6 +105,8 @@ describe("Lender Pool - Switch Reward Manager", function () {
       await ethers.provider.getCode(lenderPool.address)
     ).to.be.length.above(10);
 
+    await rewardManager1["startRewardManager(address)"](lenderPool.address);
+
     const Verification = await ethers.getContractFactory("Verification");
     verification = await Verification.deploy(lenderPool.address);
     expect(
@@ -234,14 +236,13 @@ describe("Lender Pool - Switch Reward Manager", function () {
     await lenderPool.switchVerification(verification.address);
     expect(await lenderPool.verification()).to.be.equal(verification.address);
 
-    await lenderPool.switchRewardManager(rewardManager1.address);
     expect(await lenderPool.rewardManager()).to.be.equal(
       rewardManager1.address
     );
 
     await verification.updateValidationLimit(n6("5000"));
 
-    lenderPool.switchStrategy(strategy.address);
+    await lenderPool.switchStrategy(strategy.address);
   });
 
   it("should impersonate account", async function () {

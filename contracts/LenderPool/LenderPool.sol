@@ -198,7 +198,7 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function claimAllRewards() external {
         _isUserRegistered(msg.sender);
-        for (uint i = 1; i <= currManager; i++) {
+        for (uint i = 0; i <= currManager; i++) {
             IRewardManager(managerList[i]).claimAllRewardsFor(msg.sender);
         }
     }
@@ -210,7 +210,7 @@ contract LenderPool is ILenderPool, Ownable {
      */
     function claimReward(address token) external {
         _isUserRegistered(msg.sender);
-        for (uint i = 1; i <= currManager; i++) {
+        for (uint i = 0; i <= currManager; i++) {
             IRewardManager(managerList[i]).claimRewardFor(msg.sender, token);
         }
     }
@@ -285,7 +285,7 @@ contract LenderPool is ILenderPool, Ownable {
 
     /**
      * @notice `rewardOf` returns the total reward of the lender
-     * @dev It returns the amount of rewards from all RewardManagers
+     * @dev It returns the sum of all amount among all RewardManagers
      * @param lender, address of the lender to check rewards.
      * @param token, address of the token to check rewards from (USDC, TRADE, etc.).
      * @return Returns the total pending reward
@@ -296,7 +296,7 @@ contract LenderPool is ILenderPool, Ownable {
         returns (uint)
     {
         uint totalReward = 0;
-        for (uint i = 1; i <= currManager; i++) {
+        for (uint i = 0; i <= currManager; i++) {
             totalReward += IRewardManager(managerList[i]).rewardOf(
                 lender,
                 token
@@ -339,7 +339,7 @@ contract LenderPool is ILenderPool, Ownable {
     }
 
     /**
-     * @notice `_isUserRegistered` checks if user is registered in the current and previous RewardManager
+     * @notice Checks and requires that the user is registered in the current and previous RewardManager
      * @param _user, address of the user
      */
     function _isUserRegistered(address _user) private view {
