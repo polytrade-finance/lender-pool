@@ -54,7 +54,7 @@ contract RewardManager is IRewardManager, AccessControl {
 
     /**
      * @notice `startRewardManager` registers the `RewardManager`
-     * @dev It can be called by LENDER_POOL only
+     * @dev It can only be called by LENDER_POOL
      */
     function startRewardManager() external onlyRole(LENDER_POOL) {
         startTime = uint40(block.timestamp);
@@ -64,7 +64,7 @@ contract RewardManager is IRewardManager, AccessControl {
     /**
      * @notice `increaseDeposit` increases the amount deposited by lender.
      * @dev It calls the `deposit` function of all the rewards in `RewardManager`.
-     * @dev It can by only called by `LenderPool`.
+     * @dev Can be called only by the `LenderPool`.
      * @param lender, address of the lender
      * @param amount, amount deposited by the lender
      */
@@ -82,7 +82,7 @@ contract RewardManager is IRewardManager, AccessControl {
     /**
      * @notice `withdrawDeposit` decrease the amount deposited by the lender.
      * @dev It calls the `withdraw` function of all the rewards in `RewardManager`
-     * @dev It can by only called by `LenderPool`.
+     * @dev Can be called only by the `LenderPool`.
      * @param lender, address of the lender
      * @param amount, amount withdrawn by the lender
      */
@@ -100,7 +100,7 @@ contract RewardManager is IRewardManager, AccessControl {
     /**
      * @notice `claimRewardsFor` claims reward for the lender.
      * @dev All the reward are transferred to the lender.
-     * @dev It can by only called by `LenderPool`.
+     * @dev Can be called only by the `LenderPool`.
      * @param lender, address of the lender
      */
     function claimAllRewardsFor(address lender) external onlyRole(LENDER_POOL) {
@@ -112,7 +112,7 @@ contract RewardManager is IRewardManager, AccessControl {
 
     /**
      * @notice `claimRewardFor` transfer all the `token` reward to the `user`
-     * @dev It can be called by LENDER_POOL only.
+     * @dev It can only be called by LENDER_POOL.
      * @param lender, address of the lender
      * @param token, address of the token
      */
