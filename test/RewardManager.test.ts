@@ -243,7 +243,7 @@ describe("Lender Pool - Switch Reward Manager", function () {
 
     await verification.updateValidationLimit(n6("5000"));
 
-    lenderPool.switchStrategy(strategy.address);
+    await lenderPool.switchStrategy(strategy.address);
   });
 
   it("should impersonate account", async function () {
