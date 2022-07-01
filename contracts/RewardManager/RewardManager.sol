@@ -62,9 +62,8 @@ contract RewardManager is IRewardManager, AccessControl {
         emit RewardManagerStarted(startTime);
     }
 
-
     /**
- * @notice `startRewardManager` starts the `RewardManager`
+     * @notice `startRewardManager` starts the `RewardManager`
      * @dev It can only be called by DEFAULT_ADMIN_ROLE
      * @dev grant LENDER_POOL role
      */
