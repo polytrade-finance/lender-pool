@@ -305,11 +305,6 @@ describe("Lender Pool", function () {
     expect(await lenderPool.verification()).to.be.equal(verification.address);
   });
 
-  it("should set RewardManager in LenderPool", async () => {
-    await lenderPool.switchRewardManager(rewardManager.address);
-    expect(await lenderPool.rewardManager()).to.be.equal(rewardManager.address);
-  });
-
   it("should check deposit of account 2 is 0 in LenderPool", async () => {
     expect(await lenderPool.getDeposit(addresses[2])).to.be.equal(0);
   });
