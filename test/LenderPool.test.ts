@@ -89,6 +89,7 @@ describe("Lender Pool", function () {
       tradeReward.address,
       ethers.constants.AddressZero
     );
+
     expect(
       await ethers.provider.getCode(rewardManager.address)
     ).to.be.length.above(10);
@@ -101,6 +102,9 @@ describe("Lender Pool", function () {
       addresses[10],
       rewardManager.address
     );
+
+    await rewardManager["startRewardManager(address)"](lenderPool.address);
+
     expect(
       await ethers.provider.getCode(lenderPool.address)
     ).to.be.length.above(10);
@@ -231,7 +235,7 @@ describe("Lender Pool", function () {
       )
     );
 
-    lenderPool.switchStrategy(strategy.address);
+    await lenderPool.switchStrategy(strategy.address);
   });
 
   it("should impersonate account", async function () {
