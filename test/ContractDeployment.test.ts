@@ -101,6 +101,10 @@ describe("Contract Deployment", function () {
     ).to.be.length.above(10);
   });
 
+  it("Should set lenderPool on RewardManager", async () => {
+    await rewardManager["startRewardManager(address)"](lenderPool.address);
+  });
+
   it("should deploy Verification", async () => {
     const Verification = await ethers.getContractFactory("Verification");
     verification = await Verification.deploy(lenderPool.address);
