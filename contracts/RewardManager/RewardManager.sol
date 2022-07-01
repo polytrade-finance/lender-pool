@@ -57,6 +57,23 @@ contract RewardManager is IRewardManager, AccessControl {
      * @dev It can only be called by LENDER_POOL
      */
     function startRewardManager() external onlyRole(LENDER_POOL) {
+        require(startTime == 0, "Already started");
+        startTime = uint40(block.timestamp);
+        emit RewardManagerStarted(startTime);
+    }
+
+
+    /**
+ * @notice `startRewardManager` starts the `RewardManager`
+     * @dev It can only be called by DEFAULT_ADMIN_ROLE
+     * @dev grant LENDER_POOL role
+     */
+    function startRewardManager(address _lenderPool)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        require(startTime == 0, "Already started");
+        _grantRole(LENDER_POOL, _lenderPool);
         startTime = uint40(block.timestamp);
         emit RewardManagerStarted(startTime);
     }
