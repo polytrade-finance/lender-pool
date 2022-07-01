@@ -30,6 +30,7 @@ let protocol: MockProtocol;
 
 const USDCAddress = "0xbEc686095Cfad43B741FA0ED305200100986CEf1";
 const tUSDCAddress = "0xecb4e60166B1A7a6Fd815F75A0e7c243bB45D540";
+const treasuryAddres = "0xD41C5bBDDDB6C9BFb341F4D2D1045e45D5DF4A89";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -69,13 +70,19 @@ async function main() {
   lenderPool = await LenderPoolContract.deploy(
     USDC.address,
     tUSDC.address,
-    redeemPool.address
+    redeemPool.address,
+    treasuryAddres,
+    rewardManager.address
   );
 
   console.log(`lenderPool: ${lenderPool.address}`);
 
+  await rewardManager["startRewardManager(address)"](lenderPool.address);
+
+  console.log("RewardManager started at:", rewardManager.address);
+
   const VerificationContract = await ethers.getContractFactory("Verification");
-  verification = await VerificationContract.deploy();
+  verification = await VerificationContract.deploy(lenderPool.address);
   console.log(`verification: ${verification.address}`);
 
   const Protocol = await ethers.getContractFactory("MockProtocol");
@@ -162,9 +169,6 @@ async function main() {
 
   await lenderPool.switchVerification(verification.address);
   console.log("Verification switched");
-
-  await lenderPool.switchRewardManager(rewardManager.address);
-  console.log("RewardManager switched");
 
   await verification.updateValidationLimit(n6("100"));
   console.log("Validation switched");
