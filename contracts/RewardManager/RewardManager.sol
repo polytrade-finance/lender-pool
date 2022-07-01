@@ -53,7 +53,7 @@ contract RewardManager is IRewardManager, AccessControl {
     }
 
     /**
-     * @notice `startRewardManager` registers the `RewardManager`
+     * @notice `startRewardManager` starts the `RewardManager`
      * @dev It can only be called by LENDER_POOL
      */
     function startRewardManager() external onlyRole(LENDER_POOL) {
