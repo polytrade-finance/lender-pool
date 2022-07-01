@@ -105,6 +105,8 @@ describe("Lender Pool - Switch Reward Manager", function () {
       await ethers.provider.getCode(lenderPool.address)
     ).to.be.length.above(10);
 
+    await rewardManager1["startRewardManager(address)"](lenderPool.address);
+
     const Verification = await ethers.getContractFactory("Verification");
     verification = await Verification.deploy(lenderPool.address);
     expect(
