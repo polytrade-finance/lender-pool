@@ -6,6 +6,26 @@ pragma solidity =0.8.15;
  * @title IVerification
  */
 interface IVerification {
+    struct UserStatus {
+        bytes2 provider;
+        bool status;
+    }
+
+    /**
+     * @notice Emits when a agent is set (added, removed)
+     * @param agent, address of the agent to be added or removed
+     * @param status, true if added or false if removed
+     */
+    event AgentSet(address agent, bool status);
+
+    /**
+     * @notice Emits when a user is validated or removed
+     * @param user, address of the user to be validated or removed
+     * @param provider, code of the provider (bytes2)
+     * @param status, true if added or false if removed
+     */
+    event UserValidation(address user, bytes2 provider, bool status);
+
     /**
      * @notice Emits when new kyc Limit is set
      * @dev Emitted when new kycLimit is set by the owner
