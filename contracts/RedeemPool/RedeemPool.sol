@@ -16,8 +16,6 @@ contract RedeemPool is IRedeemPool, AccessControl {
     IToken public immutable stable;
     IToken public immutable tStable;
 
-    mapping(address => bool) public lenderPool;
-
     bytes32 public constant LENDER_POOL = keccak256("LENDER_POOL");
 
     constructor(address _stableAddress, address _tStableAddress) {

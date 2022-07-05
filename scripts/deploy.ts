@@ -127,7 +127,7 @@ async function main() {
     .then((tx) => tx.wait(1));
   console.log("4");
 
-  await rewardManager
+  await strategy
     .grantRole(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
       lenderPool.address
@@ -135,7 +135,7 @@ async function main() {
     .then((tx) => tx.wait(1));
   console.log("5");
 
-  await strategy
+  await redeemPool
     .grantRole(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
       lenderPool.address
@@ -145,19 +145,11 @@ async function main() {
 
   await redeemPool
     .grantRole(
-      ethers.utils.keccak256(ethers.utils.toUtf8Bytes("LENDER_POOL")),
-      lenderPool.address
-    )
-    .then((tx) => tx.wait(1));
-  console.log("7");
-
-  await redeemPool
-    .grantRole(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes("OWNER")),
       deployer.address
     )
     .then((tx) => tx.wait(1));
-  console.log("8");
+  console.log("7");
 
   await tUSDC
     .grantRole(
@@ -165,7 +157,7 @@ async function main() {
       lenderPool.address
     )
     .then((tx) => tx.wait(1));
-  console.log("9");
+  console.log("8");
 
   await lenderPool.switchVerification(verification.address);
   console.log("Verification switched");
