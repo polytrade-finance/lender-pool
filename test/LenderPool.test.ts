@@ -553,7 +553,7 @@ describe("Lender Pool", function () {
   });
 
   it("should approve KYC for user3", async () => {
-    await verification.setValidation(addresses[6], true);
+    await verification.setValidation(addresses[6], "0xab12", true);
     expect(await verification.isValid(addresses[6])).to.equal(true);
   });
 
